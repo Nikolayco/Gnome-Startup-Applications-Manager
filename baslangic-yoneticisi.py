@@ -573,10 +573,10 @@ class AutostartManager(Gtk.Window):
                         t_mem_kb += float(parts[1])
                 if t_cpu > 0 or t_mem_kb > 0:
                     mb = t_mem_kb / 1024.0
-                    if mb > 1024: return f"{mb/1024.0:.1f} GB | %{t_cpu:.1f}"
-                    return f"{mb:.0f} MB | %{t_cpu:.1f}"
+                    if mb > 1024: return f"[{pid_str}] {mb/1024.0:.1f}GB | %{t_cpu:.1f}"
+                    return f"[{pid_str}] {mb:.0f}MB | %{t_cpu:.1f}"
             except: pass
-            return ""
+            return f"[{pid_str}]"
 
         def is_running(row):
             filename = row[7]
