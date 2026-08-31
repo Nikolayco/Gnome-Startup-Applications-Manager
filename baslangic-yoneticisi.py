@@ -7,6 +7,7 @@ import gettext
 import locale
 import gi
 gi.require_version('Gtk', '3.0')
+GLib.set_prgname('baslangic-yoneticisi')
 from gi.repository import Gtk, Gio, GLib, Gdk
 
 APP_NAME = "gnome-startup-manager"

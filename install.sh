@@ -33,6 +33,7 @@ Terminal=false
 Type=Application
 Categories=Settings;System;Utility;
 Keywords=startup;autostart;manager;
+StartupWMClass=baslangic-yoneticisi
 DESKTOP
 
 chmod +x "$APP_DIR/${APP_NAME}.desktop"
