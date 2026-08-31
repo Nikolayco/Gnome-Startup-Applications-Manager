@@ -202,11 +202,7 @@ class AutostartManager(Gtk.Window):
         self.set_icon_name(APP_ICON)
         self.current_selection = None
         
-        self.tray_conf_path = os.path.join(CUSTOM_SCRIPTS_DIR, "tray_enabled.conf")
-        self.tray_enabled = True
-        if os.path.exists(self.tray_conf_path):
-            with open(self.tray_conf_path, "r") as cf:
-                self.tray_enabled = (cf.read().strip() != "0")
+
                 
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
@@ -220,17 +216,10 @@ class AutostartManager(Gtk.Window):
         hb.pack_start(self.search_entry)
 
         if AppIndicator3:
-            self.btn_tray_toggle = Gtk.ToggleButton(label="Tray")
-            self.btn_tray_toggle.set_active(self.tray_enabled)
-            self.btn_tray_toggle.set_tooltip_text(_("Tray ikonunu göster/gizle"))
-            self.btn_tray_toggle.connect("toggled", self.on_tray_toggle_clicked)
-            hb.pack_end(self.btn_tray_toggle)
-            
-            self.btn_tray = Gtk.Button()
+            self.btn_tray = Gtk.Button(label="Tray'a İndir")
             self.btn_tray.add(Gtk.Image.new_from_icon_name("go-down-symbolic", Gtk.IconSize.BUTTON))
-            self.btn_tray.set_tooltip_text(_("Arka planda (Tray) çalışmaya devam et"))
-            self.btn_tray.connect("clicked", lambda w: self.hide())
-            self.btn_tray.set_visible(self.tray_enabled)
+            self.btn_tray.set_tooltip_text(_("Uygulamayı arka plana (Tray) gizle"))
+            self.btn_tray.connect("clicked", self.on_tray_clicked)
             hb.pack_end(self.btn_tray)
 
         self.btn_remove = Gtk.Button()
@@ -385,19 +374,15 @@ class AutostartManager(Gtk.Window):
             
         return True
 
-    def on_tray_toggle_clicked(self, widget):
-        self.tray_enabled = widget.get_active()
-        with open(self.tray_conf_path, "w") as cf:
-            cf.write("1" if self.tray_enabled else "0")
-        
-        if hasattr(self, 'btn_tray'):
-            self.btn_tray.set_visible(self.tray_enabled)
-            
+    def on_tray_clicked(self, widget):
         if self.indicator:
-            if self.tray_enabled:
-                self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
-            else:
-                self.indicator.set_status(AppIndicator3.IndicatorStatus.PASSIVE)
+            self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+        self.hide()
+        
+    def restore_from_tray(self):
+        if self.indicator:
+            self.indicator.set_status(AppIndicator3.IndicatorStatus.PASSIVE)
+        self.present()
 
     def on_delete_event(self, widget, event):
         Gtk.main_quit()
@@ -430,7 +415,7 @@ class AutostartManager(Gtk.Window):
             menu.append(empty)
         menu.append(Gtk.SeparatorMenuItem())
         item_show = Gtk.MenuItem(label=_("⚙️ Yöneticiyi Aç"))
-        item_show.connect("activate", lambda w: self.present())
+        item_show.connect("activate", lambda w: self.restore_from_tray())
         menu.append(item_show)
         item_quit = Gtk.MenuItem(label=_("❌ Çıkış Yap"))
         item_quit.connect("activate", Gtk.main_quit)
