@@ -102,7 +102,6 @@ class AppDialog(Gtk.Dialog):
             else:
                 self.entry_cmd.set_text(filepath)
                 
-            # Otomatik İsim Doldurma (Auto-fill Name)
             if not self.entry_name.get_text().strip():
                 filename_only = os.path.basename(filepath)
                 name_no_ext = os.path.splitext(filename_only)[0]
@@ -167,6 +166,9 @@ class AutostartManager(Gtk.Window):
         
         selection = self.treeview.get_selection()
         selection.connect("changed", self.on_selection_changed)
+        
+        # Cift tiklama ile duzenleme
+        self.treeview.connect("row-activated", self.on_row_activated)
 
         col_name = Gtk.TreeViewColumn("Uygulama Adı")
         col_name.set_resizable(True)
@@ -255,6 +257,9 @@ class AutostartManager(Gtk.Window):
         self.btn_start.set_sensitive(has_sel)
         self.btn_remove.set_sensitive(has_sel)
         self.btn_edit.set_sensitive(has_sel)
+
+    def on_row_activated(self, treeview, path, column):
+        self.on_edit_clicked(None)
 
     def write_desktop_file(self, filename, name, cmd, comment):
         path = os.path.join(AUTOSTART_DIR, filename)
