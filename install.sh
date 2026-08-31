@@ -33,6 +33,7 @@ Terminal=false
 Type=Application
 Categories=Settings;System;Utility;
 Keywords=startup;autostart;manager;
+StartupNotify=true
 StartupWMClass=baslangic-yoneticisi
 DESKTOP
 
