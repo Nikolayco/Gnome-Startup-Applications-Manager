@@ -197,7 +197,7 @@ class AppDialog(Gtk.Dialog):
 class AutostartManager(Gtk.Window):
     def __init__(self):
         super().__init__(title=_("Başlangıç Uygulamaları Yöneticisi"))
-        self.set_default_size(900, 650)
+        self.set_default_size(800, 600)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_icon_name(APP_ICON)
         self.current_selection = None
