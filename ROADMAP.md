@@ -19,9 +19,3 @@ Bu proje aktif olarak geliştirilmektedir. Aşağıdaki özellikler öncelik sı
 - [ ] **Çökme Bildirimleri:** Beklenmedik şekilde kapanan scriptler için masaüstü bildirimi (Notification) gösterme.
 - [ ] **Şablon Kütüphanesi:** Sık kullanılan başlangıç scriptleri için (VPN bağlan, Sistem Temizle vb.) hazır kod şablonları.
 - [ ] **Systemd --user Entegrasyonu:** Gelişmiş servis yönetimi ve log okuma işlemleri için systemd servislerini yönetebilme.
-
-## 4. Altyapı / Dağıtım
-- [ ] **Paketleme:** Uygulamayı sadece kaynak koddan (git) değil; `.deb` veya `Flatpak` olarak mağazalardan kurulabilir hale getirme.
-- [ ] **İçe/Dışa Aktarma:** Yedekleme amaçlı tüm ayarları ve kurulan scriptleri JSON olarak tek tıkla dışa aktarma (Export) ve içe aktarma (Import).
-- [ ] **Birim Testleri:** CI/CD (GitHub Actions) ile kod kalitesini (lint) otomatik denetleme.
-- [ ] **GTK4 + Libadwaita Geçişi:** Uzun vadede arayüzü en modern GNOME 40+ (Libadwaita) standartlarına yükseltme ve Tray ikonlarını yenileme.
