@@ -324,16 +324,39 @@ class AutostartManager(Gtk.Window):
         self.stack.add_titled(page_apps, "page_apps", _("Başlangıç"))
         
         # Ayarlar Sayfasi
-        page_settings = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
+        page_settings = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
         page_settings.set_margin_top(30)
         page_settings.set_margin_start(30)
+        page_settings.set_margin_end(30)
         
         lbl_set = Gtk.Label(label=_("<b>Uygulama Ayarları</b>"), use_markup=True, xalign=0)
         lbl_set.get_style_context().add_class("title")
         page_settings.pack_start(lbl_set, False, False, 0)
         
-        lbl_set_desc = Gtk.Label(label=_("Gelecek güncellemelerde eklenecek yeni seçenekler burada yer alacaktır."), xalign=0)
-        page_settings.pack_start(lbl_set_desc, False, False, 0)
+        # Ayar 1: Yenileme Suresi
+        box_interval = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=15)
+        lbl_interval = Gtk.Label(label=_("Durum Tarama Sıklığı (Saniye):"), xalign=0)
+        box_interval.pack_start(lbl_interval, True, True, 0)
+        
+        adj_interval = Gtk.Adjustment(value=self.config["refresh_interval"], lower=1, upper=30, step_increment=1)
+        spin_interval = Gtk.SpinButton(adjustment=adj_interval, numeric=True)
+        spin_interval.connect("value-changed", self.on_interval_changed)
+        box_interval.pack_start(spin_interval, False, False, 0)
+        
+        page_settings.pack_start(box_interval, False, False, 0)
+        
+        # Ayar 2: Sabit Tray
+        box_tray = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=15)
+        lbl_tray = Gtk.Label(label=_("Sistem Çekmecesinde (Tray) Her Zaman Göster:"), xalign=0)
+        box_tray.pack_start(lbl_tray, True, True, 0)
+        
+        sw_tray = Gtk.Switch()
+        sw_tray.set_active(self.config["tray_always_visible"])
+        sw_tray.connect("notify::active", self.on_tray_switch_changed)
+        box_tray.pack_start(sw_tray, False, False, 0)
+        
+        page_settings.pack_start(box_tray, False, False, 0)
+        
         self.stack.add_titled(page_settings, "page_settings", _("Ayarlar"))
         
         # Hakkinda Sayfasi
@@ -369,7 +392,7 @@ class AutostartManager(Gtk.Window):
         self.setup_tray()
         self.connect("delete-event", self.on_delete_event)
         self.refresh_status()
-        GLib.timeout_add_seconds(3, self.refresh_status)
+        self.timer_id = GLib.timeout_add_seconds(self.config["refresh_interval"], self.refresh_status)
 
     def on_stack_page_changed(self, stack, param):
         is_main = (stack.get_visible_child_name() == "page_apps")
@@ -381,6 +404,36 @@ class AutostartManager(Gtk.Window):
         self.btn_remove.set_visible(is_main)
         if hasattr(self, 'btn_tray'):
             self.btn_tray.set_visible(is_main)
+
+    def load_settings(self):
+        import json
+        self.settings_file = os.path.join(CUSTOM_SCRIPTS_DIR, "settings.json")
+        self.config = {"refresh_interval": 3, "tray_always_visible": False}
+        if os.path.exists(self.settings_file):
+            try:
+                with open(self.settings_file, "r") as f:
+                    self.config.update(json.load(f))
+            except: pass
+
+    def save_settings(self):
+        import json
+        try:
+            with open(self.settings_file, "w") as f:
+                json.dump(self.config, f)
+        except: pass
+
+    def on_interval_changed(self, spin):
+        self.config["refresh_interval"] = int(spin.get_value())
+        self.save_settings()
+        if hasattr(self, 'timer_id') and self.timer_id:
+            GLib.source_remove(self.timer_id)
+        self.timer_id = GLib.timeout_add_seconds(self.config["refresh_interval"], self.refresh_status)
+
+    def on_tray_switch_changed(self, switch, gparam):
+        self.config["tray_always_visible"] = switch.get_active()
+        self.save_settings()
+        if self.indicator:
+            self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE if self.config["tray_always_visible"] else AppIndicator3.IndicatorStatus.PASSIVE)
 
     def refresh_status(self):
         try:
@@ -450,7 +503,10 @@ class AutostartManager(Gtk.Window):
         self.indicator = None
         if AppIndicator3:
             self.indicator = AppIndicator3.Indicator.new("gnome-startup-manager-indicator", APP_ICON, AppIndicator3.IndicatorCategory.APPLICATION_STATUS)
-            self.indicator.set_status(AppIndicator3.IndicatorStatus.PASSIVE)
+            if self.config["tray_always_visible"]:
+                self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+            else:
+                self.indicator.set_status(AppIndicator3.IndicatorStatus.PASSIVE)
             self.update_tray_menu()
 
     def update_tray_menu(self):
