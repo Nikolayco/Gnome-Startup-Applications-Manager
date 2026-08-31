@@ -275,7 +275,7 @@ class AutostartManager(Gtk.Window):
         self.filter_user.set_visible_func(self.filter_func)
         
         lbl_user = Gtk.Label(xalign=0)
-        lbl_user.set_markup(_("<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları</span>"))
+        lbl_user.set_markup(f"<span size='large' weight='bold' color='#2A7BDE'>{_('Kullanıcı Uygulamaları')}</span>")
         box_user.pack_start(lbl_user, False, False, 0)
         
         scroll_user = Gtk.ScrolledWindow()
@@ -295,7 +295,7 @@ class AutostartManager(Gtk.Window):
         self.filter_sys.set_visible_func(self.filter_func)
         
         lbl_sys = Gtk.Label(xalign=0)
-        lbl_sys.set_markup(_("<span size='large' weight='bold' color='#E03C31'>Sistem Uygulamaları</span>"))
+        lbl_sys.set_markup(f"<span size='large' weight='bold' color='#E03C31'>{_('Sistem Uygulamaları')}</span>")
         box_sys.pack_start(lbl_sys, False, False, 0)
         
         scroll_sys = Gtk.ScrolledWindow()
