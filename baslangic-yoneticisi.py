@@ -201,9 +201,7 @@ class AutostartManager(Gtk.Window):
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_icon_name(APP_ICON)
         self.current_selection = None
-        
-
-                
+        self.load_settings()
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
         hb.set_title(self.get_title())
