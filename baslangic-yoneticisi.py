@@ -251,15 +251,27 @@ class AutostartManager(Gtk.Window):
         self.btn_edit.set_sensitive(False)
         hb.pack_end(self.btn_edit)
 
-        btn_add = Gtk.Button()
-        btn_add.add(Gtk.Image.new_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON))
-        btn_add.set_tooltip_text(_("Yeni uygulama veya script ekle"))
-        btn_add.connect("clicked", self.on_add_clicked)
-        btn_add.get_style_context().add_class("suggested-action")
-        hb.pack_end(btn_add)
+        self.btn_add = Gtk.Button()
+        self.btn_add.add(Gtk.Image.new_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON))
+        self.btn_add.set_tooltip_text(_("Yeni uygulama veya script ekle"))
+        self.btn_add.connect("clicked", self.on_add_clicked)
+        self.btn_add.get_style_context().add_class("suggested-action")
+        hb.pack_end(self.btn_add)
 
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self.add(vbox)
+        hbox_main = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.add(hbox_main)
+        
+        self.stack = Gtk.Stack()
+        self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN)
+        self.stack.connect("notify::visible-child-name", self.on_stack_page_changed)
+        
+        sidebar = Gtk.StackSidebar()
+        sidebar.set_stack(self.stack)
+        sidebar.set_size_request(160, -1)
+        
+        hbox_main.pack_start(sidebar, False, False, 0)
+        hbox_main.pack_start(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL), False, False, 0)
+        hbox_main.pack_start(self.stack, True, True, 0)
 
         paned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
         paned.set_position(300)
@@ -307,7 +319,42 @@ class AutostartManager(Gtk.Window):
         paned.pack1(box_user, True, False)
         paned.pack2(box_sys, True, False)
         
-        vbox.pack_start(paned, True, True, 0)
+        page_apps = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        page_apps.pack_start(paned, True, True, 0)
+        self.stack.add_titled(page_apps, "page_apps", _("Başlangıç"))
+        
+        # Ayarlar Sayfasi
+        page_settings = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
+        page_settings.set_margin_top(30)
+        page_settings.set_margin_start(30)
+        
+        lbl_set = Gtk.Label(label=_("<b>Uygulama Ayarları</b>"), use_markup=True, xalign=0)
+        lbl_set.get_style_context().add_class("title")
+        page_settings.pack_start(lbl_set, False, False, 0)
+        
+        lbl_set_desc = Gtk.Label(label=_("Gelecek güncellemelerde eklenecek yeni seçenekler burada yer alacaktır."), xalign=0)
+        page_settings.pack_start(lbl_set_desc, False, False, 0)
+        self.stack.add_titled(page_settings, "page_settings", _("Ayarlar"))
+        
+        # Hakkinda Sayfasi
+        page_about = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
+        page_about.set_margin_top(40)
+        
+        try:
+            img = Gtk.Image.new_from_icon_name(APP_ICON, Gtk.IconSize.DIALOG)
+            img.set_pixel_size(128)
+            page_about.pack_start(img, False, False, 0)
+        except: pass
+        
+        lbl_title = Gtk.Label(label=_("<b>Başlangıç Uygulamaları Yöneticisi</b>"), use_markup=True)
+        page_about.pack_start(lbl_title, False, False, 0)
+        
+        lbl_desc = Gtk.Label(label=_("Sürüm: 2.1\nGeliştirici: Nikolayco"))
+        lbl_desc.set_justify(Gtk.Justification.CENTER)
+        page_about.pack_start(lbl_desc, False, False, 0)
+        
+        self.stack.add_titled(page_about, "page_about", _("Hakkında"))
+
 
         os.makedirs(AUTOSTART_DIR, exist_ok=True)
         os.makedirs(CUSTOM_SCRIPTS_DIR, exist_ok=True)
@@ -323,6 +370,17 @@ class AutostartManager(Gtk.Window):
         self.connect("delete-event", self.on_delete_event)
         self.refresh_status()
         GLib.timeout_add_seconds(3, self.refresh_status)
+
+    def on_stack_page_changed(self, stack, param):
+        is_main = (stack.get_visible_child_name() == "page_apps")
+        self.search_entry.set_visible(is_main)
+        self.btn_add.set_visible(is_main)
+        self.btn_edit.set_visible(is_main)
+        self.btn_start.set_visible(is_main)
+        self.btn_stop.set_visible(is_main)
+        self.btn_remove.set_visible(is_main)
+        if hasattr(self, 'btn_tray'):
+            self.btn_tray.set_visible(is_main)
 
     def refresh_status(self):
         try:
