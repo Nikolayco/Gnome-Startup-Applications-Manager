@@ -3,27 +3,106 @@ import os
 import glob
 import shlex
 import subprocess
-import gettext
-import locale
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio, GLib, Gdk
-GLib.set_prgname('baslangic-yoneticisi')
+import os
 
-APP_NAME = "gnome-startup-manager"
-LOCALE_DIR = os.path.expanduser("~/.local/share/locale")
+_EN_DICT = {
+    "-": "-",
+    "-- Hızlı Başlat --": "-- Quick Launch --",
+    "<b>Başlangıç Uygulamaları Yöneticisi</b>": "<b>Startup Applications Manager</b>",
+    "<b>Gelişmiş Arka Plan İzni (Lingering)</b>": "<b>Advanced Background Permission (Lingering)</b>",
+    "Aktif": "Enabled",
+    "Ayarlar": "Settings",
+    "Ayarları düzenle": "Edit settings",
+    "Açıklama (İsteğe):": "Description (Optional):",
+    "Başlangıç": "Startup",
+    "Başlangıç Uygulamaları Yöneticisi": "Startup Applications Manager",
+    "Belirli Aralıklarla (Tekrarla)": "Interval (Repeat)",
+    "Belirli Gün/Saat (Takvim)": "Specific Day/Time (Calendar)",
+    "Bilgisayar açıldığında, siz henüz şifre girip oturum açmasanız bile\nzamanlanmış görevlerin (Sistem Açılışında - Boot) çalışabilmesi için gereklidir.": "Required for scheduled tasks (Boot) to run\nin the background before you even log in.",
+    "Bu öğeyi silmek istediğinize emin misiniz?": "Are you sure you want to delete this item?",
+    "Dakika": "Minutes",
+    "Dosya Seç": "Select File",
+    "Durum": "Status",
+    "Durum Tarama Sıklığı (Saniye):": "Status Refresh Rate (Seconds):",
+    "Düzenle": "Edit",
+    "Evet (Max)": "Yes (Max)",
+    "Evet (Min)": "Yes (Min)",
+    "Evet (Normal)": "Yes (Normal)",
+    "Gecikme": "Delay",
+    "Gecikme (Sn):": "Delay (Sec):",
+    "Gecikme:": "Delay:",
+    "Görev": "Task",
+    "Görev Adı:": "Task Name:",
+    "Görevi Düzenle": "Edit Task",
+    "Gün": "Days",
+    "Hakkında": "About",
+    "Kalıcı olarak sil": "Delete permanently",
+    "Kaydet": "Save",
+    "Kaynak": "Resources",
+    "Komut": "Command",
+    "Komut / Dosya:": "Command / File:",
+    "Kullanıcı Uygulamaları": "User Applications",
+    "Kısaca açıklama yazın...": "Write a short description...",
+    "Mevcut Dosya / Komut Seç": "Select Existing File / Command",
+    "Mini Editör (Kodu Buraya Yaz)": "Mini Editor (Write Code Here)",
+    "Oturum Açılışında (Login)": "At Login (Startup)",
+    "Pencere Boyutu ve Pozisyonu:": "Window Size and Position:",
+    "Pencere Modu:": "Window Mode:",
+    "Saat": "Hours",
+    "Saniye": "Seconds",
+    "Seç": "Select",
+    "Seçili görevleri silmek istiyor musunuz?": "Are you sure you want to delete the selected tasks?",
+    "Sil": "Delete",
+    "Sistem Açılışında (Boot)": "At System Boot",
+    "Sistem Uygulamaları": "System Applications",
+    "Sistem Uygulamalarını (Alt Liste) Göster:": "Show System Applications (Sublist):",
+    "Sistem açıldıktan kaç saniye sonra çalışsın?": "How many seconds after boot should it run?",
+    "Sistem ve Kullanıcı uygulamalarını yönetin": "Manage system and user startup applications",
+    "Sistem Çekmecesinde (Tray) Her Zaman Göster:": "Always Show in System Tray:",
+    "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor.": "Task Scheduler is unavailable because systemd is not found on your system.",
+    "Sürüm: 1.1\nGeliştirici: Nikolayco": "Version: 1.1\nDeveloper: Nikolayco",
+    "Sıradaki Çalışma": "Next Run",
+    "Terminal": "Terminal",
+    "Terminalde Çalıştır:": "Run in Terminal:",
+    "Terminalde çalıştır": "Run in terminal",
+    "Tetikleyici": "Trigger",
+    "Tetikleyici:": "Trigger:",
+    "Tüm Dosyalar": "All Files",
+    "Uygulama Adı": "App Name",
+    "Uygulama Adı:": "App Name:",
+    "Uygulama Ara...": "Search app...",
+    "Uygulama bulunamadı": "No application found",
+    "Uygulamayı arka plana (Tray) gizle": "Hide application to Tray",
+    "Uygulamayı hemen çalıştırarak test et": "Run application immediately to test",
+    "Varsayılan Boyuta Dön": "Restore Default Size",
+    "Yeni Başlangıç Öğesi Ekle": "Add New Startup Item",
+    "Yeni Görev": "New Task",
+    "Yeni uygulama veya script ekle": "Add new app or script",
+    "Zamanlayıcı": "Task Scheduler",
+    "Çalışacak Dosya/Kod:": "File/Code to Run:",
+    "Çalışan uygulamayı durdur (Kapat)": "Stop running application (Kill)",
+    "Çalıştırma Hatası!": "Execution Error!",
+    "Çalıştırılacak Dosyayı Seçin": "Select File to Run",
+    "Örn: Otomatik Yedekleme": "e.g. Auto Backup",
+    "Örn: Yedekleme": "e.g. Backup",
+    "Öğeyi Düzenle": "Edit Item",
+    "İptal": "Cancel",
+    "İzin Ver (Lingering'i Aç)": "Enable (Turn on Lingering)",
+    "İzin Ver / Kaldır": "Enable / Disable",
+    "İzin Verildi (Aktif)": "Enabled (Active)",
+    "Şimdi Çalıştır": "Run Now",
+    "⚙️ Yöneticiyi Aç": "⚙️ Open Manager",
+    "❌ Çıkış Yap": "❌ Quit",
+    "Çalışıyor": "Running",
+    "Durdu": "Stopped"
+}
 
-try:
-    locale.setlocale(locale.LC_ALL, '')
-except locale.Error:
-    pass
+_LANG = os.environ.get("LANG", "en").split("_")[0]
 
-try:
-    gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
-    gettext.textdomain(APP_NAME)
-    _ = gettext.gettext
-except Exception:
-    _ = lambda s: s
+def _(text):
+    if _LANG == "tr": return text
+    return _EN_DICT.get(text, text)
+
 
 try:
     gi.require_version('AyatanaAppIndicator3', '0.1')
@@ -935,9 +1014,11 @@ class AutostartManager(Gtk.Window):
         col_status.pack_start(render_status, False)
         def format_status(c, cell, m, i, d):
             if m[i][11]:
-                cell.set_property("markup", "<span foreground='#2ca02c'>🟢 Çalışıyor</span>")
+                t = _("Çalışıyor")
+                cell.set_property("markup", f"<span foreground='#2ca02c'>🟢 {t}</span>")
             else:
-                cell.set_property("markup", "<span foreground='#7f7f7f'>⚪ Durdu</span>")
+                t = _("Durdu")
+                cell.set_property("markup", f"<span foreground='#7f7f7f'>⚪ {t}</span>")
         col_status.set_cell_data_func(render_status, format_status)
         tree.append_column(col_status)
 
