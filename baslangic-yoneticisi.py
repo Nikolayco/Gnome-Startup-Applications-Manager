@@ -312,10 +312,13 @@ class AutostartManager(Gtk.Window):
 
     def refresh_status(self):
         try:
-            res = subprocess.run(["ps", "-eo", "args"], stdout=subprocess.PIPE, text=True)
+            res = subprocess.run(["/bin/ps", "-eo", "args"], stdout=subprocess.PIPE, text=True)
             all_procs = res.stdout
-        except:
-            all_procs = ""
+        except Exception as e:
+            all_procs = f"ERROR: {str(e)}"
+        
+
+            
         def is_running(cmd):
             try:
                 clean_cmd = cmd.replace("%f", "").replace("%F", "").replace("%u", "").replace("%U", "")
@@ -342,7 +345,10 @@ class AutostartManager(Gtk.Window):
                 search_term = target if "/" in target else base
                 if search_term in ["bash", "sh", "env"]: return False
                 return search_term in all_procs
-            except: return False
+            except Exception as e:
+                with open("/tmp/app_status_err.log", "a") as errf:
+                    errf.write(f"ERROR for {cmd}: {str(e)}\n")
+                return False
         for row in self.store_user: row[11] = is_running(row[3])
         for row in self.store_sys: row[11] = is_running(row[3])
         
