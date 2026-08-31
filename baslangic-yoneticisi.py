@@ -254,16 +254,24 @@ class ScheduleDialog(Gtk.Dialog):
         cmd_box.pack_start(btn_browse, False, False, 0)
         grid.attach(cmd_box, 1, 1, 1, 1)
         
+        # Terminal Switch
+        lbl_term = Gtk.Label(label=_("Terminalde Çalıştır:"), xalign=0)
+        grid.attach(lbl_term, 0, 2, 1, 1)
+        self.switch_term = Gtk.Switch()
+        self.switch_term.set_halign(Gtk.Align.START)
+        self.switch_term.set_valign(Gtk.Align.CENTER)
+        grid.attach(self.switch_term, 1, 2, 1, 1)
+        
         # Trigger Type
         lbl_type = Gtk.Label(label=_("Tetikleyici:"), xalign=0)
-        grid.attach(lbl_type, 0, 2, 1, 1)
+        grid.attach(lbl_type, 0, 3, 1, 1)
         self.combo_type = Gtk.ComboBoxText()
         self.combo_type.append("interval", _("Belirli Aralıklarla (Tekrarla)"))
         self.combo_type.append("calendar", _("Belirli Gün/Saat (Takvim)"))
         self.combo_type.append("boot", _("Sistem Açılışında (Boot)"))
         self.combo_type.append("login", _("Oturum Açılışında (Login)"))
         self.combo_type.set_active_id("interval")
-        grid.attach(self.combo_type, 1, 2, 1, 1)
+        grid.attach(self.combo_type, 1, 3, 1, 1)
         
         # Trigger Settings Stack
         self.stack = Gtk.Stack()
@@ -302,13 +310,17 @@ class ScheduleDialog(Gtk.Dialog):
         box_login.pack_start(Gtk.Label(label=_("Saniye")), False, False, 0)
         self.stack.add_named(box_login, "login")
         
-        grid.attach(self.stack, 1, 3, 1, 1)
+        grid.attach(self.stack, 1, 4, 1, 1)
         
         self.combo_type.connect("changed", lambda c: self.stack.set_visible_child_name(c.get_active_id()))
         
         if task:
             self.entry_name.set_text(task['name'])
-            self.entry_cmd.set_text(task['cmd'])
+            cmd_text = task['cmd']
+            if cmd_text.startswith("gnome-terminal -- "):
+                cmd_text = cmd_text.replace("gnome-terminal -- ", "", 1)
+                self.switch_term.set_active(True)
+            self.entry_cmd.set_text(cmd_text)
             self.combo_type.set_active_id(task['type'])
             if task['type'] == 'interval':
                 self.spin_int.set_value(task['val_int'])
@@ -1307,6 +1319,9 @@ class AutostartManager(Gtk.Window):
         name = dialog.entry_name.get_text().strip()
         cmd = dialog.entry_cmd.get_text().strip()
         if not name or not cmd: return
+        
+        if dialog.switch_term.get_active() and not cmd.startswith("gnome-terminal"):
+            cmd = f"gnome-terminal -- {cmd}" 
         
         t_type = dialog.combo_type.get_active_id()
         if not task_id:
