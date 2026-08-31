@@ -345,8 +345,12 @@ class AutostartManager(Gtk.Window):
             except: 
                 return False
                 
-        for row in self.store_user: row[11] = is_running(row[3])
-        for row in self.store_sys: row[11] = is_running(row[3])
+        for row in self.store_user: 
+            new_val = is_running(row[3])
+            if row[11] != new_val: row[11] = new_val
+        for row in self.store_sys: 
+            new_val = is_running(row[3])
+            if row[11] != new_val: row[11] = new_val
         
         if self.current_selection:
             model, treeiter = self.current_selection
