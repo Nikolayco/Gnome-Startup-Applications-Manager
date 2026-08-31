@@ -518,9 +518,14 @@ class AutostartManager(Gtk.Window):
             cmd = cmd.replace("gnome-terminal --maximize -- ", "")
             term_size = "maximize"
             terminal = True
-        prefix_min = 'gnome-terminal -- bash -c "xdotool getactivewindow windowminimize; '
+        prefix_min = 'gnome-terminal -- bash -c "sleep 0.4 && xdotool getactivewindow windowminimize; '
+        prefix_min_old = 'gnome-terminal -- bash -c "xdotool getactivewindow windowminimize; '
         if cmd.startswith(prefix_min) and cmd.endswith('"'):
             cmd = cmd[len(prefix_min):-1]
+            term_size = "minimize"
+            terminal = True
+        elif cmd.startswith(prefix_min_old) and cmd.endswith('"'):
+            cmd = cmd[len(prefix_min_old):-1]
             term_size = "minimize"
             terminal = True
             
@@ -592,7 +597,7 @@ class AutostartManager(Gtk.Window):
             if term_size == "maximize":
                 final_cmd = f"gnome-terminal --maximize -- {cmd}"
             elif term_size == "minimize":
-                final_cmd = f'gnome-terminal -- bash -c "xdotool getactivewindow windowminimize; {cmd}"'
+                final_cmd = f'gnome-terminal -- bash -c "sleep 0.4 && xdotool getactivewindow windowminimize; {cmd}"'
             else:
                 term_str = "true"
                 
