@@ -96,7 +96,6 @@ class AppDialog(Gtk.Dialog):
         self.spin_delay.set_tooltip_text(_("Sistem açıldıktan kaç saniye sonra çalışsın?"))
         grid.attach(self.spin_delay, 1, 2, 1, 1)
 
-        # Terminal and Size Box
         lbl_term = Gtk.Label(label=_("Pencere Modu:"), xalign=0)
         lbl_term.get_style_context().add_class("dim-label")
         grid.attach(lbl_term, 0, 3, 1, 1)
@@ -180,24 +179,19 @@ class AppDialog(Gtk.Dialog):
     def on_browse_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(title=_("Çalıştırılacak Dosyayı Seçin"), parent=self, action=Gtk.FileChooserAction.OPEN)
         dialog.add_buttons(_("İptal"), Gtk.ResponseType.CANCEL, _("Seç"), Gtk.ResponseType.OK)
-        
         filter_all = Gtk.FileFilter()
         filter_all.set_name(_("Tüm Dosyalar"))
         filter_all.add_pattern("*")
         dialog.add_filter(filter_all)
-        
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             filepath = dialog.get_filename()
             self.entry_cmd.set_text(f'"{filepath}"' if " " in filepath else filepath)
-                
             if not self.entry_name.get_text().strip():
                 name_no_ext = os.path.splitext(os.path.basename(filepath))[0]
                 self.entry_name.set_text(name_no_ext.replace("-", " ").replace("_", " ").title())
-            
             if filepath.endswith(".sh") or filepath.endswith(".py"):
                 self.check_terminal.set_active(True)
-                
         dialog.destroy()
 
 class AutostartManager(Gtk.Window):
@@ -267,7 +261,6 @@ class AutostartManager(Gtk.Window):
         box_lists.set_margin_top(15)
         box_lists.set_margin_bottom(15)
         
-        # Data Model: 0:Icon, 1:Enabled, 2:Name, 3:Cmd, 4:Comment, 5:IsSys, 6:Path, 7:Filename, 8:Terminal, 9:Delay, 10:TermSize, 11:IsRunning
         self.store_user = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str, bool)
         self.filter_user = self.store_user.filter_new()
         self.filter_user.set_visible_func(self.filter_func)
@@ -298,6 +291,12 @@ class AutostartManager(Gtk.Window):
         os.makedirs(AUTOSTART_DIR, exist_ok=True)
         os.makedirs(CUSTOM_SCRIPTS_DIR, exist_ok=True)
         
+        wrapper_path = os.path.join(CUSTOM_SCRIPTS_DIR, "minimize_wrapper.sh")
+        if not os.path.exists(wrapper_path):
+            with open(wrapper_path, "w") as f:
+                f.write("#!/bin/bash\nTITLE=$1\nshift\nfor i in {1..30}; do\n    WID=$(xdotool search --name \"$TITLE\" | head -1)\n    if [ -n \"$WID\" ]; then\n        xdotool windowminimize $WID\n        if xprop -id $WID | grep -q _NET_WM_STATE_HIDDEN; then\n            break\n        fi\n    fi\n    sleep 0.1\ndone\neval \"$@\"\n")
+            os.chmod(wrapper_path, 0o755)
+
         self.load_apps()
         self.setup_tray()
         self.connect("delete-event", self.on_delete_event)
@@ -306,14 +305,11 @@ class AutostartManager(Gtk.Window):
 
     def refresh_status(self):
         try:
-            import subprocess
             res = subprocess.run(["ps", "-eo", "args"], stdout=subprocess.PIPE, text=True)
             all_procs = res.stdout
         except:
             all_procs = ""
-
         def is_running(cmd):
-            import shlex, os
             try:
                 clean_cmd = cmd.replace("%f", "").replace("%F", "").replace("%u", "").replace("%U", "")
                 parts = shlex.split(clean_cmd)
@@ -329,14 +325,9 @@ class AutostartManager(Gtk.Window):
                 search_term = target if "/" in target else base
                 if search_term in ["bash", "sh", "env"]: return False
                 return search_term in all_procs
-            except:
-                return False
-
-        for row in self.store_user:
-            row[11] = is_running(row[3])
-        for row in self.store_sys:
-            row[11] = is_running(row[3])
-            
+            except: return False
+        for row in self.store_user: row[11] = is_running(row[3])
+        for row in self.store_sys: row[11] = is_running(row[3])
         return True
 
     def on_delete_event(self, widget, event):
@@ -346,11 +337,7 @@ class AutostartManager(Gtk.Window):
     def setup_tray(self):
         self.indicator = None
         if AppIndicator3:
-            self.indicator = AppIndicator3.Indicator.new(
-                "gnome-startup-manager-indicator",
-                APP_ICON,
-                AppIndicator3.IndicatorCategory.APPLICATION_STATUS
-            )
+            self.indicator = AppIndicator3.Indicator.new("gnome-startup-manager-indicator", APP_ICON, AppIndicator3.IndicatorCategory.APPLICATION_STATUS)
             self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
             self.indicator.set_title(_("Başlangıç Uygulamaları Yöneticisi"))
             self.update_tray_menu()
@@ -358,35 +345,26 @@ class AutostartManager(Gtk.Window):
     def update_tray_menu(self):
         if not self.indicator: return
         menu = Gtk.Menu()
-        
         item_title = Gtk.MenuItem(label=_("-- Hızlı Başlat --"))
         item_title.set_sensitive(False)
         menu.append(item_title)
-        
         count = 0
         for row in self.store_user:
             count += 1
-            app_name = row[2]
-            app_cmd = row[3]
-            item = Gtk.MenuItem(label=app_name)
-            item.connect("activate", self.on_tray_execute, app_cmd)
+            item = Gtk.MenuItem(label=row[2])
+            item.connect("activate", self.on_tray_execute, row[3])
             menu.append(item)
-            
         if count == 0:
             empty = Gtk.MenuItem(label=_("Uygulama bulunamadı"))
             empty.set_sensitive(False)
             menu.append(empty)
-            
         menu.append(Gtk.SeparatorMenuItem())
-        
         item_show = Gtk.MenuItem(label=_("⚙️ Yöneticiyi Aç"))
         item_show.connect("activate", lambda w: self.present())
         menu.append(item_show)
-        
         item_quit = Gtk.MenuItem(label=_("❌ Çıkış Yap"))
         item_quit.connect("activate", Gtk.main_quit)
         menu.append(item_quit)
-        
         menu.show_all()
         self.indicator.set_menu(menu)
 
@@ -409,7 +387,6 @@ class AutostartManager(Gtk.Window):
         tree = Gtk.TreeView(model=model)
         tree.set_rules_hint(True)
         tree.connect("row-activated", self.on_row_activated)
-        
         selection = tree.get_selection()
         selection.connect("changed", self.on_selection_changed, tree)
         
@@ -425,13 +402,12 @@ class AutostartManager(Gtk.Window):
         render_icon.set_property("stock-size", Gtk.IconSize.DND)
         col_name.pack_start(render_icon, False)
         col_name.add_attribute(render_icon, "icon-name", 0)
-        
         render_name = Gtk.CellRendererText()
         render_name.set_property("weight", 600)
         col_name.pack_start(render_name, True)
         col_name.add_attribute(render_name, "text", 2)
         tree.append_column(col_name)
-        
+
         col_status = Gtk.TreeViewColumn(_("Durum"))
         render_status = Gtk.CellRendererText()
         col_status.pack_start(render_status, False)
@@ -456,16 +432,13 @@ class AutostartManager(Gtk.Window):
         col_term = Gtk.TreeViewColumn(_("Terminal"))
         render_term = Gtk.CellRendererText()
         col_term.pack_start(render_term, False)
-        
         def format_term(c, cell, m, i, d):
-            if not m[i][8]:
-                cell.set_property("text", _("-"))
+            if not m[i][8]: cell.set_property("text", _("-"))
             else:
                 s = m[i][10]
                 if s == "maximize": cell.set_property("text", _("Evet (Max)"))
                 elif s == "minimize": cell.set_property("text", _("Evet (Min)"))
                 else: cell.set_property("text", _("Evet (Normal)"))
-                
         col_term.set_cell_data_func(render_term, format_term)
         tree.append_column(col_term)
 
@@ -479,23 +452,12 @@ class AutostartManager(Gtk.Window):
 
     def on_app_toggled(self, widget, path, filter_model):
         treeiter = filter_model.get_iter(path)
-        is_enabled = not filter_model[treeiter][1]
-        
-        filename = filter_model[treeiter][7]
-        name = filter_model[treeiter][2]
-        cmd = filter_model[treeiter][3]
-        comment = filter_model[treeiter][4]
-        terminal = filter_model[treeiter][8]
-        delay = filter_model[treeiter][9]
-        term_size = filter_model[treeiter][10]
-        
-        self.write_desktop_file(filename, name, cmd, comment, terminal, term_size, delay, is_enabled)
+        self.write_desktop_file(filter_model[treeiter][7], filter_model[treeiter][2], filter_model[treeiter][3], filter_model[treeiter][4], filter_model[treeiter][8], filter_model[treeiter][10], filter_model[treeiter][9], not filter_model[treeiter][1])
         self.load_apps()
 
     def parse_desktop_file(self, path):
         name = os.path.basename(path).replace(".desktop", "")
-        cmd, comment, hidden, icon, terminal, delay = "", "", False, "application-x-executable", False, 0
-        term_size = "normal"
+        cmd, comment, hidden, icon, terminal, delay, term_size = "", "", False, "application-x-executable", False, 0, "normal"
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 for line in f:
@@ -513,19 +475,39 @@ class AutostartManager(Gtk.Window):
         except: pass
         if "/" in icon: icon = "application-x-executable"
         
-        # Check if it was wrapped by our maximize logic
+        safe_name = "".join([c for c in name if c.isalnum()])
+        wrapper_path = os.path.join(CUSTOM_SCRIPTS_DIR, "minimize_wrapper.sh")
+        
+        # New robust logic
+        prefix1 = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- bash -c "{wrapper_path} \'{safe_name}\' '
+        prefix2 = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- bash -c "{wrapper_path} \'MINIMIZE_{safe_name}\' '
+        # Old legacy fallbacks
+        prefix3 = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- bash -c "xdotool search --sync --name \\\'MINIMIZE_{safe_name}\\\' windowminimize; '
+        prefix4 = 'gnome-terminal -- bash -c "sleep 0.4 && xdotool getactivewindow windowminimize; '
+        prefix5 = 'gnome-terminal -- bash -c "xdotool getactivewindow windowminimize; '
+
         if cmd.startswith("gnome-terminal --maximize -- "):
             cmd = cmd.replace("gnome-terminal --maximize -- ", "")
             term_size = "maximize"
             terminal = True
-        prefix_min = 'gnome-terminal -- bash -c "sleep 0.4 && xdotool getactivewindow windowminimize; '
-        prefix_min_old = 'gnome-terminal -- bash -c "xdotool getactivewindow windowminimize; '
-        if cmd.startswith(prefix_min) and cmd.endswith('"'):
-            cmd = cmd[len(prefix_min):-1]
+        elif cmd.startswith(prefix1) and cmd.endswith('"'):
+            cmd = cmd[len(prefix1):-1]
             term_size = "minimize"
             terminal = True
-        elif cmd.startswith(prefix_min_old) and cmd.endswith('"'):
-            cmd = cmd[len(prefix_min_old):-1]
+        elif cmd.startswith(prefix2) and cmd.endswith('"'):
+            cmd = cmd[len(prefix2):-1]
+            term_size = "minimize"
+            terminal = True
+        elif cmd.startswith(prefix3) and cmd.endswith('"'):
+            cmd = cmd[len(prefix3):-1]
+            term_size = "minimize"
+            terminal = True
+        elif cmd.startswith(prefix4) and cmd.endswith('"'):
+            cmd = cmd[len(prefix4):-1]
+            term_size = "minimize"
+            terminal = True
+        elif cmd.startswith(prefix5) and cmd.endswith('"'):
+            cmd = cmd[len(prefix5):-1]
             term_size = "minimize"
             terminal = True
             
@@ -534,51 +516,35 @@ class AutostartManager(Gtk.Window):
     def load_apps(self):
         self.store_user.clear()
         self.store_sys.clear()
-        
         paths = []
-        if os.path.exists(AUTOSTART_DIR):
-            paths.extend(glob.glob(os.path.join(AUTOSTART_DIR, "*.desktop")))
-        if os.path.exists(SYS_AUTOSTART_DIR):
-            paths.extend(glob.glob(os.path.join(SYS_AUTOSTART_DIR, "*.desktop")))
-            
+        if os.path.exists(AUTOSTART_DIR): paths.extend(glob.glob(os.path.join(AUTOSTART_DIR, "*.desktop")))
+        if os.path.exists(SYS_AUTOSTART_DIR): paths.extend(glob.glob(os.path.join(SYS_AUTOSTART_DIR, "*.desktop")))
         seen = {}
         for p in paths:
             fname = os.path.basename(p)
-            if fname not in seen:
-                user_path = os.path.join(AUTOSTART_DIR, fname)
-                seen[fname] = user_path if os.path.exists(user_path) else p
-                    
+            if fname not in seen: seen[fname] = os.path.join(AUTOSTART_DIR, fname) if os.path.exists(os.path.join(AUTOSTART_DIR, fname)) else p
         all_apps = []
         for fname, path in seen.items():
             app = self.parse_desktop_file(path)
-            if app.cmd:
-                all_apps.append(app)
-                
+            if app.cmd: all_apps.append(app)
         all_apps.sort(key=lambda x: x.name.lower())
-                
         for app in all_apps:
             row = [app.icon, app.enabled, app.name, app.cmd, app.comment, app.is_sys, app.path, app.filename, app.terminal, app.delay, app.term_size, False]
-            if app.is_sys:
-                self.store_sys.append(row)
-            else:
-                self.store_user.append(row)
-                
-        if hasattr(self, 'indicator'):
-            self.update_tray_menu()
+            if app.is_sys: self.store_sys.append(row)
+            else: self.store_user.append(row)
+        if hasattr(self, 'indicator'): self.update_tray_menu()
 
     def on_selection_changed(self, selection, treeview):
         model, treeiter = selection.get_selected()
         if treeiter is not None:
-            other_tree = self.tree_sys if treeview == self.tree_user else self.tree_user
-            other_tree.get_selection().unselect_all()
-            
+            other = self.tree_sys if treeview == self.tree_user else self.tree_user
+            other.get_selection().unselect_all()
             self.current_selection = (model, treeiter)
             self.btn_start.set_sensitive(True)
             self.btn_remove.set_sensitive(True)
             self.btn_edit.set_sensitive(True)
         else:
-            if not self.tree_user.get_selection().get_selected()[1] and \
-               not self.tree_sys.get_selection().get_selected()[1]:
+            if not self.tree_user.get_selection().get_selected()[1] and not self.tree_sys.get_selection().get_selected()[1]:
                 self.current_selection = None
                 self.btn_start.set_sensitive(False)
                 self.btn_remove.set_sensitive(False)
@@ -589,27 +555,23 @@ class AutostartManager(Gtk.Window):
 
     def write_desktop_file(self, filename, name, cmd, comment, terminal, term_size, delay, enabled):
         path = os.path.join(AUTOSTART_DIR, filename)
-        
         final_cmd = cmd
         term_str = "false"
-        
         if terminal:
             if term_size == "maximize":
                 final_cmd = f"gnome-terminal --maximize -- {cmd}"
             elif term_size == "minimize":
-                final_cmd = f'gnome-terminal -- bash -c "sleep 0.4 && xdotool getactivewindow windowminimize; {cmd}"'
+                safe_name = "".join([c for c in name if c.isalnum()])
+                wrapper_path = os.path.join(CUSTOM_SCRIPTS_DIR, "minimize_wrapper.sh")
+                final_cmd = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- bash -c "{wrapper_path} \'MINIMIZE_{safe_name}\' {cmd}"'
             else:
                 term_str = "true"
                 
         en_str = "true" if enabled else "false"
         hidden_str = "false" if enabled else "true"
-        
         content = f"[Desktop Entry]\nType=Application\nName={name}\nExec={final_cmd}\nComment={comment}\nIcon=application-x-executable\nTerminal={term_str}\nHidden={hidden_str}\nX-GNOME-Autostart-enabled={en_str}\n"
-        if delay > 0:
-            content += f"X-GNOME-Autostart-Delay={delay}\n"
-            
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(content)
+        if delay > 0: content += f"X-GNOME-Autostart-Delay={delay}\n"
+        with open(path, 'w', encoding='utf-8') as f: f.write(content)
 
     def save_custom_script(self, filename, code):
         script_path = os.path.join(CUSTOM_SCRIPTS_DIR, filename.replace('.desktop', '.sh'))
@@ -620,58 +582,30 @@ class AutostartManager(Gtk.Window):
 
     def on_add_clicked(self, widget):
         dialog = AppDialog(self, _("Yeni Başlangıç Öğesi Ekle"))
-        response = dialog.run()
-        if response == Gtk.ResponseType.OK:
-            name = dialog.entry_name.get_text()
-            comment = dialog.entry_comment.get_text()
-            terminal = dialog.check_terminal.get_active()
-            term_size = dialog.combo_term_size.get_active_id()
-            delay = int(dialog.spin_delay.get_value())
-            
-            visible_tab = dialog.stack.get_visible_child_name()
-            if visible_tab == "file":
-                cmd = dialog.entry_cmd.get_text()
+        if dialog.run() == Gtk.ResponseType.OK:
+            name, comment, terminal, term_size, delay = dialog.entry_name.get_text(), dialog.entry_comment.get_text(), dialog.check_terminal.get_active(), dialog.combo_term_size.get_active_id(), int(dialog.spin_delay.get_value())
+            if dialog.stack.get_visible_child_name() == "file": cmd = dialog.entry_cmd.get_text()
             else:
                 buf = dialog.text_buffer
                 code = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True).strip()
-                if code:
-                    filename = name.lower().replace(" ", "-").replace("/", "") + ".desktop"
-                    cmd = self.save_custom_script(filename, code)
-                else:
-                    cmd = ""
-
+                cmd = self.save_custom_script(name.lower().replace(" ", "-").replace("/", "") + ".desktop", code) if code else ""
             if name and cmd:
-                filename = name.lower().replace(" ", "-").replace("/", "") + ".desktop"
-                self.write_desktop_file(filename, name, cmd, comment, terminal, term_size, delay, True)
+                self.write_desktop_file(name.lower().replace(" ", "-").replace("/", "") + ".desktop", name, cmd, comment, terminal, term_size, delay, True)
                 self.load_apps()
         dialog.destroy()
 
     def on_edit_clicked(self, widget):
         if not self.current_selection: return
         model, treeiter = self.current_selection
-        path = model[treeiter][6]
-        app = self.parse_desktop_file(path)
-        
+        app = self.parse_desktop_file(model[treeiter][6])
         dialog = AppDialog(self, _("Öğeyi Düzenle"), app)
-        response = dialog.run()
-        if response == Gtk.ResponseType.OK:
-            name = dialog.entry_name.get_text()
-            comment = dialog.entry_comment.get_text()
-            terminal = dialog.check_terminal.get_active()
-            term_size = dialog.combo_term_size.get_active_id()
-            delay = int(dialog.spin_delay.get_value())
-            
-            visible_tab = dialog.stack.get_visible_child_name()
-            if visible_tab == "file":
-                cmd = dialog.entry_cmd.get_text()
+        if dialog.run() == Gtk.ResponseType.OK:
+            name, comment, terminal, term_size, delay = dialog.entry_name.get_text(), dialog.entry_comment.get_text(), dialog.check_terminal.get_active(), dialog.combo_term_size.get_active_id(), int(dialog.spin_delay.get_value())
+            if dialog.stack.get_visible_child_name() == "file": cmd = dialog.entry_cmd.get_text()
             else:
                 buf = dialog.text_buffer
                 code = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True).strip()
-                if code:
-                    cmd = self.save_custom_script(app.filename, code)
-                else:
-                    cmd = app.cmd
-                    
+                cmd = self.save_custom_script(app.filename, code) if code else app.cmd
             if name and cmd:
                 self.write_desktop_file(app.filename, name, cmd, comment, terminal, term_size, delay, app.enabled)
                 self.load_apps()
@@ -680,39 +614,22 @@ class AutostartManager(Gtk.Window):
     def on_remove_clicked(self, widget):
         if not self.current_selection: return
         model, treeiter = self.current_selection
-        filename = model[treeiter][7]
-        is_sys = model[treeiter][5]
-        user_path = os.path.join(AUTOSTART_DIR, filename)
-        
-        dialog = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.WARNING,
-                                   buttons=Gtk.ButtonsType.YES_NO, text=_("Bu öğeyi KALICI OLARAK silmek istiyor musunuz?\\nGeçici olarak durdurmak için listeden 'Aktif' tikini kaldırabilirsiniz."))
-        response = dialog.run()
-        dialog.destroy()
-        
-        if response == Gtk.ResponseType.YES:
-            if is_sys:
-                with open(user_path, 'w', encoding='utf-8') as f:
-                    f.write(f"[Desktop Entry]\nHidden=true\nX-GNOME-Autostart-enabled=false\n")
+        dialog = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.WARNING, buttons=Gtk.ButtonsType.YES_NO, text=_("Bu öğeyi KALICI OLARAK silmek istiyor musunuz?\\nGeçici olarak durdurmak için listeden 'Aktif' tikini kaldırabilirsiniz."))
+        if dialog.run() == Gtk.ResponseType.YES:
+            if model[treeiter][5]:
+                with open(os.path.join(AUTOSTART_DIR, model[treeiter][7]), 'w', encoding='utf-8') as f: f.write("[Desktop Entry]\nHidden=true\nX-GNOME-Autostart-enabled=false\n")
             else:
-                if os.path.exists(user_path):
-                    os.remove(user_path)
+                if os.path.exists(os.path.join(AUTOSTART_DIR, model[treeiter][7])): os.remove(os.path.join(AUTOSTART_DIR, model[treeiter][7]))
             self.load_apps()
+        dialog.destroy()
 
     def on_start_clicked(self, widget):
         if not self.current_selection: return
         model, treeiter = self.current_selection
-        path = model[treeiter][6]
-        
         try:
-            app_info = Gio.DesktopAppInfo.new_from_filename(path)
-            if app_info:
-                context = Gdk.Display.get_default().get_app_launch_context()
-                app_info.launch([], context)
-            else:
-                cmd = model[treeiter][3]
-                cmd_clean = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
-                subprocess.Popen(shlex.split(cmd_clean), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                
+            app_info = Gio.DesktopAppInfo.new_from_filename(model[treeiter][6])
+            if app_info: app_info.launch([], Gdk.Display.get_default().get_app_launch_context())
+            else: subprocess.Popen(shlex.split(model[treeiter][3].replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             d = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.INFO, buttons=Gtk.ButtonsType.OK, text=_("Uygulama/Script Başlatıldı!"))
             d.run()
             d.destroy()
@@ -726,11 +643,6 @@ if __name__ == "__main__":
     app = AutostartManager()
     import sys
     if "--tray" in sys.argv:
-        if app.indicator:
-            pass
-        else:
-            app.show_all()
-    else:
-        app.show_all()
-        
+        if not app.indicator: app.show_all()
+    else: app.show_all()
     Gtk.main()
