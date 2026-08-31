@@ -67,9 +67,12 @@ python3 baslangic-yoneticisi.py
 ## 🗑️ Kaldırma
 
 ```bash
+# Repo zaten bilgisayarınızdaysa:
+cd Gnome-Startup-Applications-Manager && bash uninstall.sh
+
+# Yoksa önce indirin:
 git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
-cd Gnome-Startup-Applications-Manager
-bash uninstall.sh
+cd Gnome-Startup-Applications-Manager && bash uninstall.sh
 ```
 
 > **Not:** Kendinizin elle eklediği `.desktop` başlangıç uygulamaları bu işlemden etkilenmez. Yalnızca uygulamanın kendi oluşturduğu dosyalar silinir.

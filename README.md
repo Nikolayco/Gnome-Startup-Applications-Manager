@@ -67,9 +67,12 @@ python3 baslangic-yoneticisi.py
 ## 🗑️ Uninstallation
 
 ```bash
+# If you already have the repo cloned:
+cd Gnome-Startup-Applications-Manager && bash uninstall.sh
+
+# If not, clone it first:
 git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
-cd Gnome-Startup-Applications-Manager
-bash uninstall.sh
+cd Gnome-Startup-Applications-Manager && bash uninstall.sh
 ```
 
 > **Note:** Your own `.desktop` autostart entries will NOT be deleted — only files created by this application are removed.

@@ -67,9 +67,12 @@ python3 baslangic-yoneticisi.py
 ## 🗑️ Удаление
 
 ```bash
+# Если репозиторий уже скачан:
+cd Gnome-Startup-Applications-Manager && bash uninstall.sh
+
+# Если нет — сначала клонируйте:
 git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
-cd Gnome-Startup-Applications-Manager
-bash uninstall.sh
+cd Gnome-Startup-Applications-Manager && bash uninstall.sh
 ```
 
 > **Примечание:** Ваши собственные записи автозапуска не будут удалены — удаляются только файлы, созданные этим приложением.
