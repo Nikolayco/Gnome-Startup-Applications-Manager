@@ -1,18 +1,33 @@
 #!/bin/bash
 
-APP_NAME="baslangic-yoneticisi"
-BIN_DIR="$HOME/.local/bin"
-APP_DIR="$HOME/.local/share/applications"
-LOCALE_DIR="$HOME/.local/share/locale"
+echo "Kaldırılıyor / Uninstalling GNOME Startup Applications Manager..."
+echo ""
 
-echo "Kaldırma işlemi başlatılıyor... (Uninstalling...)"
+# Uygulama binary
+rm -f "$HOME/.local/bin/baslangic-yoneticisi"
+echo "✓ Uygulama dosyası kaldırıldı."
 
-rm -f "$BIN_DIR/${APP_NAME}"
-rm -f "$APP_DIR/${APP_NAME}.desktop"
+# Uygulama verisi (PID, settings, runner.py, logs)
+rm -rf "$HOME/.local/share/Gnome-Startup-Applications-Manager/"
+echo "✓ Uygulama verileri kaldırıldı."
 
-# Sadece bu uygulamaya ait mo dosyalarını bulup sil
-find "$LOCALE_DIR" -type f -name "gnome-startup-manager.mo" -delete 2>/dev/null || true
+# .desktop launcher
+rm -f "$HOME/.local/share/applications/baslangic-yoneticisi.desktop"
+echo "✓ Uygulama başlatıcısı kaldırıldı."
 
-update-desktop-database "$APP_DIR" 2>/dev/null || true
+# Zamanlayıcı (systemd user timers/services created by the app)
+for f in "$HOME/.config/systemd/user/gsam-"*.timer "$HOME/.config/systemd/user/gsam-"*.service; do
+    [ -f "$f" ] && systemctl --user disable --now "$(basename "$f")" 2>/dev/null
+    rm -f "$f"
+done
+systemctl --user daemon-reload 2>/dev/null
+echo "✓ Zamanlanmış görevler kaldırıldı."
 
-echo "Kaldırma tamamlandı! (Uninstallation complete!)"
+# Autostart entries created by the app
+rm -f "$HOME/.config/autostart/gsam-"*.desktop
+echo "✓ Autostart girdileri kaldırıldı."
+
+echo ""
+echo "✅ Tamamlandı! / Uninstallation complete!"
+echo "   Kendi eklediğiniz başlangıç uygulamaları silinmedi."
+echo "   Your own startup entries were NOT removed."

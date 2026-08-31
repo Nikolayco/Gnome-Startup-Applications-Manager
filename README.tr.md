@@ -67,16 +67,7 @@ python3 baslangic-yoneticisi.py
 ## 🗑️ Kaldırma
 
 ```bash
-rm -f ~/.local/bin/baslangic-yoneticisi
-rm -rf ~/.local/share/Gnome-Startup-Applications-Manager/
-
-for f in ~/.config/systemd/user/gsam-*.timer ~/.config/systemd/user/gsam-*.service; do
-    [ -f "$f" ] && systemctl --user disable --now "$(basename $f)" 2>/dev/null
-    rm -f "$f"
-done
-systemctl --user daemon-reload
-
-rm -f ~/.config/autostart/gsam-*.desktop
+bash uninstall.sh
 ```
 
 > **Not:** Kendinizin elle eklediği `.desktop` başlangıç uygulamaları bu işlemden etkilenmez. Yalnızca uygulamanın kendi oluşturduğu dosyalar silinir.

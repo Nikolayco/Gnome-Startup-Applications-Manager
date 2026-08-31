@@ -864,6 +864,15 @@ class AutostartManager(Gtk.Window):
         lbl_desc.set_justify(Gtk.Justification.CENTER)
         page_about.pack_start(lbl_desc, False, False, 0)
         
+        lbl_mail = Gtk.Label()
+        lbl_mail.set_markup('<a href="mailto:nikolayco@gmail.com">nikolayco@gmail.com</a>')
+        lbl_mail.set_justify(Gtk.Justification.CENTER)
+        page_about.pack_start(lbl_mail, False, False, 0)
+        
+        lbl_gh = Gtk.Label()
+        lbl_gh.set_markup('<a href="https://github.com/Nikolayco/Gnome-Startup-Applications-Manager">GitHub</a>')
+        page_about.pack_start(lbl_gh, False, False, 0)
+        
         # Kayitlar (Logs) Sayfasi
 
 
