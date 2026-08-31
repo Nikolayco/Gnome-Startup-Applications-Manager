@@ -39,6 +39,7 @@ AUTOSTART_DIR = os.path.expanduser("~/.config/autostart")
 SYS_AUTOSTART_DIR = "/etc/xdg/autostart"
 CUSTOM_SCRIPTS_DIR = os.path.expanduser("~/.local/share/Gnome-Startup-Applications-Manager/scripts")
 APP_ICON = "system-run"
+SYSTEMD_USER_DIR = os.path.expanduser("~/.config/systemd/user")
 
 class AutostartApp:
     def __init__(self, filename, name, cmd, comment, hidden, is_sys, path, icon, terminal, delay, term_size="normal"):
@@ -213,6 +214,122 @@ class AppDialog(Gtk.Dialog):
                 self.entry_name.set_text(name_no_ext.replace("-", " ").replace("_", " ").title())
             if filepath.endswith(".sh") or filepath.endswith(".py"):
                 self.check_terminal.set_active(True)
+        dialog.destroy()
+
+class ScheduleDialog(Gtk.Dialog):
+    def __init__(self, parent, title, task=None):
+        super().__init__(title=title, transient_for=parent, flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
+        self.set_default_size(600, 500)
+        self.add_buttons(_("İptal"), Gtk.ResponseType.CANCEL, _("Kaydet"), Gtk.ResponseType.OK)
+        self.get_widget_for_response(Gtk.ResponseType.OK).get_style_context().add_class("suggested-action")
+        
+        box = self.get_content_area()
+        box.set_spacing(15)
+        box.set_margin_top(20)
+        box.set_margin_bottom(20)
+        box.set_margin_start(20)
+        box.set_margin_end(20)
+        
+        grid = Gtk.Grid()
+        grid.set_row_spacing(15)
+        grid.set_column_spacing(15)
+        box.pack_start(grid, True, True, 0)
+        
+        # Name
+        lbl_name = Gtk.Label(label=_("Görev Adı:"), xalign=0)
+        grid.attach(lbl_name, 0, 0, 1, 1)
+        self.entry_name = Gtk.Entry(placeholder_text=_("Örn: Otomatik Yedekleme"))
+        self.entry_name.set_hexpand(True)
+        grid.attach(self.entry_name, 1, 0, 1, 1)
+        
+        # Command
+        lbl_cmd = Gtk.Label(label=_("Komut / Dosya:"), xalign=0)
+        grid.attach(lbl_cmd, 0, 1, 1, 1)
+        cmd_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        self.entry_cmd = CmdTextView()
+        cmd_box.pack_start(self.entry_cmd, True, True, 0)
+        btn_browse = Gtk.Button()
+        btn_browse.add(Gtk.Image.new_from_icon_name("folder-open-symbolic", Gtk.IconSize.BUTTON))
+        btn_browse.connect("clicked", self.on_browse)
+        cmd_box.pack_start(btn_browse, False, False, 0)
+        grid.attach(cmd_box, 1, 1, 1, 1)
+        
+        # Trigger Type
+        lbl_type = Gtk.Label(label=_("Tetikleyici:"), xalign=0)
+        grid.attach(lbl_type, 0, 2, 1, 1)
+        self.combo_type = Gtk.ComboBoxText()
+        self.combo_type.append("interval", _("Belirli Aralıklarla (Tekrarla)"))
+        self.combo_type.append("calendar", _("Belirli Gün/Saat (Takvim)"))
+        self.combo_type.append("boot", _("Sistem Açılışında (Boot)"))
+        self.combo_type.append("login", _("Oturum Açılışında (Login)"))
+        self.combo_type.set_active_id("interval")
+        grid.attach(self.combo_type, 1, 2, 1, 1)
+        
+        # Trigger Settings Stack
+        self.stack = Gtk.Stack()
+        
+        # Interval Box
+        box_int = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        self.spin_int = Gtk.SpinButton.new_with_range(1, 1000, 1)
+        self.combo_int_unit = Gtk.ComboBoxText()
+        self.combo_int_unit.append("min", _("Dakika"))
+        self.combo_int_unit.append("h", _("Saat"))
+        self.combo_int_unit.append("d", _("Gün"))
+        self.combo_int_unit.set_active_id("min")
+        box_int.pack_start(self.spin_int, False, False, 0)
+        box_int.pack_start(self.combo_int_unit, False, False, 0)
+        self.stack.add_named(box_int, "interval")
+        
+        # Calendar Box
+        box_cal = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        self.entry_cal = Gtk.Entry(placeholder_text="Örn: Mon,Wed *-*-* 09:00:00")
+        box_cal.pack_start(self.entry_cal, True, True, 0)
+        self.stack.add_named(box_cal, "calendar")
+        
+        # Boot Box
+        box_boot = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        box_boot.pack_start(Gtk.Label(label=_("Gecikme:")), False, False, 0)
+        self.spin_boot = Gtk.SpinButton.new_with_range(0, 3600, 1)
+        box_boot.pack_start(self.spin_boot, False, False, 0)
+        box_boot.pack_start(Gtk.Label(label=_("Saniye")), False, False, 0)
+        self.stack.add_named(box_boot, "boot")
+        
+        # Login Box
+        box_login = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        box_login.pack_start(Gtk.Label(label=_("Gecikme:")), False, False, 0)
+        self.spin_login = Gtk.SpinButton.new_with_range(0, 3600, 1)
+        box_login.pack_start(self.spin_login, False, False, 0)
+        box_login.pack_start(Gtk.Label(label=_("Saniye")), False, False, 0)
+        self.stack.add_named(box_login, "login")
+        
+        grid.attach(self.stack, 1, 3, 1, 1)
+        
+        self.combo_type.connect("changed", lambda c: self.stack.set_visible_child_name(c.get_active_id()))
+        
+        if task:
+            self.entry_name.set_text(task['name'])
+            self.entry_cmd.set_text(task['cmd'])
+            self.combo_type.set_active_id(task['type'])
+            if task['type'] == 'interval':
+                self.spin_int.set_value(task['val_int'])
+                self.combo_int_unit.set_active_id(task['val_unit'])
+            elif task['type'] == 'calendar':
+                self.entry_cal.set_text(task['val_cal'])
+            elif task['type'] == 'boot':
+                self.spin_boot.set_value(task['val_delay'])
+            elif task['type'] == 'login':
+                self.spin_login.set_value(task['val_delay'])
+                
+        self.show_all()
+
+    def on_browse(self, widget):
+        dialog = Gtk.FileChooserDialog(title=_("Dosya Seç"), parent=self, action=Gtk.FileChooserAction.OPEN)
+        dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+        if dialog.run() == Gtk.ResponseType.OK:
+            filepath = dialog.get_filename()
+            self.entry_cmd.set_text(f'"{filepath}"' if " " in filepath else filepath)
+            if not self.entry_name.get_text().strip():
+                self.entry_name.set_text(os.path.splitext(os.path.basename(filepath))[0].title())
         dialog.destroy()
 
 class AutostartManager(Gtk.Window):
@@ -442,6 +559,7 @@ class AutostartManager(Gtk.Window):
         os.chmod(runner_path, 0o755)
             
         self.load_apps()
+        self.load_sched_tasks()
         self.setup_tray()
         self.connect("delete-event", self.on_delete_event)
         self.connect("key-press-event", self.on_key_press)
