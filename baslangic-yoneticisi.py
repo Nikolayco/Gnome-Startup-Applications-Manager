@@ -306,7 +306,7 @@ class AutostartManager(Gtk.Window):
         box_user.set_margin_end(10)
         box_user.set_margin_top(15)
         
-        self.store_user = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str, bool)
+        self.store_user = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str, bool, str)
         self.filter_user = self.store_user.filter_new()
         self.filter_user.set_visible_func(self.filter_func)
         
@@ -326,7 +326,7 @@ class AutostartManager(Gtk.Window):
         self.box_sys.set_margin_end(10)
         self.box_sys.set_margin_top(15)
         
-        self.store_sys = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str, bool)
+        self.store_sys = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str, bool, str)
         self.filter_sys = self.store_sys.filter_new()
         self.filter_sys.set_visible_func(self.filter_func)
         
@@ -555,11 +555,30 @@ class AutostartManager(Gtk.Window):
 
     def refresh_status(self):
         try:
-            res = subprocess.run(["ps", "-eo", "args"], stdout=subprocess.PIPE, text=True)
+            import subprocess
+            res = subprocess.run(["ps", "-eo", "pid,args"], stdout=subprocess.PIPE, text=True)
             all_procs = res.stdout
         except:
             all_procs = ""
-            
+
+        def get_usage(pid_str):
+            try:
+                res = subprocess.run(["ps", "--no-headers", "-o", "%cpu,rss", "--ppid", pid_str, "-p", pid_str], stdout=subprocess.PIPE, text=True)
+                lines = res.stdout.strip().split("
+")
+                t_cpu, t_mem_kb = 0.0, 0.0
+                for line in lines:
+                    parts = line.strip().split()
+                    if len(parts) >= 2:
+                        t_cpu += float(parts[0])
+                        t_mem_kb += float(parts[1])
+                if t_cpu > 0 or t_mem_kb > 0:
+                    mb = t_mem_kb / 1024.0
+                    if mb > 1024: return f"{mb/1024.0:.1f} GB | %{t_cpu:.1f}"
+                    return f"{mb:.0f} MB | %{t_cpu:.1f}"
+            except: pass
+            return ""
+
         def is_running(row):
             filename = row[7]
             cmd = row[3]
@@ -570,18 +589,20 @@ class AutostartManager(Gtk.Window):
                     with open(pid_file, "r") as f:
                         pid = f.read().strip()
                     if pid.isdigit():
+                        import subprocess
                         res = subprocess.run(["ps", "-p", pid, "-o", "args="], stdout=subprocess.PIPE, text=True)
                         out = res.stdout.strip()
                         if "runner.py" in out and filename in out:
-                            return True
+                            return True, get_usage(pid)
                         elif out:
-                            return False
+                            return False, ""
                 except: pass
                 
             try:
+                import shlex, os
                 clean_cmd = cmd.replace("%f", "").replace("%F", "").replace("%u", "").replace("%U", "")
                 parts = shlex.split(clean_cmd)
-                if not parts: return False
+                if not parts: return False, ""
                 if parts[0] == "gnome-terminal" and "--" in parts:
                     idx = parts.index("--")
                     target = parts[idx+1] if len(parts) > idx+1 else parts[0]
@@ -590,18 +611,29 @@ class AutostartManager(Gtk.Window):
                 if target in ["bash", "sh", "python3", "python"] and len(parts) >= 2:
                     target = parts[-1] 
                 
-                if "runner.py" in target: return False
+                if "runner.py" in target: return False, ""
                     
                 base = os.path.basename(target)
                 search_term = target if "/" in target else base
-                if search_term in ["bash", "sh", "env"]: return False
-                return search_term in all_procs
+                if search_term in ["bash", "sh", "env"]: return False, ""
+                
+                for line in all_procs.split("
+"):
+                    if search_term in line:
+                        pid = line.strip().split()[0]
+                        return True, get_usage(pid)
+                return False, ""
             except: 
-                return False
+                return False, ""
                 
         for row in self.store_user: 
-            new_val = is_running(row)
-            if row[11] != new_val: row[11] = new_val
+            is_run, usage = is_running(row)
+            if row[11] != is_run: row[11] = is_run
+            if row[12] != usage: row[12] = usage
+        for row in self.store_sys: 
+            is_run, usage = is_running(row)
+            if row[11] != is_run: row[11] = is_run
+            if row[12] != usage: row[12] = usage
         for row in self.store_sys: 
             new_val = is_running(row)
             if row[11] != new_val: row[11] = new_val
@@ -893,7 +925,7 @@ class AutostartManager(Gtk.Window):
             if app.cmd: all_apps.append(app)
         all_apps.sort(key=lambda x: x.name.lower())
         for app in all_apps:
-            row = [app.icon, app.enabled, app.name, app.cmd, app.comment, app.is_sys, app.path, app.filename, app.terminal, app.delay, app.term_size, False]
+            row = [app.icon, app.enabled, app.name, app.cmd, app.comment, app.is_sys, app.path, app.filename, app.terminal, app.delay, app.term_size, False, ""]
             if app.is_sys: self.store_sys.append(row)
             else: self.store_user.append(row)
         if hasattr(self, 'indicator'): self.update_tray_menu()
