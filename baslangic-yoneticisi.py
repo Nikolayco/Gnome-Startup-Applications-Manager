@@ -488,25 +488,9 @@ class AutostartManager(Gtk.Window):
         if hasattr(self, 'btn_tray'):
             self.btn_tray.set_visible(is_main)
             
-        if stack.get_visible_child_name() == "page_logs":
-            self.populate_log_combo()
 
-    def populate_log_combo(self):
-        self.combo_logs.remove_all()
-        log_dir = os.path.join(CUSTOM_SCRIPTS_DIR, "logs")
-        if os.path.exists(log_dir):
-            import glob
-            logs = glob.glob(os.path.join(log_dir, "*.log"))
-            for log in sorted(logs):
-                basename = os.path.basename(log)
-                self.combo_logs.append(log, basename.replace(".log", ""))
-        self.combo_logs.set_active(0)
 
-    def on_log_selection_changed(self, widget):
-        log_file = self.combo_logs.get_active_id()
-        buffer = self.textview_logs.get_buffer()
-        if not log_file or not os.path.exists(log_file):
-            buffer.set_text(_("Gösterilecek log dosyası bulunamadı."))
+
             return
         try:
             with open(log_file, "r") as f:
