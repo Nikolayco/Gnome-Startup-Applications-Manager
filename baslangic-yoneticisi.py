@@ -208,10 +208,7 @@ class AutostartManager(Gtk.Window):
         hb.pack_end(btn_add)
 
         self.btn_start = Gtk.Button()
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        box.pack_start(Gtk.Image.new_from_icon_name("media-playback-start-symbolic", Gtk.IconSize.BUTTON), False, False, 0)
-        box.pack_start(Gtk.Label(label=_("Başlat (Test)")), False, False, 0)
-        self.btn_start.add(box)
+        self.btn_start.add(Gtk.Image.new_from_icon_name("media-playback-start-symbolic", Gtk.IconSize.BUTTON))
         self.btn_start.set_tooltip_text(_("Uygulamayı hemen çalıştırarak test et"))
         self.btn_start.connect("clicked", self.on_start_clicked)
         self.btn_start.set_sensitive(False)
