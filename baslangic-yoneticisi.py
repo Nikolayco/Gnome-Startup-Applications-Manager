@@ -500,6 +500,42 @@ class AutostartManager(Gtk.Window):
         except Exception as e:
             buffer.set_text(f"Hata: {str(e)}")
 
+    def load_settings(self):
+        import json
+        self.settings_file = os.path.join(CUSTOM_SCRIPTS_DIR, "settings.json")
+        self.config = {"refresh_interval": 3, "tray_always_visible": False, "show_sys_apps": True}
+        if os.path.exists(self.settings_file):
+            try:
+                with open(self.settings_file, "r") as f:
+                    self.config.update(json.load(f))
+            except: pass
+
+    def save_settings(self):
+        import json
+        try:
+            with open(self.settings_file, "w") as f:
+                json.dump(self.config, f)
+        except: pass
+
+    def on_interval_changed(self, spin):
+        self.config["refresh_interval"] = int(spin.get_value())
+        self.save_settings()
+        if hasattr(self, 'timer_id') and self.timer_id:
+            GLib.source_remove(self.timer_id)
+        self.timer_id = GLib.timeout_add_seconds(self.config["refresh_interval"], self.refresh_status)
+
+    def on_show_sys_changed(self, switch, gparam):
+        self.config["show_sys_apps"] = switch.get_active()
+        self.save_settings()
+        if hasattr(self, 'box_sys'):
+            self.box_sys.set_visible(self.config["show_sys_apps"])
+
+    def on_tray_switch_changed(self, switch, gparam):
+        self.config["tray_always_visible"] = switch.get_active()
+        self.save_settings()
+        if self.indicator:
+            self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE if self.config["tray_always_visible"] else AppIndicator3.IndicatorStatus.PASSIVE)
+
     def refresh_status(self):
         try:
             res = subprocess.run(["ps", "-eo", "args"], stdout=subprocess.PIPE, text=True)
