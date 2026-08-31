@@ -3,13 +3,13 @@
 Bu proje aktif olarak geliştirilmektedir. Aşağıdaki özellikler öncelik sırasına göre projeye eklenecektir:
 
 ## 1. Güvenilirlik / Çekirdek Mantık
-- [ ] **PID Tabanlı Süreç Takibi:** Uygulamaların ve scriptlerin durumunu isimden (string) ziyade gerçek İşlem Kimliği (PID) ile takip etmek (Yanlış uygulamanın durdurulmasını %100 engeller).
-- [ ] **Wayland Desteği:** `xdotool` kısıtlamalarını aşmak için GNOME-Shell D-Bus eklentisi veya `wlrctl` gibi modern Wayland alternatifleri ile "Terminali Gizle (Minimize)" özelliğini Wayland'e taşımak.
+- [x] **PID Tabanlı Süreç Takibi:** Uygulamaların ve scriptlerin durumunu isimden (string) ziyade gerçek İşlem Kimliği (PID) ile takip etmek (Yanlış uygulamanın durdurulmasını %100 engeller).
+- [~] **Wayland Desteği:** (Kullanıcı kararıyla ertelendi/mevcut hali yeterli görüldü) `xdotool` kısıtlamalarını aşmak için GNOME-Shell D-Bus eklentisi veya `wlrctl` gibi modern Wayland alternatifleri ile "Terminali Gizle (Minimize)" özelliğini Wayland'e taşımak.
 
 ## 2. Kullanılabilirlik ve Arayüz
 - [ ] **Sürükle & Bırak Sıralama:** Başlangıç uygulamalarının çalışma sırasını görsel olarak sürükle-bırak yöntemiyle ayarlama.
 - [ ] **Profil Sistemi:** "İş Modu", "Oyun Modu" gibi gruplar oluşturup tek tıkla farklı uygulama setlerini topluca açıp kapatabilme.
-- [ ] **Gerçek .desktop İkonları:** Jenerik terminal ikonları yerine, uygulamanın kendi orjinal ikonunu (örn. Chrome, Firefox) listede gösterebilme.
+- [x] **Gerçek .desktop İkonları:** Jenerik terminal ikonları yerine, uygulamanın kendi orjinal ikonunu (örn. Chrome, Firefox) listede gösterebilme.
 - [ ] **Çoklu Seçim:** Birden fazla uygulamayı aynı anda seçip topluca aktif/pasif yapma veya silme.
 - [ ] **Klavye Kısayolları:** Hızlı kullanım için arayüzde klavye kısayolları (Örn: Ctrl+N Yeni Ekle, Delete Sil vb.).
 
