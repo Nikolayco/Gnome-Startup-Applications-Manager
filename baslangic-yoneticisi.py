@@ -59,6 +59,8 @@ class AppDialog(Gtk.Dialog):
     def __init__(self, parent, title, app=None):
         super().__init__(title=title, transient_for=parent, flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
         self.set_default_size(580, 420)
+        self.original_icon = app.icon if app else "application-x-executable"
+
         
         self.add_buttons(_("İptal"), Gtk.ResponseType.CANCEL, _("Kaydet"), Gtk.ResponseType.OK)
         save_btn = self.get_widget_for_response(Gtk.ResponseType.OK)
@@ -204,6 +206,10 @@ class AutostartManager(Gtk.Window):
         self.set_wmclass('baslangic-yoneticisi', 'baslangic-yoneticisi')
         self.current_selection = None
         self.load_settings()
+        self.set_default_size(self.config.get("window_width", 800), self.config.get("window_height", 600))
+        if self.config.get("window_maximized", False):
+            self.maximize()
+            
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
         hb.set_title(self.get_title())
@@ -367,6 +373,17 @@ class AutostartManager(Gtk.Window):
         
         page_settings.pack_start(box_show_sys, False, False, 0)
         
+        # Ayar 4: Pencere Boyutu
+        box_reset = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=15)
+        lbl_reset = Gtk.Label(label=_("Pencere Boyutu ve Pozisyonu:"), xalign=0)
+        box_reset.pack_start(lbl_reset, True, True, 0)
+        
+        btn_reset = Gtk.Button(label=_("Varsayılan Boyuta Dön"))
+        btn_reset.connect("clicked", self.on_reset_size_clicked)
+        box_reset.pack_start(btn_reset, False, False, 0)
+        
+        page_settings.pack_start(box_reset, False, False, 0)
+
         self.stack.add_titled(page_settings, "page_settings", _("Ayarlar"))
         
         # Hakkinda Sayfasi
@@ -398,6 +415,24 @@ class AutostartManager(Gtk.Window):
                 f.write("#!/bin/bash\nTITLE=$1\nshift\nfor i in {1..30}; do\n    WID=$(xdotool search --name \"$TITLE\" | head -1)\n    if [ -n \"$WID\" ]; then\n        xdotool windowminimize $WID\n        if xprop -id $WID | grep -q _NET_WM_STATE_HIDDEN; then\n            break\n        fi\n    fi\n    sleep 0.1\ndone\neval \"$@\"\n")
             os.chmod(wrapper_path, 0o755)
 
+        runner_path = os.path.join(CUSTOM_SCRIPTS_DIR, "runner.py")
+        if not os.path.exists(runner_path):
+            with open(runner_path, "w") as f:
+                f.write("#!/usr/bin/env python3
+import sys, os, subprocess, signal
+pid_file = sys.argv[1]
+cmd = sys.argv[2]
+with open(pid_file, 'w') as f:
+    f.write(str(os.getpid()))
+proc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid)
+def handler(signum, frame):
+    os.killpg(proc.pid, signal.SIGTERM)
+    sys.exit(0)
+signal.signal(signal.SIGTERM, handler)
+proc.wait()
+")
+            os.chmod(runner_path, 0o755)
+            
         self.load_apps()
         self.setup_tray()
         self.connect("delete-event", self.on_delete_event)
@@ -418,7 +453,7 @@ class AutostartManager(Gtk.Window):
     def load_settings(self):
         import json
         self.settings_file = os.path.join(CUSTOM_SCRIPTS_DIR, "settings.json")
-        self.config = {"refresh_interval": 3, "tray_always_visible": False, "show_sys_apps": True}
+        self.config = {"refresh_interval": 3, "tray_always_visible": False, "show_sys_apps": True, "window_width": 800, "window_height": 600, "window_maximized": False}
         if os.path.exists(self.settings_file):
             try:
                 with open(self.settings_file, "r") as f:
@@ -458,7 +493,24 @@ class AutostartManager(Gtk.Window):
         except:
             all_procs = ""
             
-        def is_running(cmd):
+        def is_running(row):
+            filename = row[7]
+            cmd = row[3]
+            
+            pid_file = os.path.join(CUSTOM_SCRIPTS_DIR, "pids", f"{filename}.pid")
+            if os.path.exists(pid_file):
+                try:
+                    with open(pid_file, "r") as f:
+                        pid = f.read().strip()
+                    if pid.isdigit():
+                        res = subprocess.run(["ps", "-p", pid, "-o", "args="], stdout=subprocess.PIPE, text=True)
+                        out = res.stdout.strip()
+                        if "runner.py" in out and filename in out:
+                            return True
+                        elif out:
+                            return False
+                except: pass
+                
             try:
                 clean_cmd = cmd.replace("%f", "").replace("%F", "").replace("%u", "").replace("%U", "")
                 parts = shlex.split(clean_cmd)
@@ -471,13 +523,7 @@ class AutostartManager(Gtk.Window):
                 if target in ["bash", "sh", "python3", "python"] and len(parts) >= 2:
                     target = parts[-1] 
                 
-                # Wrapper icindeki asil komutu ayikla
-                if "minimize_wrapper.sh" in target:
-                    try:
-                        w_parts = shlex.split(target)
-                        if len(w_parts) >= 3:
-                            target = w_parts[2]
-                    except: pass
+                if "runner.py" in target: return False
                     
                 base = os.path.basename(target)
                 search_term = target if "/" in target else base
@@ -487,10 +533,10 @@ class AutostartManager(Gtk.Window):
                 return False
                 
         for row in self.store_user: 
-            new_val = is_running(row[3])
+            new_val = is_running(row)
             if row[11] != new_val: row[11] = new_val
         for row in self.store_sys: 
-            new_val = is_running(row[3])
+            new_val = is_running(row)
             if row[11] != new_val: row[11] = new_val
         
         if self.current_selection:
@@ -511,7 +557,24 @@ class AutostartManager(Gtk.Window):
             self.indicator.set_status(AppIndicator3.IndicatorStatus.PASSIVE)
         self.present()
 
+    def on_reset_size_clicked(self, widget):
+        self.unmaximize()
+        self.resize(800, 600)
+        self.config["window_width"] = 800
+        self.config["window_height"] = 600
+        self.config["window_maximized"] = False
+        self.save_settings()
+
     def on_delete_event(self, widget, event):
+        try:
+            is_max = self.get_window().get_state() & Gdk.WindowState.MAXIMIZED
+            self.config["window_maximized"] = bool(is_max)
+            if not is_max:
+                w, h = self.get_size()
+                self.config["window_width"] = w
+                self.config["window_height"] = h
+            self.save_settings()
+        except: pass
         Gtk.main_quit()
         return False
 
@@ -656,7 +719,7 @@ class AutostartManager(Gtk.Window):
                     elif line.startswith("Hidden=true") or line.startswith("X-GNOME-Autostart-enabled=false"):
                         hidden = True
         except: pass
-        if "/" in icon: icon = "application-x-executable"
+        # keep original icon
         
         safe_name = "".join([c for c in name if c.isalnum()])
         wrapper_path = os.path.join(CUSTOM_SCRIPTS_DIR, "minimize_wrapper.sh")
@@ -739,24 +802,48 @@ class AutostartManager(Gtk.Window):
     def on_row_activated(self, treeview, path, column):
         self.on_edit_clicked(None)
 
-    def write_desktop_file(self, filename, name, cmd, comment, terminal, term_size, delay, enabled):
+    def write_desktop_file(self, filename, name, cmd, comment, terminal, term_size, delay, enabled, icon="application-x-executable"):
         path = os.path.join(AUTOSTART_DIR, filename)
-        final_cmd = cmd
-        term_str = "false"
+        
+        pid_dir = os.path.join(CUSTOM_SCRIPTS_DIR, "pids")
+        os.makedirs(pid_dir, exist_ok=True)
+        pid_file = os.path.join(pid_dir, f"{filename}.pid")
+        runner_path = os.path.join(CUSTOM_SCRIPTS_DIR, "runner.py")
+        
+        safe_name = "".join([c for c in name if c.isalnum()])
+        
+        if terminal and term_size == "minimize":
+            wrapper_path = os.path.join(CUSTOM_SCRIPTS_DIR, "minimize_wrapper.sh")
+            base_cmd = f"{wrapper_path} 'MINIMIZE_{safe_name}' {cmd}"
+        else:
+            base_cmd = cmd
+            
+        runner_exec = f'python3 "{runner_path}" "{pid_file}" "{base_cmd}"'
+        
         if terminal:
             if term_size == "maximize":
-                final_cmd = f"gnome-terminal --maximize -- {cmd}"
+                final_cmd = f"gnome-terminal --maximize -- {runner_exec}"
             elif term_size == "minimize":
-                safe_name = "".join([c for c in name if c.isalnum()])
-                wrapper_path = os.path.join(CUSTOM_SCRIPTS_DIR, "minimize_wrapper.sh")
-                final_cmd = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- bash -c "{wrapper_path} \'MINIMIZE_{safe_name}\' {cmd}"'
+                final_cmd = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- {runner_exec}'
             else:
-                term_str = "true"
+                final_cmd = f"gnome-terminal -- {runner_exec}"
+        else:
+            final_cmd = runner_exec
                 
         en_str = "true" if enabled else "false"
         hidden_str = "false" if enabled else "true"
-        content = f"[Desktop Entry]\nType=Application\nName={name}\nExec={final_cmd}\nComment={comment}\nIcon=application-x-executable\nTerminal={term_str}\nHidden={hidden_str}\nX-GNOME-Autostart-enabled={en_str}\n"
-        if delay > 0: content += f"X-GNOME-Autostart-Delay={delay}\n"
+        content = f"[Desktop Entry]
+Type=Application
+Name={name}
+Exec={final_cmd}
+Comment={comment}
+Icon={icon}
+Terminal=false
+Hidden={hidden_str}
+X-GNOME-Autostart-enabled={en_str}
+"
+        if delay > 0: content += f"X-GNOME-Autostart-Delay={delay}
+"
         with open(path, 'w', encoding='utf-8') as f: f.write(content)
 
     def save_custom_script(self, filename, code):
@@ -769,7 +856,7 @@ class AutostartManager(Gtk.Window):
     def on_add_clicked(self, widget):
         dialog = AppDialog(self, _("Yeni Başlangıç Öğesi Ekle"))
         if dialog.run() == Gtk.ResponseType.OK:
-            name, comment, terminal, term_size, delay = dialog.entry_name.get_text(), dialog.entry_comment.get_text(), dialog.check_terminal.get_active(), dialog.combo_term_size.get_active_id(), int(dialog.spin_delay.get_value())
+            name, comment, terminal, term_size, delay, icon = dialog.entry_name.get_text(), dialog.entry_comment.get_text(), dialog.check_terminal.get_active(), dialog.combo_term_size.get_active_id(), int(dialog.spin_delay.get_value()), dialog.original_icon
             if dialog.stack.get_visible_child_name() == "file": cmd = dialog.entry_cmd.get_text()
             else:
                 buf = dialog.text_buffer
@@ -786,7 +873,7 @@ class AutostartManager(Gtk.Window):
         app = self.parse_desktop_file(model[treeiter][6])
         dialog = AppDialog(self, _("Öğeyi Düzenle"), app)
         if dialog.run() == Gtk.ResponseType.OK:
-            name, comment, terminal, term_size, delay = dialog.entry_name.get_text(), dialog.entry_comment.get_text(), dialog.check_terminal.get_active(), dialog.combo_term_size.get_active_id(), int(dialog.spin_delay.get_value())
+            name, comment, terminal, term_size, delay, icon = dialog.entry_name.get_text(), dialog.entry_comment.get_text(), dialog.check_terminal.get_active(), dialog.combo_term_size.get_active_id(), int(dialog.spin_delay.get_value()), dialog.original_icon
             if dialog.stack.get_visible_child_name() == "file": cmd = dialog.entry_cmd.get_text()
             else:
                 buf = dialog.text_buffer
