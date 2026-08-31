@@ -681,7 +681,9 @@ class AutostartManager(Gtk.Window):
             self.store_sched = Gtk.ListStore(str, bool, str, str, str, str, str, str, str)
             self.tree_sched = Gtk.TreeView(model=self.store_sched)
             
-            col_t = Gtk.TreeViewColumn(_("Aktif"), Gtk.CellRendererToggle(), active=1)
+            render_toggle_sched = Gtk.CellRendererToggle()
+            render_toggle_sched.connect("toggled", self.on_sched_toggled)
+            col_t = Gtk.TreeViewColumn(_("Aktif"), render_toggle_sched, active=1)
             self.tree_sched.append_column(col_t)
             self.tree_sched.append_column(Gtk.TreeViewColumn(_("Görev"), Gtk.CellRendererText(), text=2))
             self.tree_sched.append_column(Gtk.TreeViewColumn(_("Tetikleyici"), Gtk.CellRendererText(), text=3))
@@ -1354,6 +1356,18 @@ class AutostartManager(Gtk.Window):
         cmd = "enable-linger" if enable else "disable-linger"
         subprocess.run(["loginctl", cmd, os.getenv("USER")])
         self.check_linger_status()
+
+    def on_sched_toggled(self, widget, path):
+        treeiter = self.store_sched.get_iter(path)
+        current_state = self.store_sched[treeiter][1]
+        t_id = self.store_sched[treeiter][0]
+        new_state = not current_state
+        self.store_sched[treeiter][1] = new_state
+        
+        import subprocess
+        cmd = "enable" if new_state else "disable"
+        subprocess.run(["systemctl", "--user", cmd, "--now", f"{t_id}.timer"])
+        subprocess.run(["systemctl", "--user", "daemon-reload"])
 
     def on_sched_selection_changed(self, selection):
         model, paths = selection.get_selected_rows()
