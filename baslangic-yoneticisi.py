@@ -267,8 +267,8 @@ class AutostartManager(Gtk.Window):
         box_lists.set_margin_top(15)
         box_lists.set_margin_bottom(15)
         
-        # Data Model: 0:Icon, 1:Enabled, 2:Name, 3:Cmd, 4:Comment, 5:IsSys, 6:Path, 7:Filename, 8:Terminal, 9:Delay, 10:TermSize
-        self.store_user = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str)
+        # Data Model: 0:Icon, 1:Enabled, 2:Name, 3:Cmd, 4:Comment, 5:IsSys, 6:Path, 7:Filename, 8:Terminal, 9:Delay, 10:TermSize, 11:IsRunning
+        self.store_user = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str, bool)
         self.filter_user = self.store_user.filter_new()
         self.filter_user.set_visible_func(self.filter_func)
         
@@ -281,7 +281,7 @@ class AutostartManager(Gtk.Window):
         
         box_lists.pack_start(Gtk.Separator(), False, False, 10)
         
-        self.store_sys = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str)
+        self.store_sys = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str, bool)
         self.filter_sys = self.store_sys.filter_new()
         self.filter_sys.set_visible_func(self.filter_func)
         
@@ -301,6 +301,43 @@ class AutostartManager(Gtk.Window):
         self.load_apps()
         self.setup_tray()
         self.connect("delete-event", self.on_delete_event)
+        self.refresh_status()
+        GLib.timeout_add_seconds(3, self.refresh_status)
+
+    def refresh_status(self):
+        try:
+            import subprocess
+            res = subprocess.run(["ps", "-eo", "args"], stdout=subprocess.PIPE, text=True)
+            all_procs = res.stdout
+        except:
+            all_procs = ""
+
+        def is_running(cmd):
+            import shlex, os
+            try:
+                clean_cmd = cmd.replace("%f", "").replace("%F", "").replace("%u", "").replace("%U", "")
+                parts = shlex.split(clean_cmd)
+                if not parts: return False
+                if parts[0] == "gnome-terminal" and "--" in parts:
+                    idx = parts.index("--")
+                    target = parts[idx+1] if len(parts) > idx+1 else parts[0]
+                else:
+                    target = parts[0]
+                if target in ["bash", "sh", "python3", "python"] and len(parts) >= 2:
+                    target = parts[-1] 
+                base = os.path.basename(target)
+                search_term = target if "/" in target else base
+                if search_term in ["bash", "sh", "env"]: return False
+                return search_term in all_procs
+            except:
+                return False
+
+        for row in self.store_user:
+            row[11] = is_running(row[3])
+        for row in self.store_sys:
+            row[11] = is_running(row[3])
+            
+        return True
 
     def on_delete_event(self, widget, event):
         Gtk.main_quit()
@@ -394,6 +431,17 @@ class AutostartManager(Gtk.Window):
         col_name.pack_start(render_name, True)
         col_name.add_attribute(render_name, "text", 2)
         tree.append_column(col_name)
+        
+        col_status = Gtk.TreeViewColumn(_("Durum"))
+        render_status = Gtk.CellRendererText()
+        col_status.pack_start(render_status, False)
+        def format_status(c, cell, m, i, d):
+            if m[i][11]:
+                cell.set_property("markup", "<span foreground='#2ca02c'>🟢 Çalışıyor</span>")
+            else:
+                cell.set_property("markup", "<span foreground='#7f7f7f'>⚪ Durdu</span>")
+        col_status.set_cell_data_func(render_status, format_status)
+        tree.append_column(col_status)
 
         col_cmd = Gtk.TreeViewColumn(_("Komut"))
         col_cmd.set_resizable(True)
@@ -503,7 +551,7 @@ class AutostartManager(Gtk.Window):
         all_apps.sort(key=lambda x: x.name.lower())
                 
         for app in all_apps:
-            row = [app.icon, app.enabled, app.name, app.cmd, app.comment, app.is_sys, app.path, app.filename, app.terminal, app.delay, app.term_size]
+            row = [app.icon, app.enabled, app.name, app.cmd, app.comment, app.is_sys, app.path, app.filename, app.terminal, app.delay, app.term_size, False]
             if app.is_sys:
                 self.store_sys.append(row)
             else:
