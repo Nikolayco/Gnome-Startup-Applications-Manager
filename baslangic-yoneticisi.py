@@ -5,13 +5,13 @@ import shlex
 import subprocess
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio, GLib
+from gi.repository import Gtk, Gio, GLib, Gdk
 
 AUTOSTART_DIR = os.path.expanduser("~/.config/autostart")
 SYS_AUTOSTART_DIR = "/etc/xdg/autostart"
 
 class AutostartApp:
-    def __init__(self, filename, name, cmd, comment, hidden, is_sys, path, icon):
+    def __init__(self, filename, name, cmd, comment, hidden, is_sys, path, icon, terminal):
         self.filename = filename
         self.name = name
         self.cmd = cmd
@@ -20,11 +20,12 @@ class AutostartApp:
         self.is_sys = is_sys
         self.path = path
         self.icon = icon
+        self.terminal = terminal
 
 class AppDialog(Gtk.Dialog):
     def __init__(self, parent, title, app=None):
         super().__init__(title=title, transient_for=parent, flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
-        self.set_default_size(450, 200)
+        self.set_default_size(500, 250)
         
         self.add_buttons("İptal", Gtk.ResponseType.CANCEL, "Kaydet", Gtk.ResponseType.OK)
         save_btn = self.get_widget_for_response(Gtk.ResponseType.OK)
@@ -65,21 +66,26 @@ class AppDialog(Gtk.Dialog):
         cmd_box.pack_start(btn_browse, False, False, 0)
         grid.attach(cmd_box, 1, 1, 1, 1)
         
-        lbl_comment = Gtk.Label(label="Açıklama (İsteğe Bağlı):", xalign=0)
+        lbl_comment = Gtk.Label(label="Açıklama (İsteğe):", xalign=0)
         lbl_comment.get_style_context().add_class("dim-label")
         grid.attach(lbl_comment, 0, 2, 1, 1)
         self.entry_comment = Gtk.Entry(placeholder_text="Ne işe yaradığını kısaca yazın...")
         grid.attach(self.entry_comment, 1, 2, 1, 1)
+
+        self.check_terminal = Gtk.CheckButton(label="Terminalde (Ekranda) çalıştır")
+        self.check_terminal.set_tooltip_text("İşaretlenirse, script siyah bir terminal penceresinde açılır.")
+        grid.attach(self.check_terminal, 1, 3, 1, 1)
         
         if app:
             self.entry_name.set_text(app.name)
             self.entry_cmd.set_text(app.cmd)
             self.entry_comment.set_text(app.comment)
+            self.check_terminal.set_active(app.terminal)
             
         self.show_all()
 
     def on_browse_clicked(self, widget):
-        dialog = Gtk.FileChooserDialog(title="Çalıştırılacak Dosyayı veya Scripti Seçin", parent=self, action=Gtk.FileChooserAction.OPEN)
+        dialog = Gtk.FileChooserDialog(title="Çalıştırılacak Dosyayı Seçin", parent=self, action=Gtk.FileChooserAction.OPEN)
         dialog.add_buttons("İptal", Gtk.ResponseType.CANCEL, "Seç", Gtk.ResponseType.OK)
         
         filter_all = Gtk.FileFilter()
@@ -103,9 +109,11 @@ class AppDialog(Gtk.Dialog):
                 self.entry_cmd.set_text(filepath)
                 
             if not self.entry_name.get_text().strip():
-                filename_only = os.path.basename(filepath)
-                name_no_ext = os.path.splitext(filename_only)[0]
+                name_no_ext = os.path.splitext(os.path.basename(filepath))[0]
                 self.entry_name.set_text(name_no_ext.replace("-", " ").replace("_", " ").title())
+            
+            if filepath.endswith(".sh") or filepath.endswith(".py"):
+                self.check_terminal.set_active(True)
                 
         dialog.destroy()
 
@@ -167,23 +175,21 @@ class AutostartManager(Gtk.Window):
         box_lists.set_margin_top(15)
         box_lists.set_margin_bottom(15)
         
-        # User List
         lbl_user = Gtk.Label(xalign=0)
         lbl_user.set_markup("<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları (Sizin Ekledikleriniz)</span>")
         box_lists.pack_start(lbl_user, False, False, 0)
         
-        self.store_user = Gtk.ListStore(str, str, str, str, bool, str, str) # icon, name, cmd, comment, is_sys, path, filename
+        self.store_user = Gtk.ListStore(str, str, str, str, bool, str, str, bool)
         self.tree_user = self.create_treeview(self.store_user)
         box_lists.pack_start(self.tree_user, False, False, 0)
         
         box_lists.pack_start(Gtk.Separator(), False, False, 10)
         
-        # System List
         lbl_sys = Gtk.Label(xalign=0)
         lbl_sys.set_markup("<span size='large' weight='bold' color='#E35D5D'>Sistem Uygulamaları (Varsayılan Servisler)</span>")
         box_lists.pack_start(lbl_sys, False, False, 0)
         
-        self.store_sys = Gtk.ListStore(str, str, str, str, bool, str, str)
+        self.store_sys = Gtk.ListStore(str, str, str, str, bool, str, str, bool)
         self.tree_sys = self.create_treeview(self.store_sys)
         box_lists.pack_start(self.tree_sys, False, False, 0)
         
@@ -204,7 +210,6 @@ class AutostartManager(Gtk.Window):
         col_name = Gtk.TreeViewColumn("Uygulama Adı")
         col_name.set_resizable(True)
         col_name.set_expand(True)
-        
         render_icon = Gtk.CellRendererPixbuf()
         render_icon.set_property("stock-size", Gtk.IconSize.DND)
         col_name.pack_start(render_icon, False)
@@ -226,11 +231,17 @@ class AutostartManager(Gtk.Window):
         col_cmd.add_attribute(render_cmd, "text", 2)
         tree.append_column(col_cmd)
         
+        col_term = Gtk.TreeViewColumn("Terminal")
+        render_term = Gtk.CellRendererText()
+        col_term.pack_start(render_term, False)
+        col_term.set_cell_data_func(render_term, lambda col, cell, m, i, d: cell.set_property("text", "Evet" if m[i][7] else "Hayır"))
+        tree.append_column(col_term)
+        
         return tree
 
     def parse_desktop_file(self, path):
         name = os.path.basename(path).replace(".desktop", "")
-        cmd, comment, hidden, icon = "", "", False, "application-x-executable"
+        cmd, comment, hidden, icon, terminal = "", "", False, "application-x-executable", False
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 for line in f:
@@ -239,11 +250,12 @@ class AutostartManager(Gtk.Window):
                     elif line.startswith("Exec="): cmd = line.split("=", 1)[1]
                     elif line.startswith("Comment="): comment = line.split("=", 1)[1]
                     elif line.startswith("Icon="): icon = line.split("=", 1)[1]
+                    elif line.lower().startswith("terminal=true"): terminal = True
                     elif line.startswith("Hidden=true") or line.startswith("X-GNOME-Autostart-enabled=false"):
                         hidden = True
         except: pass
         if "/" in icon: icon = "application-x-executable"
-        return AutostartApp(os.path.basename(path), name, cmd, comment, hidden, path.startswith("/etc"), path, icon)
+        return AutostartApp(os.path.basename(path), name, cmd, comment, hidden, path.startswith("/etc"), path, icon, terminal)
 
     def load_apps(self):
         self.store_user.clear()
@@ -271,7 +283,7 @@ class AutostartManager(Gtk.Window):
         all_apps.sort(key=lambda x: x.name.lower())
                 
         for app in all_apps:
-            row = [app.icon, app.name, app.cmd, app.comment, app.is_sys, app.path, app.filename]
+            row = [app.icon, app.name, app.cmd, app.comment, app.is_sys, app.path, app.filename, app.terminal]
             if app.is_sys:
                 self.store_sys.append(row)
             else:
@@ -298,9 +310,10 @@ class AutostartManager(Gtk.Window):
     def on_row_activated(self, treeview, path, column):
         self.on_edit_clicked(None)
 
-    def write_desktop_file(self, filename, name, cmd, comment):
+    def write_desktop_file(self, filename, name, cmd, comment, terminal):
         path = os.path.join(AUTOSTART_DIR, filename)
-        content = f"[Desktop Entry]\nType=Application\nName={name}\nExec={cmd}\nComment={comment}\nIcon=application-x-executable\nX-GNOME-Autostart-enabled=true\n"
+        term_str = "true" if terminal else "false"
+        content = f"[Desktop Entry]\nType=Application\nName={name}\nExec={cmd}\nComment={comment}\nIcon=application-x-executable\nTerminal={term_str}\nX-GNOME-Autostart-enabled=true\n"
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
 
@@ -311,9 +324,10 @@ class AutostartManager(Gtk.Window):
             name = dialog.entry_name.get_text()
             cmd = dialog.entry_cmd.get_text()
             comment = dialog.entry_comment.get_text()
+            terminal = dialog.check_terminal.get_active()
             if name and cmd:
                 filename = name.lower().replace(" ", "-").replace("/", "") + ".desktop"
-                self.write_desktop_file(filename, name, cmd, comment)
+                self.write_desktop_file(filename, name, cmd, comment, terminal)
                 self.load_apps()
         dialog.destroy()
 
@@ -329,8 +343,9 @@ class AutostartManager(Gtk.Window):
             name = dialog.entry_name.get_text()
             cmd = dialog.entry_cmd.get_text()
             comment = dialog.entry_comment.get_text()
+            terminal = dialog.check_terminal.get_active()
             if name and cmd:
-                self.write_desktop_file(app.filename, name, cmd, comment)
+                self.write_desktop_file(app.filename, name, cmd, comment, terminal)
                 self.load_apps()
         dialog.destroy()
 
@@ -358,12 +373,19 @@ class AutostartManager(Gtk.Window):
     def on_start_clicked(self, widget):
         if not self.current_selection: return
         model, treeiter = self.current_selection
-        cmd = model[treeiter][2]
+        path = model[treeiter][5]
+        
         try:
-            cmd_clean = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
-            subprocess.Popen(shlex.split(cmd_clean), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            app_info = Gio.DesktopAppInfo.new_from_filename(path)
+            if app_info:
+                context = Gdk.Display.get_default().get_app_launch_context()
+                app_info.launch([], context)
+            else:
+                cmd = model[treeiter][2]
+                cmd_clean = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
+                subprocess.Popen(shlex.split(cmd_clean), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                
             d = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.INFO, buttons=Gtk.ButtonsType.OK, text="Uygulama/Script Başlatıldı!")
-            d.format_secondary_text(f"Komut: {cmd_clean}")
             d.run()
             d.destroy()
         except Exception as e:
