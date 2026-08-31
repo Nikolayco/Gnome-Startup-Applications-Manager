@@ -9,7 +9,6 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GLib, Gdk
 
-# i18n / Gettext Setup
 APP_NAME = "gnome-startup-manager"
 LOCALE_DIR = os.path.expanduser("~/.local/share/locale")
 
@@ -41,7 +40,7 @@ CUSTOM_SCRIPTS_DIR = os.path.expanduser("~/.local/share/Gnome-Startup-Applicatio
 APP_ICON = "system-run"
 
 class AutostartApp:
-    def __init__(self, filename, name, cmd, comment, hidden, is_sys, path, icon, terminal, delay):
+    def __init__(self, filename, name, cmd, comment, hidden, is_sys, path, icon, terminal, delay, term_size="normal"):
         self.filename = filename
         self.name = name
         self.cmd = cmd
@@ -53,11 +52,12 @@ class AutostartApp:
         self.terminal = terminal
         self.delay = delay
         self.enabled = not hidden
+        self.term_size = term_size
 
 class AppDialog(Gtk.Dialog):
     def __init__(self, parent, title, app=None):
         super().__init__(title=title, transient_for=parent, flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
-        self.set_default_size(550, 400)
+        self.set_default_size(580, 420)
         
         self.add_buttons(_("İptal"), Gtk.ResponseType.CANCEL, _("Kaydet"), Gtk.ResponseType.OK)
         save_btn = self.get_widget_for_response(Gtk.ResponseType.OK)
@@ -96,8 +96,25 @@ class AppDialog(Gtk.Dialog):
         self.spin_delay.set_tooltip_text(_("Sistem açıldıktan kaç saniye sonra çalışsın?"))
         grid.attach(self.spin_delay, 1, 2, 1, 1)
 
-        self.check_terminal = Gtk.CheckButton(label=_("Terminalde (Ekranda) çalıştır"))
-        grid.attach(self.check_terminal, 1, 3, 1, 1)
+        # Terminal and Size Box
+        lbl_term = Gtk.Label(label=_("Pencere Modu:"), xalign=0)
+        lbl_term.get_style_context().add_class("dim-label")
+        grid.attach(lbl_term, 0, 3, 1, 1)
+
+        term_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=15)
+        self.check_terminal = Gtk.CheckButton(label=_("Terminalde çalıştır"))
+        term_box.pack_start(self.check_terminal, False, False, 0)
+        
+        self.combo_term_size = Gtk.ComboBoxText()
+        self.combo_term_size.append("normal", _("Normal"))
+        self.combo_term_size.append("maximize", _("Maximize (Tam Ekran)"))
+        self.combo_term_size.append("fullscreen", _("Fullscreen (Sınırsız)"))
+        self.combo_term_size.set_active_id("normal")
+        self.combo_term_size.set_sensitive(False)
+        self.check_terminal.connect("toggled", lambda w: self.combo_term_size.set_sensitive(w.get_active()))
+        
+        term_box.pack_start(self.combo_term_size, False, False, 0)
+        grid.attach(term_box, 1, 3, 1, 1)
 
         lbl_source = Gtk.Label(label=_("Çalışacak Dosya/Kod:"), xalign=0)
         lbl_source.get_style_context().add_class("dim-label")
@@ -142,6 +159,8 @@ class AppDialog(Gtk.Dialog):
             self.entry_cmd.set_text(app.cmd)
             self.entry_comment.set_text(app.comment)
             self.check_terminal.set_active(app.terminal)
+            self.combo_term_size.set_active_id(app.term_size)
+            self.combo_term_size.set_sensitive(app.terminal)
             self.spin_delay.set_value(app.delay)
             
             if app.cmd.startswith(CUSTOM_SCRIPTS_DIR):
@@ -200,33 +219,6 @@ class AutostartManager(Gtk.Window):
         self.search_entry.connect("search-changed", self.on_search_changed)
         hb.pack_start(self.search_entry)
 
-        # Butonlari tanimlama
-        btn_add = Gtk.Button()
-        btn_add.add(Gtk.Image.new_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON))
-        btn_add.set_tooltip_text(_("Yeni uygulama veya script ekle"))
-        btn_add.connect("clicked", self.on_add_clicked)
-        btn_add.get_style_context().add_class("suggested-action")
-        
-        self.btn_edit = Gtk.Button()
-        self.btn_edit.add(Gtk.Image.new_from_icon_name("document-edit-symbolic", Gtk.IconSize.BUTTON))
-        self.btn_edit.set_tooltip_text(_("Ayarları düzenle"))
-        self.btn_edit.connect("clicked", self.on_edit_clicked)
-        self.btn_edit.set_sensitive(False)
-
-        self.btn_start = Gtk.Button()
-        self.btn_start.add(Gtk.Image.new_from_icon_name("media-playback-start-symbolic", Gtk.IconSize.BUTTON))
-        self.btn_start.set_tooltip_text(_("Uygulamayı hemen çalıştırarak test et"))
-        self.btn_start.connect("clicked", self.on_start_clicked)
-        self.btn_start.set_sensitive(False)
-
-        self.btn_remove = Gtk.Button()
-        self.btn_remove.add(Gtk.Image.new_from_icon_name("user-trash-symbolic", Gtk.IconSize.BUTTON))
-        self.btn_remove.set_tooltip_text(_("Kalıcı olarak sil"))
-        self.btn_remove.connect("clicked", self.on_remove_clicked)
-        self.btn_remove.get_style_context().add_class("destructive-action")
-        self.btn_remove.set_sensitive(False)
-
-        # Tray kucultme butonu (sadece eger pystray/indicator destegi varsa)
         if AppIndicator3:
             btn_tray = Gtk.Button()
             btn_tray.add(Gtk.Image.new_from_icon_name("go-down-symbolic", Gtk.IconSize.BUTTON))
@@ -234,11 +226,33 @@ class AutostartManager(Gtk.Window):
             btn_tray.connect("clicked", lambda w: self.hide())
             hb.pack_end(btn_tray)
 
-        # Sagdan sola dogru dizilim sirasi (Tersi visual olarak soldan saga okunur)
-        # Visual sira: [Ekle] [Duzenle] [Baslat] [Sil]
+        self.btn_remove = Gtk.Button()
+        self.btn_remove.add(Gtk.Image.new_from_icon_name("user-trash-symbolic", Gtk.IconSize.BUTTON))
+        self.btn_remove.set_tooltip_text(_("Kalıcı olarak sil"))
+        self.btn_remove.connect("clicked", self.on_remove_clicked)
+        self.btn_remove.get_style_context().add_class("destructive-action")
+        self.btn_remove.set_sensitive(False)
         hb.pack_end(self.btn_remove)
+
+        self.btn_start = Gtk.Button()
+        self.btn_start.add(Gtk.Image.new_from_icon_name("media-playback-start-symbolic", Gtk.IconSize.BUTTON))
+        self.btn_start.set_tooltip_text(_("Uygulamayı hemen çalıştırarak test et"))
+        self.btn_start.connect("clicked", self.on_start_clicked)
+        self.btn_start.set_sensitive(False)
         hb.pack_end(self.btn_start)
+
+        self.btn_edit = Gtk.Button()
+        self.btn_edit.add(Gtk.Image.new_from_icon_name("document-edit-symbolic", Gtk.IconSize.BUTTON))
+        self.btn_edit.set_tooltip_text(_("Ayarları düzenle"))
+        self.btn_edit.connect("clicked", self.on_edit_clicked)
+        self.btn_edit.set_sensitive(False)
         hb.pack_end(self.btn_edit)
+
+        btn_add = Gtk.Button()
+        btn_add.add(Gtk.Image.new_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON))
+        btn_add.set_tooltip_text(_("Yeni uygulama veya script ekle"))
+        btn_add.connect("clicked", self.on_add_clicked)
+        btn_add.get_style_context().add_class("suggested-action")
         hb.pack_end(btn_add)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -253,7 +267,8 @@ class AutostartManager(Gtk.Window):
         box_lists.set_margin_top(15)
         box_lists.set_margin_bottom(15)
         
-        self.store_user = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int)
+        # Data Model: 0:Icon, 1:Enabled, 2:Name, 3:Cmd, 4:Comment, 5:IsSys, 6:Path, 7:Filename, 8:Terminal, 9:Delay, 10:TermSize
+        self.store_user = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str)
         self.filter_user = self.store_user.filter_new()
         self.filter_user.set_visible_func(self.filter_func)
         
@@ -266,7 +281,7 @@ class AutostartManager(Gtk.Window):
         
         box_lists.pack_start(Gtk.Separator(), False, False, 10)
         
-        self.store_sys = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int)
+        self.store_sys = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str)
         self.filter_sys = self.store_sys.filter_new()
         self.filter_sys.set_visible_func(self.filter_func)
         
@@ -393,7 +408,17 @@ class AutostartManager(Gtk.Window):
         col_term = Gtk.TreeViewColumn(_("Terminal"))
         render_term = Gtk.CellRendererText()
         col_term.pack_start(render_term, False)
-        col_term.set_cell_data_func(render_term, lambda c, cell, m, i, d: cell.set_property("text", _("Evet") if m[i][8] else _("-")))
+        
+        def format_term(c, cell, m, i, d):
+            if not m[i][8]:
+                cell.set_property("text", _("-"))
+            else:
+                s = m[i][10]
+                if s == "maximize": cell.set_property("text", _("Evet (Max)"))
+                elif s == "fullscreen": cell.set_property("text", _("Evet (Full)"))
+                else: cell.set_property("text", _("Evet (Normal)"))
+                
+        col_term.set_cell_data_func(render_term, format_term)
         tree.append_column(col_term)
 
         col_delay = Gtk.TreeViewColumn(_("Gecikme"))
@@ -414,13 +439,15 @@ class AutostartManager(Gtk.Window):
         comment = filter_model[treeiter][4]
         terminal = filter_model[treeiter][8]
         delay = filter_model[treeiter][9]
+        term_size = filter_model[treeiter][10]
         
-        self.write_desktop_file(filename, name, cmd, comment, terminal, delay, is_enabled)
+        self.write_desktop_file(filename, name, cmd, comment, terminal, term_size, delay, is_enabled)
         self.load_apps()
 
     def parse_desktop_file(self, path):
         name = os.path.basename(path).replace(".desktop", "")
         cmd, comment, hidden, icon, terminal, delay = "", "", False, "application-x-executable", False, 0
+        term_size = "normal"
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 for line in f:
@@ -437,7 +464,18 @@ class AutostartManager(Gtk.Window):
                         hidden = True
         except: pass
         if "/" in icon: icon = "application-x-executable"
-        return AutostartApp(os.path.basename(path), name, cmd, comment, hidden, path.startswith("/etc"), path, icon, terminal, delay)
+        
+        # Check if it was wrapped by our maximize logic
+        if cmd.startswith("gnome-terminal --maximize -- "):
+            cmd = cmd.replace("gnome-terminal --maximize -- ", "")
+            term_size = "maximize"
+            terminal = True
+        elif cmd.startswith("gnome-terminal --full-screen -- "):
+            cmd = cmd.replace("gnome-terminal --full-screen -- ", "")
+            term_size = "fullscreen"
+            terminal = True
+            
+        return AutostartApp(os.path.basename(path), name, cmd, comment, hidden, path.startswith("/etc"), path, icon, terminal, delay, term_size)
 
     def load_apps(self):
         self.store_user.clear()
@@ -465,7 +503,7 @@ class AutostartManager(Gtk.Window):
         all_apps.sort(key=lambda x: x.name.lower())
                 
         for app in all_apps:
-            row = [app.icon, app.enabled, app.name, app.cmd, app.comment, app.is_sys, app.path, app.filename, app.terminal, app.delay]
+            row = [app.icon, app.enabled, app.name, app.cmd, app.comment, app.is_sys, app.path, app.filename, app.terminal, app.delay, app.term_size]
             if app.is_sys:
                 self.store_sys.append(row)
             else:
@@ -495,13 +533,24 @@ class AutostartManager(Gtk.Window):
     def on_row_activated(self, treeview, path, column):
         self.on_edit_clicked(None)
 
-    def write_desktop_file(self, filename, name, cmd, comment, terminal, delay, enabled):
+    def write_desktop_file(self, filename, name, cmd, comment, terminal, term_size, delay, enabled):
         path = os.path.join(AUTOSTART_DIR, filename)
-        term_str = "true" if terminal else "false"
+        
+        final_cmd = cmd
+        term_str = "false"
+        
+        if terminal:
+            if term_size == "maximize":
+                final_cmd = f"gnome-terminal --maximize -- {cmd}"
+            elif term_size == "fullscreen":
+                final_cmd = f"gnome-terminal --full-screen -- {cmd}"
+            else:
+                term_str = "true"
+                
         en_str = "true" if enabled else "false"
         hidden_str = "false" if enabled else "true"
         
-        content = f"[Desktop Entry]\nType=Application\nName={name}\nExec={cmd}\nComment={comment}\nIcon=application-x-executable\nTerminal={term_str}\nHidden={hidden_str}\nX-GNOME-Autostart-enabled={en_str}\n"
+        content = f"[Desktop Entry]\nType=Application\nName={name}\nExec={final_cmd}\nComment={comment}\nIcon=application-x-executable\nTerminal={term_str}\nHidden={hidden_str}\nX-GNOME-Autostart-enabled={en_str}\n"
         if delay > 0:
             content += f"X-GNOME-Autostart-Delay={delay}\n"
             
@@ -522,6 +571,7 @@ class AutostartManager(Gtk.Window):
             name = dialog.entry_name.get_text()
             comment = dialog.entry_comment.get_text()
             terminal = dialog.check_terminal.get_active()
+            term_size = dialog.combo_term_size.get_active_id()
             delay = int(dialog.spin_delay.get_value())
             
             visible_tab = dialog.stack.get_visible_child_name()
@@ -538,7 +588,7 @@ class AutostartManager(Gtk.Window):
 
             if name and cmd:
                 filename = name.lower().replace(" ", "-").replace("/", "") + ".desktop"
-                self.write_desktop_file(filename, name, cmd, comment, terminal, delay, True)
+                self.write_desktop_file(filename, name, cmd, comment, terminal, term_size, delay, True)
                 self.load_apps()
         dialog.destroy()
 
@@ -554,6 +604,7 @@ class AutostartManager(Gtk.Window):
             name = dialog.entry_name.get_text()
             comment = dialog.entry_comment.get_text()
             terminal = dialog.check_terminal.get_active()
+            term_size = dialog.combo_term_size.get_active_id()
             delay = int(dialog.spin_delay.get_value())
             
             visible_tab = dialog.stack.get_visible_child_name()
@@ -568,7 +619,7 @@ class AutostartManager(Gtk.Window):
                     cmd = app.cmd
                     
             if name and cmd:
-                self.write_desktop_file(app.filename, name, cmd, comment, terminal, delay, app.enabled)
+                self.write_desktop_file(app.filename, name, cmd, comment, terminal, term_size, delay, app.enabled)
                 self.load_apps()
         dialog.destroy()
 
