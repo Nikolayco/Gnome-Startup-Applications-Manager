@@ -1382,7 +1382,21 @@ Persistent=true
                 v1 = c.get("Timer", "OnStartupSec").replace("s", "")
                 t_desc = f"Login ({v1}s)"
                 
-            self.store_sched.append([t_id, enabled, name, t_desc, "-", cmd, t_type, v1, v2])
+            next_run = "-"
+            timer_res = subprocess.run(["systemctl", "--user", "list-timers", "--all", f"{t_id}.timer"], stdout=subprocess.PIPE, text=True)
+            for line in timer_res.stdout.split("\n"):
+                if f"{t_id}.timer" in line:
+                    parts = line.split(f"{t_id}.timer")
+                    left_part = parts[0].strip()
+                    if left_part.startswith("-"): next_run = "-"
+                    else: 
+                        import shlex
+                        time_parts = shlex.split(left_part)
+                        if len(time_parts) >= 3:
+                            next_run = " ".join(time_parts[:3])
+                    break
+            
+            self.store_sched.append([t_id, enabled, name, t_desc, next_run, cmd, t_type, v1, v2])
 
 if __name__ == "__main__":
 
