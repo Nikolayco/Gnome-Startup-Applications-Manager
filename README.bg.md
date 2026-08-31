@@ -67,12 +67,9 @@ python3 baslangic-yoneticisi.py
 ## 🗑️ Деинсталиране
 
 ```bash
-# Ако репото вече е изтеглено:
-cd Gnome-Startup-Applications-Manager && bash uninstall.sh
-
-# Ако не е — първо го клонирайте:
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
-cd Gnome-Startup-Applications-Manager && bash uninstall.sh
+git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null || true
+cd Gnome-Startup-Applications-Manager
+bash uninstall.sh
 ```
 
 > **Забележка:** Вашите собствени `.desktop` записи няма да бъдат изтрити — изтриват се само файловете, създадени от това приложение.
