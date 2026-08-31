@@ -201,6 +201,7 @@ class AutostartManager(Gtk.Window):
         self.set_default_size(800, 600)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_icon_name(APP_ICON)
+        self.set_wmclass('baslangic-yoneticisi', 'baslangic-yoneticisi')
         self.current_selection = None
         self.load_settings()
         hb = Gtk.HeaderBar()
