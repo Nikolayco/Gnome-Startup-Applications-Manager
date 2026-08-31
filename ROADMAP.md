@@ -8,7 +8,7 @@ Bu proje aktif olarak geliştirilmektedir. Aşağıdaki özellikler öncelik sı
 
 ## 2. Kullanılabilirlik ve Arayüz
 - [ ] **Sürükle & Bırak Sıralama:** Başlangıç uygulamalarının çalışma sırasını görsel olarak sürükle-bırak yöntemiyle ayarlama.
-- [ ] **Profil Sistemi:** "İş Modu", "Oyun Modu" gibi gruplar oluşturup tek tıkla farklı uygulama setlerini topluca açıp kapatabilme.
+- [~] **Profil Sistemi:** (İptal edildi) "İş Modu", "Oyun Modu" gibi gruplar oluşturup tek tıkla farklı uygulama setlerini topluca açıp kapatabilme.
 - [x] **Gerçek .desktop İkonları:** Jenerik terminal ikonları yerine, uygulamanın kendi orjinal ikonunu (örn. Chrome, Firefox) listede gösterebilme.
 - [ ] **Çoklu Seçim:** Birden fazla uygulamayı aynı anda seçip topluca aktif/pasif yapma veya silme.
 - [x] **Klavye Kısayolları:** Hızlı kullanım için arayüzde klavye kısayolları (Örn: Ctrl+N Yeni Ekle, Delete Sil vb.).
