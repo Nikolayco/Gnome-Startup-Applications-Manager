@@ -418,19 +418,7 @@ class AutostartManager(Gtk.Window):
         runner_path = os.path.join(CUSTOM_SCRIPTS_DIR, "runner.py")
         if not os.path.exists(runner_path):
             with open(runner_path, "w") as f:
-                f.write("#!/usr/bin/env python3
-import sys, os, subprocess, signal
-pid_file = sys.argv[1]
-cmd = sys.argv[2]
-with open(pid_file, 'w') as f:
-    f.write(str(os.getpid()))
-proc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid)
-def handler(signum, frame):
-    os.killpg(proc.pid, signal.SIGTERM)
-    sys.exit(0)
-signal.signal(signal.SIGTERM, handler)
-proc.wait()
-")
+                f.write("""#!/usr/bin/env python3\nimport sys, os, subprocess, signal\npid_file = sys.argv[1]\ncmd = sys.argv[2]\nwith open(pid_file, 'w') as f:\n    f.write(str(os.getpid()))\nproc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid)\ndef handler(signum, frame):\n    os.killpg(proc.pid, signal.SIGTERM)\n    sys.exit(0)\nsignal.signal(signal.SIGTERM, handler)\nproc.wait()\n""")
             os.chmod(runner_path, 0o755)
             
         self.load_apps()
@@ -832,18 +820,8 @@ proc.wait()
                 
         en_str = "true" if enabled else "false"
         hidden_str = "false" if enabled else "true"
-        content = f"[Desktop Entry]
-Type=Application
-Name={name}
-Exec={final_cmd}
-Comment={comment}
-Icon={icon}
-Terminal=false
-Hidden={hidden_str}
-X-GNOME-Autostart-enabled={en_str}
-"
-        if delay > 0: content += f"X-GNOME-Autostart-Delay={delay}
-"
+        content = f"[Desktop Entry]\nType=Application\nName={name}\nExec={final_cmd}\nComment={comment}\nIcon={icon}\nTerminal=false\nHidden={hidden_str}\nX-GNOME-Autostart-enabled={en_str}\n"
+        if delay > 0: content += f"X-GNOME-Autostart-Delay={delay}\n"
         with open(path, 'w', encoding='utf-8') as f: f.write(content)
 
     def save_custom_script(self, filename, code):
