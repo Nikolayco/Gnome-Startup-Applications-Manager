@@ -7,7 +7,6 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GLib, Gdk
 
-# Tray Icon desteği için kütüphane kontrolü
 try:
     gi.require_version('AyatanaAppIndicator3', '0.1')
     from gi.repository import AyatanaAppIndicator3 as AppIndicator3
@@ -21,6 +20,9 @@ except ValueError:
 AUTOSTART_DIR = os.path.expanduser("~/.config/autostart")
 SYS_AUTOSTART_DIR = "/etc/xdg/autostart"
 CUSTOM_SCRIPTS_DIR = os.path.expanduser("~/.local/share/Gnome-Startup-Applications-Manager/scripts")
+
+# Uygulama ikonunu belirleyelim (Tüm pencerelerde ve menülerde bu kullanılacak)
+APP_ICON = "system-run"
 
 class AutostartApp:
     def __init__(self, filename, name, cmd, comment, hidden, is_sys, path, icon, terminal, delay):
@@ -127,7 +129,6 @@ class AppDialog(Gtk.Dialog):
         
         grid.attach(vbox_source, 1, 4, 1, 1)
 
-        # Pre-fill data if editing
         if app:
             self.entry_name.set_text(app.name)
             self.entry_cmd.set_text(app.cmd)
@@ -135,7 +136,6 @@ class AppDialog(Gtk.Dialog):
             self.check_terminal.set_active(app.terminal)
             self.spin_delay.set_value(app.delay)
             
-            # Check if this is a custom script we generated
             if app.cmd.startswith(CUSTOM_SCRIPTS_DIR):
                 self.stack.set_visible_child_name("code")
                 try:
@@ -178,25 +178,20 @@ class AutostartManager(Gtk.Window):
         super().__init__(title="Başlangıç Uygulamaları Yöneticisi")
         self.set_default_size(900, 650)
         self.set_position(Gtk.WindowPosition.CENTER)
-        self.set_icon_name("preferences-system")
+        self.set_icon_name(APP_ICON)
         self.current_selection = None
         
-        # System Tray Support
-        self.setup_tray()
-
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
         hb.set_title(self.get_title())
-        hb.set_subtitle("Uygulama ve scriptlerinizi yönetin")
+        hb.set_subtitle("Sistem ve Kullanıcı uygulamalarını yönetin")
         self.set_titlebar(hb)
 
-        # Search Bar
         self.search_entry = Gtk.SearchEntry()
         self.search_entry.set_placeholder_text("Uygulama Ara...")
         self.search_entry.connect("search-changed", self.on_search_changed)
         hb.pack_start(self.search_entry)
 
-        # Actions
         btn_add = Gtk.Button()
         btn_add.add(Gtk.Image.new_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON))
         btn_add.set_tooltip_text("Yeni uygulama veya script ekle")
@@ -241,7 +236,6 @@ class AutostartManager(Gtk.Window):
         box_lists.set_margin_top(15)
         box_lists.set_margin_bottom(15)
         
-        # Data Model: [0:Icon, 1:Enabled, 2:Name, 3:Cmd, 4:Comment, 5:IsSys, 6:Path, 7:Filename, 8:Terminal, 9:Delay]
         self.store_user = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int)
         self.filter_user = self.store_user.filter_new()
         self.filter_user.set_visible_func(self.filter_func)
@@ -271,15 +265,19 @@ class AutostartManager(Gtk.Window):
 
         os.makedirs(AUTOSTART_DIR, exist_ok=True)
         os.makedirs(CUSTOM_SCRIPTS_DIR, exist_ok=True)
+        
+        # Load apps first so the stores are populated
         self.load_apps()
         
-        # Override delete event to hide to tray if indicator exists
+        # Then setup tray menu which relies on store_user
+        self.setup_tray()
+        
         self.connect("delete-event", self.on_delete_event)
 
     def on_delete_event(self, widget, event):
         if hasattr(self, 'indicator') and self.indicator is not None:
             self.hide()
-            return True # Veto close
+            return True
         else:
             Gtk.main_quit()
             return False
@@ -289,7 +287,7 @@ class AutostartManager(Gtk.Window):
         if AppIndicator3:
             self.indicator = AppIndicator3.Indicator.new(
                 "gnome-startup-manager-indicator",
-                "preferences-system",
+                APP_ICON,
                 AppIndicator3.IndicatorCategory.APPLICATION_STATUS
             )
             self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
@@ -300,7 +298,6 @@ class AutostartManager(Gtk.Window):
         if not self.indicator: return
         menu = Gtk.Menu()
         
-        # Populate User scripts
         item_title = Gtk.MenuItem(label="-- Hızlı Başlat --")
         item_title.set_sensitive(False)
         menu.append(item_title)
@@ -355,13 +352,11 @@ class AutostartManager(Gtk.Window):
         selection = tree.get_selection()
         selection.connect("changed", self.on_selection_changed, tree)
         
-        # 1. Aktif/Pasif Toggle
         render_toggle = Gtk.CellRendererToggle()
         render_toggle.connect("toggled", self.on_app_toggled, model)
         col_toggle = Gtk.TreeViewColumn("Aktif", render_toggle, active=1)
         tree.append_column(col_toggle)
 
-        # 2. Icon + Name
         col_name = Gtk.TreeViewColumn("Uygulama Adı")
         col_name.set_resizable(True)
         col_name.set_expand(True)
@@ -376,7 +371,6 @@ class AutostartManager(Gtk.Window):
         col_name.add_attribute(render_name, "text", 2)
         tree.append_column(col_name)
 
-        # 3. Path / Command
         col_cmd = Gtk.TreeViewColumn("Komut")
         col_cmd.set_resizable(True)
         col_cmd.set_expand(True)
@@ -387,14 +381,12 @@ class AutostartManager(Gtk.Window):
         col_cmd.add_attribute(render_cmd, "text", 3)
         tree.append_column(col_cmd)
         
-        # 4. Terminal
         col_term = Gtk.TreeViewColumn("Terminal")
         render_term = Gtk.CellRendererText()
         col_term.pack_start(render_term, False)
         col_term.set_cell_data_func(render_term, lambda c, cell, m, i, d: cell.set_property("text", "Evet" if m[i][8] else "-"))
         tree.append_column(col_term)
 
-        # 5. Delay
         col_delay = Gtk.TreeViewColumn("Gecikme")
         render_delay = Gtk.CellRendererText()
         col_delay.pack_start(render_delay, False)
@@ -464,14 +456,14 @@ class AutostartManager(Gtk.Window):
         all_apps.sort(key=lambda x: x.name.lower())
                 
         for app in all_apps:
-            # 0:Icon, 1:Enabled, 2:Name, 3:Cmd, 4:Comment, 5:IsSys, 6:Path, 7:Filename, 8:Terminal, 9:Delay
             row = [app.icon, app.enabled, app.name, app.cmd, app.comment, app.is_sys, app.path, app.filename, app.terminal, app.delay]
             if app.is_sys:
                 self.store_sys.append(row)
             else:
                 self.store_user.append(row)
                 
-        self.update_tray_menu()
+        if hasattr(self, 'indicator'):
+            self.update_tray_menu()
 
     def on_selection_changed(self, selection, treeview):
         model, treeiter = selection.get_selected()
@@ -484,7 +476,6 @@ class AutostartManager(Gtk.Window):
             self.btn_remove.set_sensitive(True)
             self.btn_edit.set_sensitive(True)
         else:
-            # If both are None
             if not self.tree_user.get_selection().get_selected()[1] and \
                not self.tree_sys.get_selection().get_selected()[1]:
                 self.current_selection = None
@@ -524,7 +515,6 @@ class AutostartManager(Gtk.Window):
             terminal = dialog.check_terminal.get_active()
             delay = int(dialog.spin_delay.get_value())
             
-            # Check which mode is selected (File vs Code)
             visible_tab = dialog.stack.get_visible_child_name()
             if visible_tab == "file":
                 cmd = dialog.entry_cmd.get_text()
@@ -566,7 +556,7 @@ class AutostartManager(Gtk.Window):
                 if code:
                     cmd = self.save_custom_script(app.filename, code)
                 else:
-                    cmd = app.cmd # Keep existing if empty
+                    cmd = app.cmd
                     
             if name and cmd:
                 self.write_desktop_file(app.filename, name, cmd, comment, terminal, delay, app.enabled)
@@ -620,11 +610,9 @@ class AutostartManager(Gtk.Window):
 
 if __name__ == "__main__":
     app = AutostartManager()
-    # Check if run with --tray
     import sys
     if "--tray" in sys.argv:
         if app.indicator:
-            # We have tray, just don't show window
             pass
         else:
             app.show_all()

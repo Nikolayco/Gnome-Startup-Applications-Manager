@@ -12,7 +12,7 @@ cat << DESKTOP > ~/.local/share/applications/baslangic-yoneticisi.desktop
 Name=Başlangıç Uygulamaları Yöneticisi
 Comment=Sistem başlangıcındaki uygulamaları yönetin ve test edin
 Exec=$HOME/.local/bin/baslangic-yoneticisi
-Icon=preferences-system
+Icon=system-run
 Terminal=false
 Type=Application
 Categories=Settings;System;
