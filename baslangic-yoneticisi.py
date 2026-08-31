@@ -106,8 +106,8 @@ class AppDialog(Gtk.Dialog):
         term_box.pack_start(self.check_terminal, False, False, 0)
         
         self.combo_term_size = Gtk.ComboBoxText()
-        self.combo_term_size.append("normal", "Normal")
         self.combo_term_size.append("maximize", "Maximize")
+        self.combo_term_size.append("normal", "Normal")
         self.combo_term_size.append("minimize", "Minimize")
         self.combo_term_size.set_active_id("normal")
         self.combo_term_size.set_sensitive(False)
