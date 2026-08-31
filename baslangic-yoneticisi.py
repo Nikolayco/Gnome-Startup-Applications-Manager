@@ -776,6 +776,11 @@ class AutostartManager(Gtk.Window):
         col_name.add_attribute(render_name, "text", 2)
         tree.append_column(col_name)
 
+        render_usage = Gtk.CellRendererText()
+        render_usage.set_property("foreground", "#888888")
+        col_usage = Gtk.TreeViewColumn(_("Kaynak"), render_usage, text=12)
+        tree.append_column(col_usage)
+
         col_status = Gtk.TreeViewColumn(_("Durum"))
         render_status = Gtk.CellRendererText()
         col_status.pack_start(render_status, False)
