@@ -743,7 +743,11 @@ class AutostartManager(Gtk.Window):
         col_cmd.set_resizable(True)
         col_cmd.set_expand(True)
         render_cmd = Gtk.CellRendererText()
-        render_cmd.set_property("ellipsize", 3)
+        import gi
+        gi.require_version('Pango', '1.0')
+        from gi.repository import Pango
+        render_cmd.set_property("wrap-mode", Pango.WrapMode.WORD_CHAR)
+        render_cmd.set_property("wrap-width", 350)
         render_cmd.set_property("foreground", "gray")
         col_cmd.pack_start(render_cmd, True)
         col_cmd.add_attribute(render_cmd, "text", 3)
