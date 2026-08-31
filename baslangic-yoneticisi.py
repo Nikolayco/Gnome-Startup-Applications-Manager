@@ -112,14 +112,15 @@ class AppDialog(Gtk.Dialog):
 class AutostartManager(Gtk.Window):
     def __init__(self):
         super().__init__(title="Başlangıç Uygulamaları Yöneticisi")
-        self.set_default_size(800, 550)
+        self.set_default_size(850, 600)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_icon_name("preferences-system")
+        self.current_selection = None
 
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
         hb.set_title(self.get_title())
-        hb.set_subtitle("Uygulama ve scriptlerinizi yönetin")
+        hb.set_subtitle("Sistem ve Kullanıcı uygulamalarını yönetin")
         self.set_titlebar(hb)
 
         btn_add = Gtk.Button()
@@ -157,19 +158,49 @@ class AutostartManager(Gtk.Window):
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(vbox)
 
-        self.liststore = Gtk.ListStore(str, str, str, str, str, str, str) 
-        self.treeview = Gtk.TreeView(model=self.liststore)
-        self.treeview.set_hexpand(True)
-        self.treeview.set_vexpand(True)
-        self.treeview.set_rules_hint(True) 
-        self.treeview.set_margin_top(5)
+        scroll = Gtk.ScrolledWindow()
+        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         
-        selection = self.treeview.get_selection()
-        selection.connect("changed", self.on_selection_changed)
+        box_lists = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
+        box_lists.set_margin_start(10)
+        box_lists.set_margin_end(10)
+        box_lists.set_margin_top(15)
+        box_lists.set_margin_bottom(15)
         
-        # Cift tiklama ile duzenleme
-        self.treeview.connect("row-activated", self.on_row_activated)
+        # User List
+        lbl_user = Gtk.Label(xalign=0)
+        lbl_user.set_markup("<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları (Sizin Ekledikleriniz)</span>")
+        box_lists.pack_start(lbl_user, False, False, 0)
+        
+        self.store_user = Gtk.ListStore(str, str, str, str, bool, str, str) # icon, name, cmd, comment, is_sys, path, filename
+        self.tree_user = self.create_treeview(self.store_user)
+        box_lists.pack_start(self.tree_user, False, False, 0)
+        
+        box_lists.pack_start(Gtk.Separator(), False, False, 10)
+        
+        # System List
+        lbl_sys = Gtk.Label(xalign=0)
+        lbl_sys.set_markup("<span size='large' weight='bold' color='#E35D5D'>Sistem Uygulamaları (Varsayılan Servisler)</span>")
+        box_lists.pack_start(lbl_sys, False, False, 0)
+        
+        self.store_sys = Gtk.ListStore(str, str, str, str, bool, str, str)
+        self.tree_sys = self.create_treeview(self.store_sys)
+        box_lists.pack_start(self.tree_sys, False, False, 0)
+        
+        scroll.add(box_lists)
+        vbox.pack_start(scroll, True, True, 0)
 
+        os.makedirs(AUTOSTART_DIR, exist_ok=True)
+        self.load_apps()
+
+    def create_treeview(self, model):
+        tree = Gtk.TreeView(model=model)
+        tree.set_rules_hint(True)
+        tree.connect("row-activated", self.on_row_activated)
+        
+        selection = tree.get_selection()
+        selection.connect("changed", self.on_selection_changed, tree)
+        
         col_name = Gtk.TreeViewColumn("Uygulama Adı")
         col_name.set_resizable(True)
         col_name.set_expand(True)
@@ -183,7 +214,7 @@ class AutostartManager(Gtk.Window):
         render_name.set_property("weight", 600)
         col_name.pack_start(render_name, True)
         col_name.add_attribute(render_name, "text", 1)
-        self.treeview.append_column(col_name)
+        tree.append_column(col_name)
 
         col_cmd = Gtk.TreeViewColumn("Dosya Yolu / Komut")
         col_cmd.set_resizable(True)
@@ -193,20 +224,9 @@ class AutostartManager(Gtk.Window):
         render_cmd.set_property("foreground", "gray")
         col_cmd.pack_start(render_cmd, True)
         col_cmd.add_attribute(render_cmd, "text", 2)
-        self.treeview.append_column(col_cmd)
+        tree.append_column(col_cmd)
         
-        col_sys = Gtk.TreeViewColumn("Konum")
-        render_sys = Gtk.CellRendererText()
-        col_sys.pack_start(render_sys, True)
-        col_sys.add_attribute(render_sys, "text", 4)
-        self.treeview.append_column(col_sys)
-
-        scroll = Gtk.ScrolledWindow()
-        scroll.add(self.treeview)
-        vbox.pack_start(scroll, True, True, 0)
-
-        os.makedirs(AUTOSTART_DIR, exist_ok=True)
-        self.load_apps()
+        return tree
 
     def parse_desktop_file(self, path):
         name = os.path.basename(path).replace(".desktop", "")
@@ -226,7 +246,9 @@ class AutostartManager(Gtk.Window):
         return AutostartApp(os.path.basename(path), name, cmd, comment, hidden, path.startswith("/etc"), path, icon)
 
     def load_apps(self):
-        self.liststore.clear()
+        self.store_user.clear()
+        self.store_sys.clear()
+        
         paths = []
         if os.path.exists(AUTOSTART_DIR):
             paths.extend(glob.glob(os.path.join(AUTOSTART_DIR, "*.desktop")))
@@ -246,17 +268,32 @@ class AutostartManager(Gtk.Window):
             if not app.hidden and app.cmd:
                 all_apps.append(app)
                 
-        all_apps.sort(key=lambda x: (x.is_sys, x.name.lower()))
+        all_apps.sort(key=lambda x: x.name.lower())
                 
         for app in all_apps:
-            self.liststore.append([app.icon, app.name, app.cmd, app.comment, "Sistem" if app.is_sys else "Kullanıcı", app.path, app.filename])
+            row = [app.icon, app.name, app.cmd, app.comment, app.is_sys, app.path, app.filename]
+            if app.is_sys:
+                self.store_sys.append(row)
+            else:
+                self.store_user.append(row)
 
-    def on_selection_changed(self, selection):
+    def on_selection_changed(self, selection, treeview):
         model, treeiter = selection.get_selected()
-        has_sel = treeiter is not None
-        self.btn_start.set_sensitive(has_sel)
-        self.btn_remove.set_sensitive(has_sel)
-        self.btn_edit.set_sensitive(has_sel)
+        if treeiter is not None:
+            other_tree = self.tree_sys if treeview == self.tree_user else self.tree_user
+            other_tree.get_selection().unselect_all()
+            
+            self.current_selection = (model, treeiter)
+            self.btn_start.set_sensitive(True)
+            self.btn_remove.set_sensitive(True)
+            self.btn_edit.set_sensitive(True)
+        else:
+            if not self.tree_user.get_selection().get_selected()[1] and \
+               not self.tree_sys.get_selection().get_selected()[1]:
+                self.current_selection = None
+                self.btn_start.set_sensitive(False)
+                self.btn_remove.set_sensitive(False)
+                self.btn_edit.set_sensitive(False)
 
     def on_row_activated(self, treeview, path, column):
         self.on_edit_clicked(None)
@@ -281,8 +318,8 @@ class AutostartManager(Gtk.Window):
         dialog.destroy()
 
     def on_edit_clicked(self, widget):
-        model, treeiter = self.treeview.get_selection().get_selected()
-        if treeiter is None: return
+        if not self.current_selection: return
+        model, treeiter = self.current_selection
         path = model[treeiter][5]
         app = self.parse_desktop_file(path)
         
@@ -298,10 +335,10 @@ class AutostartManager(Gtk.Window):
         dialog.destroy()
 
     def on_remove_clicked(self, widget):
-        model, treeiter = self.treeview.get_selection().get_selected()
-        if treeiter is None: return
+        if not self.current_selection: return
+        model, treeiter = self.current_selection
         filename = model[treeiter][6]
-        is_sys = model[treeiter][4] == "Sistem"
+        is_sys = model[treeiter][4]
         user_path = os.path.join(AUTOSTART_DIR, filename)
         
         dialog = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.WARNING,
@@ -319,8 +356,8 @@ class AutostartManager(Gtk.Window):
             self.load_apps()
 
     def on_start_clicked(self, widget):
-        model, treeiter = self.treeview.get_selection().get_selected()
-        if treeiter is None: return
+        if not self.current_selection: return
+        model, treeiter = self.current_selection
         cmd = model[treeiter][2]
         try:
             cmd_clean = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
