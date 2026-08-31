@@ -7,7 +7,7 @@ Bu proje aktif olarak geliştirilmektedir. Aşağıdaki özellikler öncelik sı
 - [~] **Wayland Desteği:** (İleri bir sürüme ertelendi) `xdotool` kısıtlamalarını aşmak için GNOME-Shell D-Bus eklentisi veya `wlrctl` gibi modern Wayland alternatifleri ile "Terminali Gizle (Minimize)" özelliğini Wayland'e taşımak.
 
 ## 2. Kullanılabilirlik ve Arayüz
-- [ ] **Sürükle & Bırak Sıralama:** Başlangıç uygulamalarının çalışma sırasını görsel olarak sürükle-bırak yöntemiyle ayarlama.
+- [~] **Sürükle & Bırak Sıralama:** (İptal edildi - Alfabetik sıralama yeterli görüldü) Başlangıç uygulamalarının çalışma sırasını görsel olarak sürükle-bırak yöntemiyle ayarlama.
 - [~] **Profil Sistemi:** (İptal edildi) "İş Modu", "Oyun Modu" gibi gruplar oluşturup tek tıkla farklı uygulama setlerini topluca açıp kapatabilme.
 - [x] **Gerçek .desktop İkonları:** Jenerik terminal ikonları yerine, uygulamanın kendi orjinal ikonunu (örn. Chrome, Firefox) listede gösterebilme.
 - [ ] **Çoklu Seçim:** Birden fazla uygulamayı aynı anda seçip topluca aktif/pasif yapma veya silme.
