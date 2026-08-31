@@ -4,7 +4,7 @@ Bu proje aktif olarak geliştirilmektedir. Aşağıdaki özellikler öncelik sı
 
 ## 1. Güvenilirlik / Çekirdek Mantık
 - [x] **PID Tabanlı Süreç Takibi:** Uygulamaların ve scriptlerin durumunu isimden (string) ziyade gerçek İşlem Kimliği (PID) ile takip etmek (Yanlış uygulamanın durdurulmasını %100 engeller).
-- [~] **Wayland Desteği:** (Kullanıcı kararıyla ertelendi/mevcut hali yeterli görüldü) `xdotool` kısıtlamalarını aşmak için GNOME-Shell D-Bus eklentisi veya `wlrctl` gibi modern Wayland alternatifleri ile "Terminali Gizle (Minimize)" özelliğini Wayland'e taşımak.
+- [~] **Wayland Desteği:** (İleri bir sürüme ertelendi) `xdotool` kısıtlamalarını aşmak için GNOME-Shell D-Bus eklentisi veya `wlrctl` gibi modern Wayland alternatifleri ile "Terminali Gizle (Minimize)" özelliğini Wayland'e taşımak.
 
 ## 2. Kullanılabilirlik ve Arayüz
 - [ ] **Sürükle & Bırak Sıralama:** Başlangıç uygulamalarının çalışma sırasını görsel olarak sürükle-bırak yöntemiyle ayarlama.
