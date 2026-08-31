@@ -329,9 +329,6 @@ class AutostartManager(Gtk.Window):
         page_settings.set_margin_start(30)
         page_settings.set_margin_end(30)
         
-        lbl_set = Gtk.Label(label=_("<b>Uygulama Ayarları</b>"), use_markup=True, xalign=0)
-        lbl_set.get_style_context().add_class("title")
-        page_settings.pack_start(lbl_set, False, False, 0)
         
         # Ayar 1: Yenileme Suresi
         box_interval = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=15)
