@@ -564,8 +564,7 @@ class AutostartManager(Gtk.Window):
         def get_usage(pid_str):
             try:
                 res = subprocess.run(["ps", "--no-headers", "-o", "%cpu,rss", "--ppid", pid_str, "-p", pid_str], stdout=subprocess.PIPE, text=True)
-                lines = res.stdout.strip().split("
-")
+                lines = res.stdout.strip().split("\n")
                 t_cpu, t_mem_kb = 0.0, 0.0
                 for line in lines:
                     parts = line.strip().split()
@@ -617,8 +616,7 @@ class AutostartManager(Gtk.Window):
                 search_term = target if "/" in target else base
                 if search_term in ["bash", "sh", "env"]: return False, ""
                 
-                for line in all_procs.split("
-"):
+                for line in all_procs.split("\n"):
                     if search_term in line:
                         pid = line.strip().split()[0]
                         return True, get_usage(pid)
