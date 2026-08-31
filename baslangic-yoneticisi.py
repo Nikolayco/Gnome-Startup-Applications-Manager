@@ -518,6 +518,26 @@ class AutostartManager(Gtk.Window):
         box_reset.pack_start(btn_reset, False, False, 0)
         
         page_settings.pack_start(box_reset, False, False, 0)
+        
+        # Linger ayari
+        import shutil
+        if shutil.which("loginctl"):
+            page_settings.pack_start(Gtk.Separator(), False, False, 10)
+            box_linger = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+            lbl_linger_title = Gtk.Label(label=_("<b>Gelişmiş Arka Plan İzni (Lingering)</b>"), use_markup=True, xalign=0)
+            lbl_linger_desc = Gtk.Label(label=_("Bilgisayar açıldığında, siz henüz şifre girip oturum açmasanız bile\nzamanlanmış görevlerin (Sistem Açılışında - Boot) çalışabilmesi için gereklidir."), xalign=0)
+            lbl_linger_desc.get_style_context().add_class("dim-label")
+            box_linger.pack_start(lbl_linger_title, False, False, 0)
+            box_linger.pack_start(lbl_linger_desc, False, False, 0)
+            
+            box_linger_btn = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+            self.btn_linger = Gtk.ToggleButton(label=_("İzin Ver / Kaldır"))
+            self.btn_linger.connect("toggled", self.on_linger_toggled)
+            box_linger_btn.pack_start(self.btn_linger, False, False, 0)
+            box_linger.pack_start(box_linger_btn, False, False, 5)
+            
+            page_settings.pack_start(box_linger, False, False, 0)
+            self.check_linger_status()
 
         
         # Hakkinda Sayfasi
@@ -1222,6 +1242,25 @@ class AutostartManager(Gtk.Window):
             d.run()
             d.destroy()
 
+
+    def check_linger_status(self):
+        if not hasattr(self, 'btn_linger'): return
+        import subprocess, os
+        # Loginctl show-user $USER --property=Linger
+        res = subprocess.run(["loginctl", "show-user", os.getenv("USER"), "--property=Linger"], stdout=subprocess.PIPE, text=True)
+        is_linger = "Linger=yes" in res.stdout
+        
+        self.btn_linger.handler_block_by_func(self.on_linger_toggled)
+        self.btn_linger.set_active(is_linger)
+        self.btn_linger.set_label(_("İzin Verildi (Aktif)") if is_linger else _("İzin Ver (Lingering'i Aç)"))
+        self.btn_linger.handler_unblock_by_func(self.on_linger_toggled)
+
+    def on_linger_toggled(self, widget):
+        import subprocess, os
+        enable = widget.get_active()
+        cmd = "enable-linger" if enable else "disable-linger"
+        subprocess.run(["loginctl", cmd, os.getenv("USER")])
+        self.check_linger_status()
 
     def on_sched_selection_changed(self, selection):
         model, paths = selection.get_selected_rows()
