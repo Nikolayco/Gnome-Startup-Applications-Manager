@@ -1,27 +1,19 @@
-# Gnome Startup Applications Manager
-
-<div align="center">
-  <h3>
-    <a href="#-türkçe">🇹🇷 Türkçe</a> |
-    <a href="#-english">🇬🇧 English</a> |
-    <a href="#-български">🇧🇬 Български</a> |
-    <a href="#-русский">🇷🇺 Русский</a>
-  </h3>
-</div>
-
----
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Nikolayco/Gnome-Startup-Applications-Manager/main/icon.png" width="128" alt="Gnome Startup Applications Manager">
+</p>
+<h1 align="center">Gnome Startup Applications Manager</h1>
 
 ## 🇹🇷 Türkçe
 
-**Gnome Başlangıç Uygulamaları Yöneticisi**, GNOME masaüstü ortamında (veya diğer GTK tabanlı ortamlarda) sistem açılışında başlayan uygulama ve scriptleri yönetmek, eklemek, düzenlemek ve anında test etmek için geliştirilmiş modern ve kullanıcı dostu bir araçtır.
+**Gnome Başlangıç Uygulamaları Yöneticisi**, GNOME ve GTK tabanlı masaüstü ortamlarında başlangıç uygulamalarını ve scriptlerini yönetmek, eklemek, düzenlemek, anında test etmek ve canlı olarak takip etmek için geliştirilmiş modern bir GTK3 aracıdır.
 
 ### Özellikler
-- **Kullanıcı Dostu Arayüz**: Modern GNOME (HeaderBar) tasarım standartlarına uygundur.
-- **Kategorize Edilmiş Listeler**: Kullanıcıya özel (User) uygulamalar ile sistem (System) servislerini iki ayrı listede düzenli bir şekilde ayırır.
-- **Terminal Modu Desteği**: Eklenen `.sh` veya `.py` scriptlerini otomatik algılar ve arka planda veya ön planda (Terminal penceresinde) çalıştırma seçeneği sunar.
-- **Anında Test (Başlat)**: Eklenen bir uygulamanın doğru çalışıp çalışmadığı tek bir tıkla anında test edilebilir.
-- **Akıllı İsimlendirme**: Gözat menüsü ile dosya seçildiğinde, uygulamanın ismini dosya adına göre otomatik olarak doldurur.
-- **Hızlı Düzenleme**: Listeden herhangi bir uygulamanın üzerine çift tıklayarak ayarları anında değiştirilebilir.
+- **Canlı Durum Takibi**: Uygulamaların arka planda çalışıp çalışmadığını (🟢 Çalışıyor / ⚪ Durdu) saniyesi saniyesine canlı olarak gösterir.
+- **Başlat ve Durdur Butonları**: Herhangi bir uygulamayı arayüzden çıkmadan anında başlatabilir (Test edebilir) veya çalışan bir uygulamayı doğrudan durdurabilirsiniz.
+- **Akıllı Tray (Sistem Çekmecesi)**: İsterseniz uygulamayı tamamen gizleyip sağ alttaki sistem çekmecesine gönderebilir ve oradan uygulamalarınıza "Hızlı Başlat" menüsüyle anında erişebilirsiniz.
+- **Kategorize Edilmiş ve Bölünmüş Listeler**: Kullanıcı (User) ve Sistem (System) uygulamalarını birbirinden ayırır. Birbirinden bağımsız kaydırılabilir listeler sayesinde ekran boyutunuz ne olursa olsun rahatça kullanılır.
+- **Terminal Modu ve Kusursuz Küçültme (Minimize)**: Scriptlerinizi (.sh veya .py) terminalde çalıştırabilir, isterseniz başlar başlamaz tamamen simge durumuna küçültebilirsiniz (Minimize).
+- **Çoklu Dil Desteği (i18n)**: Sistem dilinize göre otomatik olarak Türkçe, İngilizce, Rusça veya Bulgarca dillerine adapte olur.
 
 ### Kurulum (Install)
 Uygulamayı sisteme menü kısayolu ile kalıcı olarak kurmak için terminalden şu komutları çalıştırmanız yeterlidir:
@@ -30,12 +22,11 @@ git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
 cd Gnome-Startup-Applications-Manager
 ./install.sh
 ```
-Kurulum tamamlandıktan sonra uygulama menüsünde **Başlangıç Uygulamaları Yöneticisi** olarak aratarak erişebilirsiniz.
 
 ### Kaldırma (Uninstall)
-Uygulama resmi mağaza paketleri (Apt/Flatpak) yerine harici bir betik olarak kurulduğundan, GNOME uygulama menüsündeki "Kaldır" butonuna basmak işe yaramayacaktır. Sistemden tamamen silmek (kaldırmak) için:
+Sistemden tamamen silmek (kaldırmak) için:
 ```bash
-cd Gnome-Startup-Applications-Manager
+cd ~/Belgeler/GitHub/Gnome-Startup-Applications-Manager
 ./uninstall.sh
 ```
 
@@ -43,29 +34,26 @@ cd Gnome-Startup-Applications-Manager
 
 ## 🇬🇧 English
 
-**Gnome Startup Applications Manager** is a modern, user-friendly GTK3 tool designed to manage, add, edit, and instantly test autostart applications and scripts in GNOME or other GTK-based desktop environments.
+**Gnome Startup Applications Manager** is a modern, user-friendly GTK3 tool designed to manage, add, edit, test, and live-track autostart applications and scripts in GNOME or other GTK-based desktop environments.
 
 ### Features
-- **User-Friendly Interface**: Designed following modern GNOME HeaderBar UI guidelines.
-- **Categorized Lists**: Visually separates user-specific custom scripts (User Apps) from default background services (System Apps).
-- **Foreground/Background Execution**: Automatically detects `.sh` or `.py` files and offers a checkbox to run them visibly in a Terminal window or hidden in the background.
-- **Instant Test**: Run the selected application immediately with a single click to verify its functionality.
-- **Smart Auto-fill**: Automatically generates application names based on the selected executable file.
-- **Double-click Editing**: Quickly edit properties by double-clicking on any row in the lists.
+- **Live Status Tracking**: Instantly tracks and displays whether your applications are currently running in the background (🟢 Running / ⚪ Stopped).
+- **Start and Stop Buttons**: Test any application instantly, or kill a running application directly from the manager.
+- **Smart System Tray (Quick Launcher)**: Minimize the manager directly to the system tray and use the right-click menu as a "Quick Launcher" for your scripts.
+- **Categorized & Paned Lists**: Visually separates User Apps from System Apps with independently scrollable, adjustable panes.
+- **Terminal Mode & Perfect Minimize**: Run scripts (.sh / .py) in the background, foreground, or launch them in a perfectly minimized terminal window.
+- **Multi-Language Support (i18n)**: Automatically adapts to English, Turkish, Russian, and Bulgarian based on your system language.
 
 ### Installation
-To install the application permanently into the system's app menu, run the following commands in the terminal:
 ```bash
 git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
 cd Gnome-Startup-Applications-Manager
 ./install.sh
 ```
-Once installed, it can be found in the application launcher.
 
 ### Uninstallation
-Because this app is installed via a custom script rather than a package manager (Apt/Flatpak), the "Uninstall" button in the GNOME app grid will not work. To completely remove it from the system:
 ```bash
-cd Gnome-Startup-Applications-Manager
+cd ~/Belgeler/GitHub/Gnome-Startup-Applications-Manager
 ./uninstall.sh
 ```
 
@@ -73,18 +61,17 @@ cd Gnome-Startup-Applications-Manager
 
 ## 🇧🇬 Български
 
-**Мениджър на стартиращи приложения за Gnome** е модерен и удобен GTK3 инструмент за управление, добавяне, редактиране и мигновено тестване на автоматично стартиращи приложения и скриптове в GNOME и други GTK базирани графични среди.
+**Мениджър на стартиращи приложения за Gnome** е модерен и удобен GTK3 инструмент за управление, добавяне, редактиране, тестване и проследяване на състоянието на автоматично стартиращи приложения и скриптове в GNOME.
 
 ### Характеристики
-- **Удобен интерфейс**: Дизайн, следващ съвременните стандарти на GNOME (HeaderBar).
-- **Категоризирани списъци**: Визуално разделя потребителските скриптове (Потребителски) от системните услуги (Системни).
-- **Изпълнение в терминал**: Автоматично разпознава `.sh` или `.py` файлове и предлага опция за стартирането им във видим терминален прозорец или скрито във фонов режим.
-- **Мигновен тест**: Стартирайте избраното приложение веднага с един клик, за да проверите функционалността му.
-- **Автоматично попълване**: Генерира имена на приложения въз основа на избрания файл.
-- **Бързо редактиране**: Редактирайте свойствата бързо чрез двойно кликване върху който и да е ред.
+- **Проследяване на състоянието на живо**: Незабавно проследява и показва дали приложенията ви работят във фонов режим (🟢 Работи / ⚪ Спряно).
+- **Бутони за стартиране и спиране**: Тествайте всяко приложение незабавно или спрете работещо приложение директно от мениджъра.
+- **Умна системна лента (Tray)**: Минимизирайте мениджъра в системната лента и използвайте менюто като "Бързо стартиране" за вашите скриптове.
+- **Категоризирани и разделени списъци**: Разделя потребителските и системните приложения с независимо превъртащи се панели.
+- **Терминален режим и минимизиране**: Изпълнявайте скриптове в терминален прозорец или автоматично ги минимизирайте.
+- **Многоезична поддръжка**: Автоматично се адаптира към български, английски, руски и турски език.
 
 ### Инсталация
-За да инсталирате приложението за постоянно в менюто на системата, изпълнете следните команди в терминала:
 ```bash
 git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
 cd Gnome-Startup-Applications-Manager
@@ -92,9 +79,8 @@ cd Gnome-Startup-Applications-Manager
 ```
 
 ### Деинсталиране
-Тъй като приложението е инсталирано чрез персонализиран скрипт, бутонът "Деинсталиране" (Uninstall) в менюто на GNOME няма да работи. За да го премахнете напълно от системата:
 ```bash
-cd Gnome-Startup-Applications-Manager
+cd ~/Belgeler/GitHub/Gnome-Startup-Applications-Manager
 ./uninstall.sh
 ```
 
@@ -102,18 +88,17 @@ cd Gnome-Startup-Applications-Manager
 
 ## 🇷🇺 Русский
 
-**Менеджер автозапуска приложений Gnome** — это современный и удобный GTK3 инструмент для управления, добавления, редактирования и мгновенного тестирования автозагружаемых приложений и скриптов в среде GNOME.
+**Менеджер автозапуска приложений Gnome** — это современный GTK3 инструмент для управления, редактирования, мгновенного тестирования и отслеживания статуса автозагружаемых приложений и скриптов в GNOME.
 
 ### Особенности
-- **Удобный интерфейс**: Разработан в соответствии с современными стандартами дизайна GNOME (HeaderBar).
-- **Раздельные списки**: Визуально отделяет пользовательские скрипты от системных служб.
-- **Запуск в терминале**: Автоматически обнаруживает файлы `.sh` или `.py` и предлагает опцию их запуска в окне терминала или скрыто в фоновом режиме.
-- **Мгновенный тест**: Проверка работы выбранного приложения или скрипта одним кликом.
-- **Автозаполнение**: Автоматическое создание названий приложений на основе выбранного файла.
-- **Быстрое редактирование**: Двойной клик по строке для мгновенного изменения свойств.
+- **Отслеживание статуса в реальном времени**: Показывает, работает ли приложение в данный момент (🟢 Работает / ⚪ Остановлено).
+- **Кнопки запуска и остановки**: Запускайте приложения для тестирования или останавливайте зависшие процессы прямо из интерфейса.
+- **Умный системный трей (Tray)**: Сверните приложение в трей и используйте меню как инструмент быстрого запуска скриптов.
+- **Раздельные списки (Paned)**: Независимая прокрутка для пользовательских и системных приложений.
+- **Режим терминала и автоматическое сворачивание**: Запускайте скрипты в окне терминала с возможностью автоматического сворачивания при старте.
+- **Многоязычная поддержка**: Поддержка русского, английского, болгарского и турецкого языков.
 
 ### Установка
-Для постоянной установки приложения в системное меню выполните следующие команды в терминале:
 ```bash
 git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
 cd Gnome-Startup-Applications-Manager
@@ -121,8 +106,7 @@ cd Gnome-Startup-Applications-Manager
 ```
 
 ### Удаление
-Поскольку приложение устанавливается с помощью пользовательского скрипта, кнопка «Удалить» (Uninstall) в меню GNOME работать не будет. Чтобы полностью удалить его из системы:
 ```bash
-cd Gnome-Startup-Applications-Manager
+cd ~/Belgeler/GitHub/Gnome-Startup-Applications-Manager
 ./uninstall.sh
 ```
