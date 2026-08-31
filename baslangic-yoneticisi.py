@@ -26,11 +26,7 @@ class AppDialog(Gtk.Dialog):
         super().__init__(title=title, transient_for=parent, flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
         self.set_default_size(450, 200)
         
-        self.add_buttons(
-            "İptal", Gtk.ResponseType.CANCEL,
-            "Kaydet", Gtk.ResponseType.OK
-        )
-        # Style the save button
+        self.add_buttons("İptal", Gtk.ResponseType.CANCEL, "Kaydet", Gtk.ResponseType.OK)
         save_btn = self.get_widget_for_response(Gtk.ResponseType.OK)
         save_btn.get_style_context().add_class("suggested-action")
         
@@ -46,7 +42,6 @@ class AppDialog(Gtk.Dialog):
         grid.set_column_spacing(15)
         box.pack_start(grid, True, True, 0)
         
-        # Name
         lbl_name = Gtk.Label(label="Uygulama Adı:", xalign=0)
         lbl_name.get_style_context().add_class("dim-label")
         grid.attach(lbl_name, 0, 0, 1, 1)
@@ -54,7 +49,6 @@ class AppDialog(Gtk.Dialog):
         self.entry_name.set_hexpand(True)
         grid.attach(self.entry_name, 1, 0, 1, 1)
         
-        # Command / Browse
         lbl_cmd = Gtk.Label(label="Çalıştırılacak Dosya:", xalign=0)
         lbl_cmd.get_style_context().add_class("dim-label")
         grid.attach(lbl_cmd, 0, 1, 1, 1)
@@ -71,7 +65,6 @@ class AppDialog(Gtk.Dialog):
         cmd_box.pack_start(btn_browse, False, False, 0)
         grid.attach(cmd_box, 1, 1, 1, 1)
         
-        # Comment
         lbl_comment = Gtk.Label(label="Açıklama (İsteğe Bağlı):", xalign=0)
         lbl_comment.get_style_context().add_class("dim-label")
         grid.attach(lbl_comment, 0, 2, 1, 1)
@@ -86,14 +79,9 @@ class AppDialog(Gtk.Dialog):
         self.show_all()
 
     def on_browse_clicked(self, widget):
-        dialog = Gtk.FileChooserDialog(
-            title="Çalıştırılacak Dosyayı veya Scripti Seçin",
-            parent=self,
-            action=Gtk.FileChooserAction.OPEN
-        )
+        dialog = Gtk.FileChooserDialog(title="Çalıştırılacak Dosyayı veya Scripti Seçin", parent=self, action=Gtk.FileChooserAction.OPEN)
         dialog.add_buttons("İptal", Gtk.ResponseType.CANCEL, "Seç", Gtk.ResponseType.OK)
         
-        # Filter for scripts/executables
         filter_all = Gtk.FileFilter()
         filter_all.set_name("Tüm Dosyalar")
         filter_all.add_pattern("*")
@@ -124,12 +112,12 @@ class AutostartManager(Gtk.Window):
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
         hb.set_title(self.get_title())
-        hb.set_subtitle("Uygulama ve scriptlerinizi görsel olarak yönetin")
+        hb.set_subtitle("Uygulama ve scriptlerinizi yönetin")
         self.set_titlebar(hb)
 
         btn_add = Gtk.Button()
         btn_add.add(Gtk.Image.new_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON))
-        btn_add.set_tooltip_text("Sistem başlangıcına yeni uygulama veya script ekle")
+        btn_add.set_tooltip_text("Yeni uygulama veya script ekle")
         btn_add.connect("clicked", self.on_add_clicked)
         btn_add.get_style_context().add_class("suggested-action")
         hb.pack_start(btn_add)
@@ -144,7 +132,7 @@ class AutostartManager(Gtk.Window):
 
         self.btn_edit = Gtk.Button()
         self.btn_edit.add(Gtk.Image.new_from_icon_name("document-edit-symbolic", Gtk.IconSize.BUTTON))
-        self.btn_edit.set_tooltip_text("Seçili olanın ayarlarını düzenle")
+        self.btn_edit.set_tooltip_text("Ayarları düzenle")
         self.btn_edit.connect("clicked", self.on_edit_clicked)
         self.btn_edit.set_sensitive(False)
         hb.pack_start(self.btn_edit)
@@ -154,55 +142,49 @@ class AutostartManager(Gtk.Window):
         box.pack_start(Gtk.Image.new_from_icon_name("media-playback-start-symbolic", Gtk.IconSize.BUTTON), False, False, 0)
         box.pack_start(Gtk.Label(label="Başlat"), False, False, 0)
         self.btn_start.add(box)
-        self.btn_start.set_tooltip_text("Seçili uygulamayı hemen çalıştırarak test et")
+        self.btn_start.set_tooltip_text("Uygulamayı hemen çalıştırarak test et")
         self.btn_start.connect("clicked", self.on_start_clicked)
         self.btn_start.set_sensitive(False)
         hb.pack_end(self.btn_start)
 
-        # Main view
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(vbox)
 
-        # ListStore: Icon, Name, Command, Comment, IsSys, FilePath, Filename
         self.liststore = Gtk.ListStore(str, str, str, str, str, str, str) 
         self.treeview = Gtk.TreeView(model=self.liststore)
         self.treeview.set_hexpand(True)
         self.treeview.set_vexpand(True)
-        self.treeview.set_rules_hint(True) # zebra stripes
+        self.treeview.set_rules_hint(True) 
         self.treeview.set_margin_top(5)
         
         selection = self.treeview.get_selection()
         selection.connect("changed", self.on_selection_changed)
 
-        # Column 0: App Name with Icon
         col_name = Gtk.TreeViewColumn("Uygulama Adı")
-        col_name.set_sort_column_id(1)
         col_name.set_resizable(True)
         col_name.set_expand(True)
         
         render_icon = Gtk.CellRendererPixbuf()
-        render_icon.set_property("stock-size", Gtk.IconSize.DND) # Large icons
+        render_icon.set_property("stock-size", Gtk.IconSize.DND)
         col_name.pack_start(render_icon, False)
         col_name.add_attribute(render_icon, "icon-name", 0)
         
         render_name = Gtk.CellRendererText()
-        render_name.set_property("weight", 600) # Bold names
+        render_name.set_property("weight", 600)
         col_name.pack_start(render_name, True)
         col_name.add_attribute(render_name, "text", 1)
         self.treeview.append_column(col_name)
 
-        # Column 1: Command
         col_cmd = Gtk.TreeViewColumn("Dosya Yolu / Komut")
         col_cmd.set_resizable(True)
         col_cmd.set_expand(True)
         render_cmd = Gtk.CellRendererText()
-        render_cmd.set_property("ellipsize", 3) # END ellipsize
+        render_cmd.set_property("ellipsize", 3)
         render_cmd.set_property("foreground", "gray")
         col_cmd.pack_start(render_cmd, True)
         col_cmd.add_attribute(render_cmd, "text", 2)
         self.treeview.append_column(col_cmd)
         
-        # Column 2: System/User
         col_sys = Gtk.TreeViewColumn("Konum")
         render_sys = Gtk.CellRendererText()
         col_sys.pack_start(render_sys, True)
@@ -230,9 +212,7 @@ class AutostartManager(Gtk.Window):
                     elif line.startswith("Hidden=true") or line.startswith("X-GNOME-Autostart-enabled=false"):
                         hidden = True
         except: pass
-        # Fallback to default icon if path-based icon fails to load via icon-name
-        if "/" in icon:
-            icon = "application-x-executable"
+        if "/" in icon: icon = "application-x-executable"
         return AutostartApp(os.path.basename(path), name, cmd, comment, hidden, path.startswith("/etc"), path, icon)
 
     def load_apps(self):
@@ -250,10 +230,17 @@ class AutostartManager(Gtk.Window):
                 user_path = os.path.join(AUTOSTART_DIR, fname)
                 seen[fname] = user_path if os.path.exists(user_path) else p
                     
+        all_apps = []
         for fname, path in seen.items():
             app = self.parse_desktop_file(path)
             if not app.hidden and app.cmd:
-                self.liststore.append([app.icon, app.name, app.cmd, app.comment, "Sistem" if app.is_sys else "Kullanıcı", app.path, app.filename])
+                all_apps.append(app)
+                
+        # Sort: User apps (False) first, then System apps (True). Then by name.
+        all_apps.sort(key=lambda x: (x.is_sys, x.name.lower()))
+                
+        for app in all_apps:
+            self.liststore.append([app.icon, app.name, app.cmd, app.comment, "Sistem" if app.is_sys else "Kullanıcı", app.path, app.filename])
 
     def on_selection_changed(self, selection):
         model, treeiter = selection.get_selected()
@@ -284,7 +271,6 @@ class AutostartManager(Gtk.Window):
     def on_edit_clicked(self, widget):
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter is None: return
-        
         path = model[treeiter][5]
         app = self.parse_desktop_file(path)
         
@@ -302,7 +288,6 @@ class AutostartManager(Gtk.Window):
     def on_remove_clicked(self, widget):
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter is None: return
-        
         filename = model[treeiter][6]
         is_sys = model[treeiter][4] == "Sistem"
         user_path = os.path.join(AUTOSTART_DIR, filename)
@@ -328,7 +313,6 @@ class AutostartManager(Gtk.Window):
         try:
             cmd_clean = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
             subprocess.Popen(shlex.split(cmd_clean), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            
             d = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.INFO, buttons=Gtk.ButtonsType.OK, text="Uygulama/Script Başlatıldı!")
             d.format_secondary_text(f"Komut: {cmd_clean}")
             d.run()
