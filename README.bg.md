@@ -55,10 +55,12 @@
 ## 🚀 Инсталация
 
 ```bash
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
+git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null || true
 cd Gnome-Startup-Applications-Manager
-python3 baslangic-yoneticisi.py
+bash install.sh
 ```
+
+Командата инсталира приложението в `~/.local/bin` и го добавя автоматично в **мрежата с приложения (App Grid)**.
 
 **Изисквания:** Python 3.8+, GTK 3, systemd
 

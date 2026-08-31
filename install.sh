@@ -1,44 +1,24 @@
 #!/bin/bash
 
-APP_NAME="baslangic-yoneticisi"
 BIN_DIR="$HOME/.local/bin"
-APP_DIR="$HOME/.local/share/applications"
-LOCALE_DIR="$HOME/.local/share/locale"
+APPS_DIR="$HOME/.local/share/applications"
 
+echo "Kuruluyor / Installing GNOME Startup Applications Manager..."
+echo ""
+
+# Binary
 mkdir -p "$BIN_DIR"
-mkdir -p "$APP_DIR"
-mkdir -p "$LOCALE_DIR"
+cp baslangic-yoneticisi.py "$BIN_DIR/baslangic-yoneticisi"
+chmod +x "$BIN_DIR/baslangic-yoneticisi"
+echo "✓ Uygulama yüklendi."
 
-# Copy python script
-cp "${APP_NAME}.py" "$BIN_DIR/${APP_NAME}"
-chmod +x "$BIN_DIR/${APP_NAME}"
+# .desktop (uygulama ızgarasında/app grid'de görünmesi için)
+mkdir -p "$APPS_DIR"
+cp baslangic-yoneticisi.desktop "$APPS_DIR/baslangic-yoneticisi.desktop"
+update-desktop-database "$APPS_DIR" 2>/dev/null || true
+echo "✓ Uygulama kısayolu oluşturuldu (App Grid)."
 
-# Copy translations
-if [ -d "locale" ]; then
-    cp -r locale/* "$LOCALE_DIR/"
-fi
-
-# Create desktop shortcut
-cat << DESKTOP > "$APP_DIR/${APP_NAME}.desktop"
-[Desktop Entry]
-Name=Başlangıç Uygulamaları Yöneticisi
-Name[en]=Startup Applications Manager
-Name[bg]=Мениджър на стартиращи приложения
-Name[ru]=Менеджер автозапуска приложений
-Comment=Sistem ve Kullanıcı uygulamalarını yönetin
-Comment[en]=Manage system and user applications
-Exec=$BIN_DIR/${APP_NAME}
-Icon=system-run
-Terminal=false
-Type=Application
-Categories=Settings;System;Utility;
-Keywords=startup;autostart;manager;
-StartupNotify=true
-StartupWMClass=baslangic-yoneticisi
-DESKTOP
-
-chmod +x "$APP_DIR/${APP_NAME}.desktop"
-update-desktop-database "$APP_DIR" 2>/dev/null || true
-
-echo "Kurulum tamamlandi! (Installation complete!)"
-echo "Uygulama menusunde 'Baslangic Uygulamalari Yoneticisi' olarak bulabilirsiniz."
+echo ""
+echo "✅ Tamamlandı! / Installation complete!"
+echo "   Uygulamayı başlatmak için: baslangic-yoneticisi"
+echo "   Or launch from your Applications grid."

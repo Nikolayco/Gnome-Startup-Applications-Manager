@@ -55,10 +55,12 @@ Uygulama **sistem dilinizi otomatik olarak algılar** ve Türkçe, İngilizce, R
 ## 🚀 Kurulum
 
 ```bash
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
+git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null || true
 cd Gnome-Startup-Applications-Manager
-python3 baslangic-yoneticisi.py
+bash install.sh
 ```
+
+Bu komut uygulamayı `~/.local/bin`'e kurar ve **Uygulama Izgarasına (App Grid)** otomatik olarak ekler.
 
 **Gereksinimler:** Python 3.8+, GTK 3, systemd
 

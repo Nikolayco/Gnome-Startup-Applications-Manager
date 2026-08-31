@@ -1,0 +1,16 @@
+[Desktop Entry]
+Version=1.1
+Type=Application
+Name=Startup Applications Manager
+Name[tr]=Başlangıç Uygulamaları Yöneticisi
+Name[ru]=Менеджер автозапуска
+Name[bg]=Мениджър за автостартиране
+Comment=Manage startup apps and schedule tasks
+Comment[tr]=Başlangıç uygulamalarını ve zamanlanmış görevleri yönet
+Comment[ru]=Управление приложениями автозапуска и задачами
+Comment[bg]=Управление на приложения за автостартиране
+Icon=system-run
+Exec=baslangic-yoneticisi
+Terminal=false
+Categories=System;Settings;
+StartupNotify=true

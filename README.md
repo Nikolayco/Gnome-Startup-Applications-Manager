@@ -55,10 +55,12 @@ The application **automatically detects your system language** and displays in T
 ## 🚀 Installation
 
 ```bash
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
+git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null || true
 cd Gnome-Startup-Applications-Manager
-python3 baslangic-yoneticisi.py
+bash install.sh
 ```
+
+This installs the app to `~/.local/bin` and adds it to your **App Grid** automatically.
 
 **Requirements:** Python 3.8+, GTK 3, systemd
 
