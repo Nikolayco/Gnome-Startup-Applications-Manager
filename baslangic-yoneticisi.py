@@ -557,8 +557,7 @@ class AutostartManager(Gtk.Window):
         try:
             import subprocess, os, shlex
             res = subprocess.run(["ps", "-eo", "pid,ppid,%cpu,rss,args="], stdout=subprocess.PIPE, text=True)
-            lines = res.stdout.strip().split("
-")
+            lines = res.stdout.strip().split("\n")
         except:
             lines = []
             
