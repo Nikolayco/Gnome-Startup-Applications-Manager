@@ -598,7 +598,7 @@ class AutostartManager(Gtk.Window):
                 except: pass
                 
             try:
-                import shlex, os
+                import shlex
                 clean_cmd = cmd.replace("%f", "").replace("%F", "").replace("%u", "").replace("%U", "")
                 parts = shlex.split(clean_cmd)
                 if not parts: return False, ""
@@ -1050,7 +1050,7 @@ class AutostartManager(Gtk.Window):
         if not self.current_selection: return
         model, treeiter = self.current_selection
         cmd = model[treeiter][3]
-        import shlex, os, subprocess
+        import shlex, subprocess
         try:
             clean_cmd = cmd.replace("%f", "").replace("%F", "").replace("%u", "").replace("%U", "")
             parts = shlex.split(clean_cmd)
