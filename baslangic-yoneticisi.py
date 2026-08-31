@@ -424,6 +424,7 @@ class AutostartManager(Gtk.Window):
         self.load_apps()
         self.setup_tray()
         self.connect("delete-event", self.on_delete_event)
+        self.connect("key-press-event", self.on_key_press)
         self.refresh_status()
         self.timer_id = GLib.timeout_add_seconds(self.config["refresh_interval"], self.refresh_status)
 
@@ -552,6 +553,30 @@ class AutostartManager(Gtk.Window):
         self.config["window_height"] = 600
         self.config["window_maximized"] = False
         self.save_settings()
+
+    def on_key_press(self, widget, event):
+        if self.stack.get_visible_child_name() != "page_apps": return False
+        keyname = Gdk.keyval_name(event.keyval)
+        ctrl = event.state & Gdk.ModifierType.CONTROL_MASK
+        
+        if ctrl:
+            if keyname == "n" or keyname == "N":
+                self.on_add_clicked(None)
+                return True
+            elif keyname == "e" or keyname == "E":
+                if self.current_selection: self.on_edit_clicked(None)
+                return True
+            elif keyname == "s" or keyname == "S":
+                if self.current_selection: self.on_start_clicked(None)
+                return True
+            elif keyname == "k" or keyname == "K":
+                if self.current_selection: self.on_stop_clicked(None)
+                return True
+        else:
+            if keyname == "Delete":
+                if self.current_selection: self.on_remove_clicked(None)
+                return True
+        return False
 
     def on_delete_event(self, widget, event):
         try:
