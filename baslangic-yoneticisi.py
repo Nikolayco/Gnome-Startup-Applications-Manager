@@ -176,7 +176,7 @@ class AutostartManager(Gtk.Window):
         box_lists.set_margin_bottom(15)
         
         lbl_user = Gtk.Label(xalign=0)
-        lbl_user.set_markup("<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları (Sizin Ekledikleriniz)</span>")
+        lbl_user.set_markup("<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları</span>")
         box_lists.pack_start(lbl_user, False, False, 0)
         
         self.store_user = Gtk.ListStore(str, str, str, str, bool, str, str, bool)
@@ -186,7 +186,7 @@ class AutostartManager(Gtk.Window):
         box_lists.pack_start(Gtk.Separator(), False, False, 10)
         
         lbl_sys = Gtk.Label(xalign=0)
-        lbl_sys.set_markup("<span size='large' weight='bold' color='#E35D5D'>Sistem Uygulamaları (Varsayılan Servisler)</span>")
+        lbl_sys.set_markup("<span size='large' weight='bold' color='#E35D5D'>Sistem Uygulamaları</span>")
         box_lists.pack_start(lbl_sys, False, False, 0)
         
         self.store_sys = Gtk.ListStore(str, str, str, str, bool, str, str, bool)
