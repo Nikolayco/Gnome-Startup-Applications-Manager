@@ -417,7 +417,7 @@ class AutostartManager(Gtk.Window):
         lbl_title = Gtk.Label(label=_("<b>Başlangıç Uygulamaları Yöneticisi</b>"), use_markup=True)
         page_about.pack_start(lbl_title, False, False, 0)
         
-        lbl_desc = Gtk.Label(label=_("Sürüm: 1.0\nGeliştirici: Nikolayco"))
+        lbl_desc = Gtk.Label(label=_("Sürüm: 1.1\nGeliştirici: Nikolayco"))
         lbl_desc.set_justify(Gtk.Justification.CENTER)
         page_about.pack_start(lbl_desc, False, False, 0)
         
