@@ -534,7 +534,8 @@ class AutostartManager(Gtk.Window):
             term_size = "minimize"
             terminal = True
             
-        return AutostartApp(os.path.basename(path), name, cmd, comment, hidden, path.startswith("/etc"), path, icon, terminal, delay, term_size)
+        is_sys_actual = os.path.exists(os.path.join(SYS_AUTOSTART_DIR, os.path.basename(path)))
+        return AutostartApp(os.path.basename(path), name, cmd, comment, hidden, is_sys_actual, path, icon, terminal, delay, term_size)
 
     def load_apps(self):
         self.store_user.clear()
