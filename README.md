@@ -2,6 +2,12 @@
 
 🌍 **[Türkçe](README.tr.md) | English | [Русский](README.ru.md) | [Български](README.bg.md)**
 
+---
+
+> I was looking for a single application that could both manage GNOME startup applications **and** work as a proper task scheduler — running scripts at specific intervals, on boot, or at a set time. I couldn’t find anything that did both well, so I built it myself.
+
+---
+
 A powerful, modern GTK-based manager for GNOME startup applications with a full-fledged **Task Scheduler** backed by `systemd --user`. Built entirely in Python — zero extra dependencies.
 
 The application **automatically detects your system language** and displays in Turkish, English, Russian, or Bulgarian.
@@ -23,14 +29,26 @@ The application **automatically detects your system language** and displays in T
 - **Calendar** — run on specific days and times (e.g. every Monday at 09:00)
 - **Boot** — run at system startup (background, no login required with Lingering)
 - **Login** — run when you open a session
-- **Manual Trigger** — "Run Now" button to test a task immediately
+- **Manual Trigger** — “Run Now” button to test a task immediately
 - **Lingering Support** — one-click `loginctl enable-linger` from Settings
 
 ### General
-- **Keyboard Shortcuts** — `Ctrl+N` (New), `Ctrl+E` (Edit), `Ctrl+S` (Start), `Ctrl+K` (Kill), `Delete` (Remove)
 - **System Tray** — runs silently in background with tray icon
 - **Persistent Window State** — remembers size and position
 - **Multi-language** — Turkish 🇹🇷, English 🇬🇧, Russian 🇷🇺, Bulgarian 🇧🇬
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+| Shortcut | Function |
+|----------|----------|
+| `Ctrl + N` | Add a new startup application |
+| `Ctrl + E` | Edit selected application |
+| `Ctrl + S` | Start selected application |
+| `Ctrl + K` | Stop (kill) selected application |
+| `Delete` | Delete selected application |
+| `Ctrl + F` | Focus the search box |
 
 ---
 
@@ -46,30 +64,23 @@ python3 baslangic-yoneticisi.py
 
 ---
 
-*Developed by Nikolayco — Version 1.1*
-
----
-
 ## 🗑️ Uninstallation
 
-To completely remove the application and all its data:
-
 ```bash
-# Remove the application binary
 rm -f ~/.local/bin/baslangic-yoneticisi
-
-# Remove all app data (PID files, settings, runner script)
 rm -rf ~/.local/share/Gnome-Startup-Applications-Manager/
 
-# Remove all scheduled tasks (systemd timers created by the app)
 for f in ~/.config/systemd/user/gsam-*.timer ~/.config/systemd/user/gsam-*.service; do
     [ -f "$f" ] && systemctl --user disable --now "$(basename $f)" 2>/dev/null
     rm -f "$f"
 done
 systemctl --user daemon-reload
 
-# Remove autostart entries created by the app
 rm -f ~/.config/autostart/gsam-*.desktop
 ```
 
-> **Note:** Your own `.desktop` autostart entries (apps you added manually) will NOT be deleted by this process. Only files created by this application are removed.
+> **Note:** Your own `.desktop` autostart entries will NOT be deleted — only files created by this application are removed.
+
+---
+
+*Developed by Nikolayco — Version 1.1*

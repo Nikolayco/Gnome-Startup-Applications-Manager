@@ -2,6 +2,12 @@
 
 🌍 **Türkçe | [English](README.md) | [Русский](README.ru.md) | [Български](README.bg.md)**
 
+---
+
+> Hem GNOME başlangıç uygulamalarını yönetebilen hem de gerçek anlamda bir görev zamanlayıcı olarak çalışabilen — belirli aralıklarla, açılışta veya belirli bir saatte script çalıştırabilen — tek bir uygulama aradım. Böyle bir şey bulamadım, o yüzden kendim geliştirdim.
+
+---
+
 `systemd --user` altyapısıyla tam kapsamlı bir **Görev Zamanlayıcı** içeren, modern GTK tabanlı GNOME başlangıç uygulama yöneticisi. Tamamen Python ile yazılmıştır — sıfır ek bağımlılık.
 
 Uygulama **sistem dilinizi otomatik olarak algılar** ve Türkçe, İngilizce, Rusça veya Bulgarca olarak açılır.
@@ -13,7 +19,7 @@ Uygulama **sistem dilinizi otomatik olarak algılar** ve Türkçe, İngilizce, R
 ### Başlangıç Yöneticisi
 - **Gerçek Uygulama İkonları** — `.desktop` dosyasındaki gerçek ikonları gösterir
 - **Canlı Durum & Kaynak Kullanımı** — PID takibiyle gerçek zamanlı CPU (%) ve RAM (MB/GB)
-- **Çoklu Seçim** — birden fazla uygulamayı aynı anda başlat, durdur veya sil
+- **Çoklu Seçim** — birden fazla uygulamaìeyı aynı anda başlat, durdur veya sil
 - **Güvenli Durdurma** — PID dosyaları kullanır; asla yanlış süreci öldürmez
 - **Terminal Modu** — scriptleri görünür GNOME Terminal penceresinde çalıştır
 - **Başlangıç Gecikmesi** — uygulama başına saniye cinsinden gecikme ayarı
@@ -23,14 +29,26 @@ Uygulama **sistem dilinizi otomatik olarak algılar** ve Türkçe, İngilizce, R
 - **Takvim** — belirli gün ve saatlerde çalıştır (örn. her Pazartesi 09:00)
 - **Boot** — sistem açılışında (Lingering ile oturum açmadan arka planda)
 - **Login** — oturum açıldığında çalıştır
-- **Manuel Tetikleme** — "Şimdi Çalıştır" butonu ile anında test et
+- **Manuel Tetikleme** — "Şimdi Çalıştır" butonu ile aninda test et
 - **Lingering Desteği** — Ayarlar'dan tek tıkla `loginctl enable-linger`
 
 ### Genel
-- **Klavye Kısayolları** — `Ctrl+N`, `Ctrl+E`, `Ctrl+S`, `Ctrl+K`, `Delete`
-- **Sistem Çekmecesi (Tray)** — arka planda sessizce çalışır
+- **Sistem Çekmeçesi (Tray)** — arka planda sessizce çalışır
 - **Pencere Hafızası** — boyut ve konum hatırlanır
 - **Çoklu Dil** — Türkçe 🇹🇷, İngilizce 🇬🇧, Rusça 🇷🇺, Bulgarca 🇧🇬
+
+---
+
+## ⌨️ Klavye Kısayolları
+
+| Kısayol | İşlev |
+|---------|-------|
+| `Ctrl + N` | Yeni başlangıç uygulaması ekle |
+| `Ctrl + E` | Seçili uygulamaîyı düzenle |
+| `Ctrl + S` | Seçili uygulamaîyı başlat |
+| `Ctrl + K` | Seçili uygulamaîyı durdur (öldür) |
+| `Delete` | Seçili uygulamaîyı sil |
+| `Ctrl + F` | Arama kutusuna odaklan |
 
 ---
 
@@ -46,30 +64,23 @@ python3 baslangic-yoneticisi.py
 
 ---
 
-*Geliştirici: Nikolayco — Sürüm 1.1*
-
----
-
 ## 🗑️ Kaldırma
 
-Uygulamayı ve tüm verilerini tamamen kaldırmak için:
-
 ```bash
-# Uygulama ikili dosyasını kaldır
 rm -f ~/.local/bin/baslangic-yoneticisi
-
-# Tüm uygulama verilerini kaldır (PID dosyaları, ayarlar, runner script)
 rm -rf ~/.local/share/Gnome-Startup-Applications-Manager/
 
-# Uygulama tarafından oluşturulan tüm zamanlanmış görevleri kaldır (systemd timer)
 for f in ~/.config/systemd/user/gsam-*.timer ~/.config/systemd/user/gsam-*.service; do
     [ -f "$f" ] && systemctl --user disable --now "$(basename $f)" 2>/dev/null
     rm -f "$f"
 done
 systemctl --user daemon-reload
 
-# Uygulama tarafından oluşturulan autostart girişlerini kaldır
 rm -f ~/.config/autostart/gsam-*.desktop
 ```
 
 > **Not:** Kendinizin elle eklediği `.desktop` başlangıç uygulamaları bu işlemden etkilenmez. Yalnızca uygulamanın kendi oluşturduğu dosyalar silinir.
+
+---
+
+*Geliştirici: Nikolayco — Sürüm 1.1*
