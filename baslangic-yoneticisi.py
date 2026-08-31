@@ -742,11 +742,7 @@ class AutostartManager(Gtk.Window):
         col_cmd.set_resizable(True)
         col_cmd.set_expand(True)
         render_cmd = Gtk.CellRendererText()
-        import gi
-        gi.require_version('Pango', '1.0')
-        from gi.repository import Pango
-        render_cmd.set_property("wrap-mode", Pango.WrapMode.WORD_CHAR)
-        render_cmd.set_property("wrap-width", 350)
+        render_cmd.set_property("ellipsize", 3)
         render_cmd.set_property("foreground", "gray")
         col_cmd.pack_start(render_cmd, True)
         col_cmd.add_attribute(render_cmd, "text", 3)
@@ -796,6 +792,31 @@ class AutostartManager(Gtk.Window):
                     elif line.startswith("Hidden=true") or line.startswith("X-GNOME-Autostart-enabled=false"):
                         hidden = True
         except: pass
+        
+        # Clean up runner wrapper from cmd
+        import shlex
+        if "runner.py" in cmd:
+            try:
+                parts = shlex.split(cmd)
+                if "runner.py" in parts[1] or "runner.py" in parts[3] or "runner.py" in parts[-4]:
+                    # Find runner.py index
+                    idx = -1
+                    for i, p in enumerate(parts):
+                        if "runner.py" in p:
+                            idx = i
+                            break
+                    if idx != -1 and len(parts) > idx + 2:
+                        base_cmd = parts[idx+2]
+                        if "minimize_wrapper.sh" in base_cmd:
+                            m_parts = shlex.split(base_cmd)
+                            if len(m_parts) >= 3:
+                                cmd = " ".join(m_parts[2:])
+                            else:
+                                cmd = base_cmd
+                        else:
+                            cmd = base_cmd
+            except: pass
+
         # keep original icon
         
         safe_name = "".join([c for c in name if c.isalnum()])
