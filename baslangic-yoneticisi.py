@@ -503,7 +503,7 @@ class AutostartManager(Gtk.Window):
     def load_settings(self):
         import json
         self.settings_file = os.path.join(CUSTOM_SCRIPTS_DIR, "settings.json")
-        self.config = {"refresh_interval": 3, "tray_always_visible": False, "show_sys_apps": True}
+        self.config = {"refresh_interval": 3, "tray_always_visible": False, "show_sys_apps": True, "window_width": 800, "window_height": 600, "window_maximized": False}
         if os.path.exists(self.settings_file):
             try:
                 with open(self.settings_file, "r") as f:
