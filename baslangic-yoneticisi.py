@@ -853,6 +853,7 @@ class AutostartManager(Gtk.Window):
                     elif line.startswith("Hidden=true") or line.startswith("X-GNOME-Autostart-enabled=false"):
                         hidden = True
         except: pass
+        if "/" in icon or "." in icon: icon = "application-x-executable"
         
         # Clean up runner wrapper from cmd
         import shlex
@@ -984,7 +985,8 @@ class AutostartManager(Gtk.Window):
         log_dir = os.path.join(CUSTOM_SCRIPTS_DIR, "logs")
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, f"{filename}.log")
-        runner_exec = f'python3 "{runner_path}" "{pid_file}" "{base_cmd}" "{log_file}"'
+        import shlex
+        runner_exec = f'python3 {shlex.quote(runner_path)} {shlex.quote(pid_file)} {shlex.quote(base_cmd)} {shlex.quote(log_file)}'
         
         if terminal:
             if term_size == "maximize":
@@ -1059,38 +1061,40 @@ class AutostartManager(Gtk.Window):
         dialog.destroy()
 
     def on_stop_clicked(self, widget):
-        if not self.current_selection: return
-        model, treeiter = self.current_selection
-        cmd = model[treeiter][3]
-        import shlex, subprocess
-        try:
-            clean_cmd = cmd.replace("%f", "").replace("%F", "").replace("%u", "").replace("%U", "")
-            parts = shlex.split(clean_cmd)
-            if not parts: return
-            if parts[0] == "gnome-terminal" and "--" in parts:
-                idx = parts.index("--")
-                target = parts[idx+1] if len(parts) > idx+1 else parts[0]
-            else:
-                target = parts[0]
-            if target in ["bash", "sh", "python3", "python"] and len(parts) >= 2:
-                target = parts[-1] 
-                
-            if "minimize_wrapper.sh" in target:
+        if not getattr(self, 'current_selection_paths', []): return
+        model = self.current_model
+        for path in self.current_selection_paths:
+            treeiter = model.get_iter(path)
+            filename = model[treeiter][7]
+            cmd = model[treeiter][3]
+            
+            import os, subprocess, shlex
+            pid_file = os.path.join(CUSTOM_SCRIPTS_DIR, "pids", f"{filename}.pid")
+            killed = False
+            if os.path.exists(pid_file):
                 try:
-                    w_parts = shlex.split(target)
-                    if len(w_parts) >= 3:
-                        target = w_parts[2]
+                    with open(pid_file, "r") as f:
+                        pid = f.read().strip()
+                    if pid.isdigit():
+                        subprocess.run(["kill", "-TERM", pid])
+                        killed = True
                 except: pass
                 
-            base = os.path.basename(target)
-            search_term = target if "/" in target else base
-            if search_term in ["bash", "sh", "env"]: return
-            subprocess.run(["pkill", "-f", search_term])
-            # Hizli tepki icin arayuzu aninda guncelle
-            model[treeiter][11] = False
-            self.btn_stop.set_sensitive(False)
-        except Exception as e:
-            pass
+            if not killed:
+                try:
+                    clean_cmd = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
+                    parts = shlex.split(clean_cmd)
+                    if not parts: continue
+                    if parts[0] == "gnome-terminal" and "--" in parts:
+                        idx = parts.index("--")
+                        target = parts[idx+1] if len(parts) > idx+1 else parts[0]
+                    else:
+                        target = parts[0]
+                    if target in ["bash", "sh", "python3", "python"] and len(parts) >= 2:
+                        target = parts[-1] 
+                    subprocess.run(["pkill", "-f", target])
+                except: pass
+        self.refresh_status()
 
     def on_start_clicked(self, widget):
         if not self.current_selection: return
