@@ -95,6 +95,15 @@ _EN_DICT = {
     "Şimdi Çalıştır": "Run Now",
     "⚙️ Yöneticiyi Aç": "⚙️ Open Manager",
     "❌ Çıkış Yap": "❌ Quit",
+    "Klavye Kısayolları": "Keyboard Shortcuts",
+    "Kısayol": "Shortcut",
+    "İşlev": "Function",
+    "Yeni başlangıç uygulaması ekle": "Add a new startup application",
+    "Seçili uygulamayı düzenle": "Edit selected application",
+    "Seçili uygulamayı başlat": "Start selected application",
+    "Seçili uygulamayı durdur (öldür)": "Stop (kill) selected application",
+    "Seçili uygulamayı sil": "Delete selected application",
+    "Arama kutusuna odaklan": "Focus the search box",
     "Çalışıyor": "Running",
     "Durdu": "Stopped"
 }
@@ -187,6 +196,15 @@ _RU_DICT = {
     "Şimdi Çalıştır": "Запустить сейчас",
     "⚙️ Yöneticiyi Aç": "⚙️ Открыть менеджер",
     "❌ Çıkış Yap": "❌ Выйти",
+    "Klavye Kısayolları": "Горячие клавиши",
+    "Kısayol": "Сочетание",
+    "İşlev": "Функция",
+    "Yeni başlangıç uygulaması ekle": "Добавить новое приложение автозапуска",
+    "Seçili uygulamayı düzenle": "Изменить выбранное приложение",
+    "Seçili uygulamayı başlat": "Запустить выбранное приложение",
+    "Seçili uygulamayı durdur (öldür)": "Остановить выбранное приложение",
+    "Seçili uygulamayı sil": "Удалить выбранное приложение",
+    "Arama kutusuna odaklan": "Перейти в поле поиска",
     "Çalışıyor": "Работает",
     "Durdu": "Остановлено"
 }
@@ -279,6 +297,15 @@ _BG_DICT = {
     "Şimdi Çalıştır": "Изпълни сега",
     "⚙️ Yöneticiyi Aç": "⚙️ Отвори мениджъра",
     "❌ Çıkış Yap": "❌ Изход",
+    "Klavye Kısayolları": "Клавишни комбинации",
+    "Kısayol": "Комбинация",
+    "İşlev": "Функция",
+    "Yeni başlangıç uygulaması ekle": "Добави ново приложение за автостартиране",
+    "Seçili uygulamayı düzenle": "Редактирай избраното приложение",
+    "Seçili uygulamayı başlat": "Стартирай избраното приложение",
+    "Seçili uygulamayı durdur (öldür)": "Спри избраното приложение",
+    "Seçili uygulamayı sil": "Изтрий избраното приложение",
+    "Arama kutusuna odaklan": "Фокусирай полето за търсене",
     "Çalışıyor": "Работи",
     "Durdu": "Спряно"
 }
@@ -892,6 +919,52 @@ class AutostartManager(Gtk.Window):
             
         self.stack.add_titled(self.page_sched, "page_sched", _("Zamanlayıcı"))
         self.stack.add_titled(page_settings, "page_settings", _("Ayarlar"))
+
+        # KISAYOLLAR SAYFASI
+        page_shortcuts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        page_shortcuts.set_margin_top(20)
+        page_shortcuts.set_margin_start(20)
+        page_shortcuts.set_margin_end(20)
+        page_shortcuts.set_margin_bottom(20)
+
+        lbl_sc_title = Gtk.Label(label=_("<b>Klavye Kısayolları</b>"), use_markup=True, xalign=0)
+        lbl_sc_title.set_margin_bottom(15)
+        page_shortcuts.pack_start(lbl_sc_title, False, False, 0)
+
+        shortcuts_list = [
+            ("Ctrl + N", _("Yeni başlangıç uygulaması ekle")),
+            ("Ctrl + E", _("Seçili uygulamayı düzenle")),
+            ("Ctrl + S", _("Seçili uygulamayı başlat")),
+            ("Ctrl + K", _("Seçili uygulamayı durdur (öldür)")),
+            ("Delete",   _("Seçili uygulamayı sil")),
+            ("Ctrl + F", _("Arama kutusuna odaklan")),
+        ]
+
+        sc_store = Gtk.ListStore(str, str)
+        for key, desc in shortcuts_list:
+            sc_store.append([key, desc])
+
+        sc_tree = Gtk.TreeView(model=sc_store)
+        sc_tree.set_headers_visible(True)
+        sc_tree.set_rules_hint(True)
+
+        col_key = Gtk.TreeViewColumn(_("Kısayol"), Gtk.CellRendererText(), text=0)
+        col_key.set_min_width(160)
+        r_func = Gtk.CellRendererText()
+        col_func = Gtk.TreeViewColumn(_("İşlev"), r_func, text=1)
+        col_func.set_expand(True)
+        sc_tree.append_column(col_key)
+        sc_tree.append_column(col_func)
+
+        sc_tree.set_can_focus(False)
+        sc_tree.get_selection().set_mode(Gtk.SelectionMode.NONE)
+
+        sc_scroll = Gtk.ScrolledWindow()
+        sc_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        sc_scroll.add(sc_tree)
+        page_shortcuts.pack_start(sc_scroll, True, True, 0)
+
+        self.stack.add_titled(page_shortcuts, "page_shortcuts", _("Klavye Kısayolları"))
 
         self.stack.add_titled(page_about, "page_about", _("Hakkında"))
 
