@@ -403,6 +403,38 @@ class AutostartManager(Gtk.Window):
         lbl_desc.set_justify(Gtk.Justification.CENTER)
         page_about.pack_start(lbl_desc, False, False, 0)
         
+        # Kayitlar (Logs) Sayfasi
+        self.page_logs = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        self.page_logs.set_margin_top(15)
+        self.page_logs.set_margin_start(15)
+        self.page_logs.set_margin_end(15)
+        self.page_logs.set_margin_bottom(15)
+        
+        box_log_top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        lbl_log = Gtk.Label(label=_("<b>Uygulama Çıktıları (Canlı Log)</b>"), use_markup=True, xalign=0)
+        box_log_top.pack_start(lbl_log, True, True, 0)
+        
+        self.combo_logs = Gtk.ComboBoxText()
+        self.combo_logs.connect("changed", self.on_log_selection_changed)
+        box_log_top.pack_start(self.combo_logs, False, False, 0)
+        
+        btn_refresh_log = Gtk.Button(label=_("Yenile"))
+        btn_refresh_log.connect("clicked", self.on_log_selection_changed)
+        box_log_top.pack_start(btn_refresh_log, False, False, 0)
+        
+        self.page_logs.pack_start(box_log_top, False, False, 0)
+        
+        scroll_logs = Gtk.ScrolledWindow()
+        scroll_logs.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        self.textview_logs = Gtk.TextView()
+        self.textview_logs.set_editable(False)
+        self.textview_logs.set_wrap_mode(Gtk.WrapMode.WORD)
+        self.textview_logs.get_style_context().add_class("terminal-font")
+        scroll_logs.add(self.textview_logs)
+        self.page_logs.pack_start(scroll_logs, True, True, 0)
+        
+        self.stack.add_titled(self.page_logs, "page_logs", _("Kayıtlar (Log)"))
+
         self.stack.add_titled(page_about, "page_about", _("Hakkında"))
 
 
@@ -831,7 +863,10 @@ class AutostartManager(Gtk.Window):
         else:
             base_cmd = cmd
             
-        runner_exec = f'python3 "{runner_path}" "{pid_file}" "{base_cmd}"'
+        log_dir = os.path.join(CUSTOM_SCRIPTS_DIR, "logs")
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, f"{filename}.log")
+        runner_exec = f'python3 "{runner_path}" "{pid_file}" "{base_cmd}" "{log_file}"'
         
         if terminal:
             if term_size == "maximize":
