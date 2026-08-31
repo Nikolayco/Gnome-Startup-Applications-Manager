@@ -228,6 +228,13 @@ class AutostartManager(Gtk.Window):
         self.btn_remove.set_sensitive(False)
         hb.pack_end(self.btn_remove)
 
+        self.btn_stop = Gtk.Button()
+        self.btn_stop.add(Gtk.Image.new_from_icon_name("media-playback-stop-symbolic", Gtk.IconSize.BUTTON))
+        self.btn_stop.set_tooltip_text(_("Çalışan uygulamayı durdur (Kapat)"))
+        self.btn_stop.connect("clicked", self.on_stop_clicked)
+        self.btn_stop.set_sensitive(False)
+        hb.pack_end(self.btn_stop)
+
         self.btn_start = Gtk.Button()
         self.btn_start.add(Gtk.Image.new_from_icon_name("media-playback-start-symbolic", Gtk.IconSize.BUTTON))
         self.btn_start.set_tooltip_text(_("Uygulamayı hemen çalıştırarak test et"))
@@ -328,6 +335,12 @@ class AutostartManager(Gtk.Window):
             except: return False
         for row in self.store_user: row[11] = is_running(row[3])
         for row in self.store_sys: row[11] = is_running(row[3])
+        
+        if self.current_selection:
+            model, treeiter = self.current_selection
+            try:
+                self.btn_stop.set_sensitive(model[treeiter][11])
+            except: pass
         return True
 
     def on_delete_event(self, widget, event):
@@ -541,12 +554,14 @@ class AutostartManager(Gtk.Window):
             other.get_selection().unselect_all()
             self.current_selection = (model, treeiter)
             self.btn_start.set_sensitive(True)
+            self.btn_stop.set_sensitive(model[treeiter][11])
             self.btn_remove.set_sensitive(True)
             self.btn_edit.set_sensitive(True)
         else:
             if not self.tree_user.get_selection().get_selected()[1] and not self.tree_sys.get_selection().get_selected()[1]:
                 self.current_selection = None
                 self.btn_start.set_sensitive(False)
+                self.btn_stop.set_sensitive(False)
                 self.btn_remove.set_sensitive(False)
                 self.btn_edit.set_sensitive(False)
 
@@ -622,6 +637,33 @@ class AutostartManager(Gtk.Window):
                 if os.path.exists(os.path.join(AUTOSTART_DIR, model[treeiter][7])): os.remove(os.path.join(AUTOSTART_DIR, model[treeiter][7]))
             self.load_apps()
         dialog.destroy()
+
+    def on_stop_clicked(self, widget):
+        if not self.current_selection: return
+        model, treeiter = self.current_selection
+        cmd = model[treeiter][3]
+        import shlex, os, subprocess
+        try:
+            clean_cmd = cmd.replace("%f", "").replace("%F", "").replace("%u", "").replace("%U", "")
+            parts = shlex.split(clean_cmd)
+            if not parts: return
+            if parts[0] == "gnome-terminal" and "--" in parts:
+                idx = parts.index("--")
+                target = parts[idx+1] if len(parts) > idx+1 else parts[0]
+            else:
+                target = parts[0]
+            if target in ["bash", "sh", "python3", "python"] and len(parts) >= 2:
+                target = parts[-1] 
+                
+            base = os.path.basename(target)
+            search_term = target if "/" in target else base
+            if search_term in ["bash", "sh", "env"]: return
+            subprocess.run(["pkill", "-f", search_term])
+            # Hizli tepki icin arayuzu aninda guncelle
+            model[treeiter][11] = False
+            self.btn_stop.set_sensitive(False)
+        except Exception as e:
+            pass
 
     def on_start_clicked(self, widget):
         if not self.current_selection: return
