@@ -519,7 +519,6 @@ class AutostartManager(Gtk.Window):
         
         page_settings.pack_start(box_reset, False, False, 0)
 
-        self.stack.add_titled(page_settings, "page_settings", _("Ayarlar"))
         
         # Hakkinda Sayfasi
         page_about = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
@@ -585,6 +584,7 @@ class AutostartManager(Gtk.Window):
             self.page_sched.pack_start(lbl_nosys, True, True, 0)
             
         self.stack.add_titled(self.page_sched, "page_sched", _("Zamanlayıcı"))
+        self.stack.add_titled(page_settings, "page_settings", _("Ayarlar"))
 
         self.stack.add_titled(page_about, "page_about", _("Hakkında"))
 
