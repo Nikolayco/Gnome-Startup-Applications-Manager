@@ -67,6 +67,8 @@ python3 baslangic-yoneticisi.py
 ## 🗑️ Удаление
 
 ```bash
+git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git
+cd Gnome-Startup-Applications-Manager
 bash uninstall.sh
 ```
 
