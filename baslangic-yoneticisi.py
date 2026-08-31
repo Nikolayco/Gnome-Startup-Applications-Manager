@@ -312,10 +312,9 @@ class AutostartManager(Gtk.Window):
 
     def refresh_status(self):
         try:
-            import subprocess, shlex, os
-            res = subprocess.run(["/usr/bin/ps", "-eo", "args"], stdout=subprocess.PIPE, text=True)
+            res = subprocess.run(["ps", "-eo", "args"], stdout=subprocess.PIPE, text=True)
             all_procs = res.stdout
-        except Exception as e:
+        except:
             all_procs = ""
             
         def is_running(cmd):
@@ -333,19 +332,17 @@ class AutostartManager(Gtk.Window):
                 
                 # Wrapper icindeki asil komutu ayikla
                 if "minimize_wrapper.sh" in target:
-                    import shlex
                     try:
                         w_parts = shlex.split(target)
                         if len(w_parts) >= 3:
-                            target = w_parts[2] # 0: script, 1: title, 2+: actual command
+                            target = w_parts[2]
                     except: pass
                     
                 base = os.path.basename(target)
                 search_term = target if "/" in target else base
                 if search_term in ["bash", "sh", "env"]: return False
-                
                 return search_term in all_procs
-            except Exception as e:
+            except: 
                 return False
                 
         for row in self.store_user: row[11] = is_running(row[3])
@@ -356,6 +353,7 @@ class AutostartManager(Gtk.Window):
             try:
                 self.btn_stop.set_sensitive(model[treeiter][11])
             except: pass
+            
         return True
 
     def on_delete_event(self, widget, event):
