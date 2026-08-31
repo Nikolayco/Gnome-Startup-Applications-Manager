@@ -55,6 +55,25 @@ class AutostartApp:
         self.enabled = not hidden
         self.term_size = term_size
 
+class CmdTextView(Gtk.ScrolledWindow):
+    def __init__(self):
+        super().__init__()
+        self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        self.set_size_request(-1, 70)
+        self.tv = Gtk.TextView()
+        self.tv.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        self.tv.set_monospace(True)
+        self.tv.set_hexpand(True)
+        self.add(self.tv)
+        self.show_all()
+        
+    def get_text(self):
+        buf = self.tv.get_buffer()
+        return buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True).strip()
+        
+    def set_text(self, text):
+        self.tv.get_buffer().set_text(text)
+
 class AppDialog(Gtk.Dialog):
     def __init__(self, parent, title, app=None):
         super().__init__(title=title, transient_for=parent, flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
@@ -126,8 +145,7 @@ class AppDialog(Gtk.Dialog):
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         
         file_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        self.entry_cmd = Gtk.Entry(placeholder_text=_("Dosya yolu veya komut..."))
-        self.entry_cmd.set_hexpand(True)
+        self.entry_cmd = CmdTextView()
         file_box.pack_start(self.entry_cmd, True, True, 0)
         btn_browse = Gtk.Button()
         btn_browse.add(Gtk.Image.new_from_icon_name("folder-open-symbolic", Gtk.IconSize.BUTTON))
