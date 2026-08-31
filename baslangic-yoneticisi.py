@@ -297,10 +297,10 @@ class AutostartManager(Gtk.Window):
         box_user.pack_start(scroll_user, True, True, 0)
         
         # Sistem listesi alani
-        box_sys = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        box_sys.set_margin_start(10)
-        box_sys.set_margin_end(10)
-        box_sys.set_margin_top(15)
+        self.box_sys = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        self.box_sys.set_margin_start(10)
+        self.box_sys.set_margin_end(10)
+        self.box_sys.set_margin_top(15)
         
         self.store_sys = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str, bool)
         self.filter_sys = self.store_sys.filter_new()
@@ -308,16 +308,17 @@ class AutostartManager(Gtk.Window):
         
         lbl_sys = Gtk.Label(xalign=0)
         lbl_sys.set_markup(f"<span size='large' weight='bold' color='#E03C31'>{_('Sistem Uygulamaları')}</span>")
-        box_sys.pack_start(lbl_sys, False, False, 0)
+        self.box_sys.pack_start(lbl_sys, False, False, 0)
         
         scroll_sys = Gtk.ScrolledWindow()
         scroll_sys.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.tree_sys = self.create_treeview(self.filter_sys)
         scroll_sys.add(self.tree_sys)
-        box_sys.pack_start(scroll_sys, True, True, 0)
+        self.box_sys.pack_start(scroll_sys, True, True, 0)
         
         paned.pack1(box_user, True, False)
-        paned.pack2(box_sys, True, False)
+        paned.pack2(self.box_sys, True, False)
+        self.box_sys.set_visible(self.config.get('show_sys_apps', True))
         
         page_apps = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         page_apps.pack_start(paned, True, True, 0)
@@ -353,6 +354,18 @@ class AutostartManager(Gtk.Window):
         box_tray.pack_start(sw_tray, False, False, 0)
         
         page_settings.pack_start(box_tray, False, False, 0)
+        
+        # Ayar 3: Sistem Uygulamalarini Goster
+        box_show_sys = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=15)
+        lbl_show_sys = Gtk.Label(label=_("Sistem Uygulamalarını (Alt Liste) Göster:"), xalign=0)
+        box_show_sys.pack_start(lbl_show_sys, True, True, 0)
+        
+        sw_show_sys = Gtk.Switch()
+        sw_show_sys.set_active(self.config.get("show_sys_apps", True))
+        sw_show_sys.connect("notify::active", self.on_show_sys_changed)
+        box_show_sys.pack_start(sw_show_sys, False, False, 0)
+        
+        page_settings.pack_start(box_show_sys, False, False, 0)
         
         self.stack.add_titled(page_settings, "page_settings", _("Ayarlar"))
         
@@ -405,7 +418,7 @@ class AutostartManager(Gtk.Window):
     def load_settings(self):
         import json
         self.settings_file = os.path.join(CUSTOM_SCRIPTS_DIR, "settings.json")
-        self.config = {"refresh_interval": 3, "tray_always_visible": False}
+        self.config = {"refresh_interval": 3, "tray_always_visible": False, "show_sys_apps": True}
         if os.path.exists(self.settings_file):
             try:
                 with open(self.settings_file, "r") as f:
@@ -425,6 +438,12 @@ class AutostartManager(Gtk.Window):
         if hasattr(self, 'timer_id') and self.timer_id:
             GLib.source_remove(self.timer_id)
         self.timer_id = GLib.timeout_add_seconds(self.config["refresh_interval"], self.refresh_status)
+
+    def on_show_sys_changed(self, switch, gparam):
+        self.config["show_sys_apps"] = switch.get_active()
+        self.save_settings()
+        if hasattr(self, 'box_sys'):
+            self.box_sys.set_visible(self.config["show_sys_apps"])
 
     def on_tray_switch_changed(self, switch, gparam):
         self.config["tray_always_visible"] = switch.get_active()
