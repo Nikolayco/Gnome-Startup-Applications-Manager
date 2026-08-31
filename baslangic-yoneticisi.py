@@ -555,27 +555,39 @@ class AutostartManager(Gtk.Window):
 
     def refresh_status(self):
         try:
-            import subprocess
-            res = subprocess.run(["ps", "-eo", "pid,args"], stdout=subprocess.PIPE, text=True)
-            all_procs = res.stdout
+            import subprocess, os, shlex
+            res = subprocess.run(["ps", "-eo", "pid,ppid,%cpu,rss,args="], stdout=subprocess.PIPE, text=True)
+            lines = res.stdout.strip().split("
+")
         except:
-            all_procs = ""
+            lines = []
+            
+        procs_by_pid = {}
+        children_by_ppid = {}
+        for line in lines:
+            parts = line.strip().split(maxsplit=4)
+            if len(parts) >= 5:
+                pid, ppid, cpu, rss, args = parts[0], parts[1], 0.0, 0.0, parts[4]
+                try: cpu = float(parts[2])
+                except: pass
+                try: rss = float(parts[3])
+                except: pass
+                procs_by_pid[pid] = {'cpu': cpu, 'rss': rss, 'args': args}
+                children_by_ppid.setdefault(ppid, []).append(pid)
 
         def get_usage(pid_str):
-            try:
-                res = subprocess.run(["ps", "--no-headers", "-o", "%cpu,rss", "--ppid", pid_str, "-p", pid_str], stdout=subprocess.PIPE, text=True)
-                lines = res.stdout.strip().split("\n")
-                t_cpu, t_mem_kb = 0.0, 0.0
-                for line in lines:
-                    parts = line.strip().split()
-                    if len(parts) >= 2:
-                        t_cpu += float(parts[0])
-                        t_mem_kb += float(parts[1])
-                if t_cpu > 0 or t_mem_kb > 0:
-                    mb = t_mem_kb / 1024.0
-                    if mb > 1024: return f"[{pid_str}] {mb/1024.0:.1f}GB | %{t_cpu:.1f}"
-                    return f"[{pid_str}] {mb:.0f}MB | %{t_cpu:.1f}"
-            except: pass
+            t_cpu = procs_by_pid.get(pid_str, {}).get('cpu', 0.0)
+            t_mem_kb = procs_by_pid.get(pid_str, {}).get('rss', 0.0)
+            
+            # Add direct children usage (runner spawns the actual command)
+            for child_pid in children_by_ppid.get(pid_str, []):
+                t_cpu += procs_by_pid.get(child_pid, {}).get('cpu', 0.0)
+                t_mem_kb += procs_by_pid.get(child_pid, {}).get('rss', 0.0)
+
+            if t_cpu > 0 or t_mem_kb > 0:
+                mb = t_mem_kb / 1024.0
+                if mb > 1024: return f"[{pid_str}] {mb/1024.0:.1f}GB | %{t_cpu:.1f}"
+                return f"[{pid_str}] {mb:.0f}MB | %{t_cpu:.1f}"
             return f"[{pid_str}]"
 
         def is_running(row):
@@ -587,18 +599,15 @@ class AutostartManager(Gtk.Window):
                 try:
                     with open(pid_file, "r") as f:
                         pid = f.read().strip()
-                    if pid.isdigit():
-                        import subprocess
-                        res = subprocess.run(["ps", "-p", pid, "-o", "args="], stdout=subprocess.PIPE, text=True)
-                        out = res.stdout.strip()
-                        if "runner.py" in out and filename in out:
+                    if pid in procs_by_pid:
+                        args = procs_by_pid[pid]['args']
+                        if "runner.py" in args and filename in args:
                             return True, get_usage(pid)
-                        elif out:
+                        elif args:
                             return False, ""
                 except: pass
                 
             try:
-                import shlex
                 clean_cmd = cmd.replace("%f", "").replace("%F", "").replace("%u", "").replace("%U", "")
                 parts = shlex.split(clean_cmd)
                 if not parts: return False, ""
@@ -616,14 +625,13 @@ class AutostartManager(Gtk.Window):
                 search_term = target if "/" in target else base
                 if search_term in ["bash", "sh", "env"]: return False, ""
                 
-                for line in all_procs.split("\n"):
-                    if search_term in line:
-                        pid = line.strip().split()[0]
+                for pid, info in procs_by_pid.items():
+                    if search_term in info['args']:
                         return True, get_usage(pid)
                 return False, ""
             except: 
                 return False, ""
-                
+
         for row in self.store_user: 
             is_run, usage = is_running(row)
             if row[11] != is_run: row[11] = is_run
