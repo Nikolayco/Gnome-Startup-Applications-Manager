@@ -11,6 +11,6 @@ Bu proje aktif olarak geliştirilmektedir. Aşağıdaki özellikler öncelik sı
 - [x] **Klavye Kısayolları:** Hızlı kullanım için arayüzde klavye kısayolları (Örn: Ctrl+N Yeni Ekle, Delete Sil vb.).
 
 ## 3. Güçlü Kullanıcı (Power User) Özellikleri
-- [ ] **Kaynak Tüketimi Gösterimi:** Her uygulamanın o anki CPU/RAM kullanımını arayüzde gösterme.
+- [x] **Kaynak Tüketimi Gösterimi:** Her uygulamanın o anki CPU/RAM kullanımını arayüzde gösterme.
 - [x] **Log (Kayıt) Paneli:** Scriptlerin arka planda ürettiği çıktıları (stdout/stderr) doğrudan arayüzdeki bir sekmeden canlı okuyabilme (Debug için).
 - [ ] **Çökme Bildirimleri:** Beklenmedik şekilde kapanan scriptler için masaüstü bildirimi (Notification) gösterme.
