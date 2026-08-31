@@ -448,10 +448,9 @@ class AutostartManager(Gtk.Window):
             os.chmod(wrapper_path, 0o755)
 
         runner_path = os.path.join(CUSTOM_SCRIPTS_DIR, "runner.py")
-        if not os.path.exists(runner_path):
-            with open(runner_path, "w") as f:
-                f.write("""#!/usr/bin/env python3\nimport sys, os, subprocess, signal\npid_file = sys.argv[1]\ncmd = sys.argv[2]\nwith open(pid_file, 'w') as f:\n    f.write(str(os.getpid()))\nproc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid)\ndef handler(signum, frame):\n    os.killpg(proc.pid, signal.SIGTERM)\n    sys.exit(0)\nsignal.signal(signal.SIGTERM, handler)\nproc.wait()\n""")
-            os.chmod(runner_path, 0o755)
+        with open(runner_path, "w") as f:
+            f.write("""#!/usr/bin/env python3\nimport sys, os, subprocess, signal\npid_file = sys.argv[1]\ncmd = sys.argv[2]\nlog_file = sys.argv[3]\nwith open(pid_file, 'w') as f:\n    f.write(str(os.getpid()))\nwith open(log_file, 'w') as lf:\n    proc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid, stdout=lf, stderr=subprocess.STDOUT)\n    def handler(signum, frame):\n        os.killpg(proc.pid, signal.SIGTERM)\n        sys.exit(0)\n    signal.signal(signal.SIGTERM, handler)\n    proc.wait()\n""")
+        os.chmod(runner_path, 0o755)
             
         self.load_apps()
         self.setup_tray()
