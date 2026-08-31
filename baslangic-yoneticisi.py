@@ -226,6 +226,14 @@ class AutostartManager(Gtk.Window):
         self.btn_remove.get_style_context().add_class("destructive-action")
         self.btn_remove.set_sensitive(False)
 
+        # Tray kucultme butonu (sadece eger pystray/indicator destegi varsa)
+        if AppIndicator3:
+            btn_tray = Gtk.Button()
+            btn_tray.add(Gtk.Image.new_from_icon_name("go-down-symbolic", Gtk.IconSize.BUTTON))
+            btn_tray.set_tooltip_text(_("Arka planda (Tray) çalışmaya devam et"))
+            btn_tray.connect("clicked", lambda w: self.hide())
+            hb.pack_end(btn_tray)
+
         # Sagdan sola dogru dizilim sirasi (Tersi visual olarak soldan saga okunur)
         # Visual sira: [Ekle] [Duzenle] [Baslat] [Sil]
         hb.pack_end(self.btn_remove)
@@ -280,12 +288,8 @@ class AutostartManager(Gtk.Window):
         self.connect("delete-event", self.on_delete_event)
 
     def on_delete_event(self, widget, event):
-        if hasattr(self, 'indicator') and self.indicator is not None:
-            self.hide()
-            return True
-        else:
-            Gtk.main_quit()
-            return False
+        Gtk.main_quit()
+        return False
 
     def setup_tray(self):
         self.indicator = None
