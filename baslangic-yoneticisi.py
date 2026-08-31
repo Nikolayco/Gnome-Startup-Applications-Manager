@@ -541,6 +541,51 @@ class AutostartManager(Gtk.Window):
         # Kayitlar (Logs) Sayfasi
 
 
+        # SCHEDULER PAGE
+        self.page_sched = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+        import shutil
+        if shutil.which("systemctl"):
+            sched_toolbar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+            self.btn_sched_add = Gtk.Button(label=_("Yeni Görev"))
+            self.btn_sched_add.connect("clicked", self.on_sched_add)
+            sched_toolbar.pack_start(self.btn_sched_add, False, False, 0)
+            
+            self.btn_sched_edit = Gtk.Button(label=_("Düzenle"))
+            self.btn_sched_edit.set_sensitive(False)
+            self.btn_sched_edit.connect("clicked", self.on_sched_edit)
+            sched_toolbar.pack_start(self.btn_sched_edit, False, False, 0)
+            
+            self.btn_sched_rem = Gtk.Button(label=_("Sil"))
+            self.btn_sched_rem.set_sensitive(False)
+            self.btn_sched_rem.connect("clicked", self.on_sched_rem)
+            sched_toolbar.pack_start(self.btn_sched_rem, False, False, 0)
+            
+            self.page_sched.pack_start(sched_toolbar, False, False, 0)
+            
+            # id, enabled, name, trigger_desc, next_run, cmd, type, val1, val2
+            self.store_sched = Gtk.ListStore(str, bool, str, str, str, str, str, str, str)
+            self.tree_sched = Gtk.TreeView(model=self.store_sched)
+            
+            col_t = Gtk.TreeViewColumn(_("Aktif"), Gtk.CellRendererToggle(), active=1)
+            self.tree_sched.append_column(col_t)
+            self.tree_sched.append_column(Gtk.TreeViewColumn(_("Görev"), Gtk.CellRendererText(), text=2))
+            self.tree_sched.append_column(Gtk.TreeViewColumn(_("Tetikleyici"), Gtk.CellRendererText(), text=3))
+            self.tree_sched.append_column(Gtk.TreeViewColumn(_("Sıradaki Çalışma"), Gtk.CellRendererText(), text=4))
+            
+            scroll_sched = Gtk.ScrolledWindow()
+            scroll_sched.add(self.tree_sched)
+            self.page_sched.pack_start(scroll_sched, True, True, 0)
+            
+            sel_sched = self.tree_sched.get_selection()
+            sel_sched.set_mode(Gtk.SelectionMode.MULTIPLE)
+            sel_sched.connect("changed", self.on_sched_selection_changed)
+            
+        else:
+            lbl_nosys = Gtk.Label(label=_("Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor."))
+            self.page_sched.pack_start(lbl_nosys, True, True, 0)
+            
+        self.stack.add_titled(self.page_sched, "page_sched", _("Zamanlayıcı"))
+
         self.stack.add_titled(page_about, "page_about", _("Hakkında"))
 
 
