@@ -17,5 +17,5 @@ Bu proje aktif olarak geliştirilmektedir. Aşağıdaki özellikler öncelik sı
 - [ ] **Kaynak Tüketimi Gösterimi:** Her uygulamanın o anki CPU/RAM kullanımını arayüzde gösterme.
 - [x] **Log (Kayıt) Paneli:** Scriptlerin arka planda ürettiği çıktıları (stdout/stderr) doğrudan arayüzdeki bir sekmeden canlı okuyabilme (Debug için).
 - [ ] **Çökme Bildirimleri:** Beklenmedik şekilde kapanan scriptler için masaüstü bildirimi (Notification) gösterme.
-- [ ] **Şablon Kütüphanesi:** Sık kullanılan başlangıç scriptleri için (VPN bağlan, Sistem Temizle vb.) hazır kod şablonları.
-- [ ] **Systemd --user Entegrasyonu:** Gelişmiş servis yönetimi ve log okuma işlemleri için systemd servislerini yönetebilme.
+- [~] **Şablon Kütüphanesi:** (İptal edildi - Basitlik ilkesine aykırı)
+- [~] **Systemd --user Entegrasyonu:** (İptal edildi - Çok karmaşık/gereksiz görüldü)
