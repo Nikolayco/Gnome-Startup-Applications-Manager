@@ -200,26 +200,24 @@ class AutostartManager(Gtk.Window):
         self.search_entry.connect("search-changed", self.on_search_changed)
         hb.pack_start(self.search_entry)
 
+        # Butonlari tanimlama
         btn_add = Gtk.Button()
         btn_add.add(Gtk.Image.new_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON))
         btn_add.set_tooltip_text(_("Yeni uygulama veya script ekle"))
         btn_add.connect("clicked", self.on_add_clicked)
         btn_add.get_style_context().add_class("suggested-action")
-        hb.pack_end(btn_add)
+        
+        self.btn_edit = Gtk.Button()
+        self.btn_edit.add(Gtk.Image.new_from_icon_name("document-edit-symbolic", Gtk.IconSize.BUTTON))
+        self.btn_edit.set_tooltip_text(_("Ayarları düzenle"))
+        self.btn_edit.connect("clicked", self.on_edit_clicked)
+        self.btn_edit.set_sensitive(False)
 
         self.btn_start = Gtk.Button()
         self.btn_start.add(Gtk.Image.new_from_icon_name("media-playback-start-symbolic", Gtk.IconSize.BUTTON))
         self.btn_start.set_tooltip_text(_("Uygulamayı hemen çalıştırarak test et"))
         self.btn_start.connect("clicked", self.on_start_clicked)
         self.btn_start.set_sensitive(False)
-        hb.pack_end(self.btn_start)
-
-        self.btn_edit = Gtk.Button()
-        self.btn_edit.add(Gtk.Image.new_from_icon_name("document-edit-symbolic", Gtk.IconSize.BUTTON))
-        self.btn_edit.set_tooltip_text(_("Ayarları düzenle"))
-        self.btn_edit.connect("clicked", self.on_edit_clicked)
-        self.btn_edit.set_sensitive(False)
-        hb.pack_end(self.btn_edit)
 
         self.btn_remove = Gtk.Button()
         self.btn_remove.add(Gtk.Image.new_from_icon_name("user-trash-symbolic", Gtk.IconSize.BUTTON))
@@ -227,7 +225,13 @@ class AutostartManager(Gtk.Window):
         self.btn_remove.connect("clicked", self.on_remove_clicked)
         self.btn_remove.get_style_context().add_class("destructive-action")
         self.btn_remove.set_sensitive(False)
+
+        # Sagdan sola dogru dizilim sirasi (Tersi visual olarak soldan saga okunur)
+        # Visual sira: [Ekle] [Duzenle] [Baslat] [Sil]
         hb.pack_end(self.btn_remove)
+        hb.pack_end(self.btn_start)
+        hb.pack_end(self.btn_edit)
+        hb.pack_end(btn_add)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(vbox)
