@@ -470,42 +470,35 @@ class AutostartManager(Gtk.Window):
         self.btn_remove.set_visible(is_main)
         if hasattr(self, 'btn_tray'):
             self.btn_tray.set_visible(is_main)
+            
+        if stack.get_visible_child_name() == "page_logs":
+            self.populate_log_combo()
 
-    def load_settings(self):
-        import json
-        self.settings_file = os.path.join(CUSTOM_SCRIPTS_DIR, "settings.json")
-        self.config = {"refresh_interval": 3, "tray_always_visible": False, "show_sys_apps": True, "window_width": 800, "window_height": 600, "window_maximized": False}
-        if os.path.exists(self.settings_file):
-            try:
-                with open(self.settings_file, "r") as f:
-                    self.config.update(json.load(f))
-            except: pass
+    def populate_log_combo(self):
+        self.combo_logs.remove_all()
+        log_dir = os.path.join(CUSTOM_SCRIPTS_DIR, "logs")
+        if os.path.exists(log_dir):
+            import glob
+            logs = glob.glob(os.path.join(log_dir, "*.log"))
+            for log in sorted(logs):
+                basename = os.path.basename(log)
+                self.combo_logs.append(log, basename.replace(".log", ""))
+        self.combo_logs.set_active(0)
 
-    def save_settings(self):
-        import json
+    def on_log_selection_changed(self, widget):
+        log_file = self.combo_logs.get_active_id()
+        buffer = self.textview_logs.get_buffer()
+        if not log_file or not os.path.exists(log_file):
+            buffer.set_text(_("Gösterilecek log dosyası bulunamadı."))
+            return
         try:
-            with open(self.settings_file, "w") as f:
-                json.dump(self.config, f)
-        except: pass
-
-    def on_interval_changed(self, spin):
-        self.config["refresh_interval"] = int(spin.get_value())
-        self.save_settings()
-        if hasattr(self, 'timer_id') and self.timer_id:
-            GLib.source_remove(self.timer_id)
-        self.timer_id = GLib.timeout_add_seconds(self.config["refresh_interval"], self.refresh_status)
-
-    def on_show_sys_changed(self, switch, gparam):
-        self.config["show_sys_apps"] = switch.get_active()
-        self.save_settings()
-        if hasattr(self, 'box_sys'):
-            self.box_sys.set_visible(self.config["show_sys_apps"])
-
-    def on_tray_switch_changed(self, switch, gparam):
-        self.config["tray_always_visible"] = switch.get_active()
-        self.save_settings()
-        if self.indicator:
-            self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE if self.config["tray_always_visible"] else AppIndicator3.IndicatorStatus.PASSIVE)
+            with open(log_file, "r") as f:
+                log_content = f.read()
+            if not log_content.strip():
+                log_content = _("(Dosya boş, henüz çıktı üretilmemiş)")
+            buffer.set_text(log_content)
+        except Exception as e:
+            buffer.set_text(f"Hata: {str(e)}")
 
     def refresh_status(self):
         try:
