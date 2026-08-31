@@ -108,7 +108,7 @@ class AppDialog(Gtk.Dialog):
         self.combo_term_size = Gtk.ComboBoxText()
         self.combo_term_size.append("normal", _("Normal"))
         self.combo_term_size.append("maximize", _("Maximize (Tam Ekran)"))
-        self.combo_term_size.append("fullscreen", _("Fullscreen (Sınırsız)"))
+        self.combo_term_size.append("minimize", _("Minimize (Küçültülmüş)"))
         self.combo_term_size.set_active_id("normal")
         self.combo_term_size.set_sensitive(False)
         self.check_terminal.connect("toggled", lambda w: self.combo_term_size.set_sensitive(w.get_active()))
@@ -463,7 +463,7 @@ class AutostartManager(Gtk.Window):
             else:
                 s = m[i][10]
                 if s == "maximize": cell.set_property("text", _("Evet (Max)"))
-                elif s == "fullscreen": cell.set_property("text", _("Evet (Full)"))
+                elif s == "minimize": cell.set_property("text", _("Evet (Min)"))
                 else: cell.set_property("text", _("Evet (Normal)"))
                 
         col_term.set_cell_data_func(render_term, format_term)
@@ -518,9 +518,10 @@ class AutostartManager(Gtk.Window):
             cmd = cmd.replace("gnome-terminal --maximize -- ", "")
             term_size = "maximize"
             terminal = True
-        elif cmd.startswith("gnome-terminal --full-screen -- "):
-            cmd = cmd.replace("gnome-terminal --full-screen -- ", "")
-            term_size = "fullscreen"
+        prefix_min = 'gnome-terminal -- bash -c "xdotool getactivewindow windowminimize; '
+        if cmd.startswith(prefix_min) and cmd.endswith('"'):
+            cmd = cmd[len(prefix_min):-1]
+            term_size = "minimize"
             terminal = True
             
         return AutostartApp(os.path.basename(path), name, cmd, comment, hidden, path.startswith("/etc"), path, icon, terminal, delay, term_size)
@@ -590,8 +591,8 @@ class AutostartManager(Gtk.Window):
         if terminal:
             if term_size == "maximize":
                 final_cmd = f"gnome-terminal --maximize -- {cmd}"
-            elif term_size == "fullscreen":
-                final_cmd = f"gnome-terminal --full-screen -- {cmd}"
+            elif term_size == "minimize":
+                final_cmd = f'gnome-terminal -- bash -c "xdotool getactivewindow windowminimize; {cmd}"'
             else:
                 term_str = "true"
                 
