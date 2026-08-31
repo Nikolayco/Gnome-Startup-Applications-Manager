@@ -328,6 +328,16 @@ class AutostartManager(Gtk.Window):
                     target = parts[0]
                 if target in ["bash", "sh", "python3", "python"] and len(parts) >= 2:
                     target = parts[-1] 
+                
+                # Wrapper icindeki asil komutu ayikla
+                if "minimize_wrapper.sh" in target:
+                    import shlex
+                    try:
+                        w_parts = shlex.split(target)
+                        if len(w_parts) >= 3:
+                            target = w_parts[2] # 0: script, 1: title, 2+: actual command
+                    except: pass
+                    
                 base = os.path.basename(target)
                 search_term = target if "/" in target else base
                 if search_term in ["bash", "sh", "env"]: return False
@@ -654,6 +664,13 @@ class AutostartManager(Gtk.Window):
                 target = parts[0]
             if target in ["bash", "sh", "python3", "python"] and len(parts) >= 2:
                 target = parts[-1] 
+                
+            if "minimize_wrapper.sh" in target:
+                try:
+                    w_parts = shlex.split(target)
+                    if len(w_parts) >= 3:
+                        target = w_parts[2]
+                except: pass
                 
             base = os.path.basename(target)
             search_term = target if "/" in target else base
