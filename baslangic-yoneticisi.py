@@ -1172,7 +1172,175 @@ class AutostartManager(Gtk.Window):
             d.run()
             d.destroy()
 
+
+    def on_sched_selection_changed(self, selection):
+        model, paths = selection.get_selected_rows()
+        self.current_sched_paths = paths
+        self.btn_sched_edit.set_sensitive(len(paths) == 1)
+        self.btn_sched_rem.set_sensitive(len(paths) > 0)
+
+    def on_sched_add(self, widget):
+        dialog = ScheduleDialog(self, _("Yeni Görev"))
+        if dialog.run() == Gtk.ResponseType.OK:
+            self._save_dialog_to_sched(dialog)
+        dialog.destroy()
+
+    def on_sched_edit(self, widget):
+        if not getattr(self, 'current_sched_paths', []): return
+        path = self.current_sched_paths[0]
+        treeiter = self.store_sched.get_iter(path)
+        task = {
+            'id': self.store_sched[treeiter][0],
+            'name': self.store_sched[treeiter][2],
+            'cmd': self.store_sched[treeiter][5],
+            'type': self.store_sched[treeiter][6],
+            'val_int': int(self.store_sched[treeiter][7]) if self.store_sched[treeiter][6] == 'interval' else 1,
+            'val_unit': self.store_sched[treeiter][8] if self.store_sched[treeiter][6] == 'interval' else 'min',
+            'val_cal': self.store_sched[treeiter][7] if self.store_sched[treeiter][6] == 'calendar' else '',
+            'val_delay': int(self.store_sched[treeiter][7]) if self.store_sched[treeiter][6] in ['boot', 'login'] else 0
+        }
+        dialog = ScheduleDialog(self, _("Görevi Düzenle"), task)
+        if dialog.run() == Gtk.ResponseType.OK:
+            self._save_dialog_to_sched(dialog, task_id=task['id'])
+        dialog.destroy()
+
+    def _save_dialog_to_sched(self, dialog, task_id=None):
+        name = dialog.entry_name.get_text().strip()
+        cmd = dialog.entry_cmd.get_text().strip()
+        if not name or not cmd: return
+        
+        t_type = dialog.combo_type.get_active_id()
+        if not task_id:
+            import uuid
+            task_id = "gsam-" + str(uuid.uuid4())[:8]
+            
+        v1, v2 = "", ""
+        if t_type == 'interval':
+            v1 = str(int(dialog.spin_int.get_value()))
+            v2 = dialog.combo_int_unit.get_active_id()
+            t_desc = f"Her {v1} {dialog.combo_int_unit.get_active_text()}"
+        elif t_type == 'calendar':
+            v1 = dialog.entry_cal.get_text().strip()
+            t_desc = f"Takvim: {v1}"
+        elif t_type == 'boot':
+            v1 = str(int(dialog.spin_boot.get_value()))
+            t_desc = f"Sistem açılışında ({v1}s)"
+        elif t_type == 'login':
+            v1 = str(int(dialog.spin_login.get_value()))
+            t_desc = f"Oturum açıldığında ({v1}s)"
+            
+        self._write_systemd_files(task_id, name, cmd, t_type, v1, v2)
+        import subprocess
+        subprocess.run(["systemctl", "--user", "daemon-reload"])
+        subprocess.run(["systemctl", "--user", "enable", "--now", f"{task_id}.timer"])
+        self.load_sched_tasks()
+
+    def _write_systemd_files(self, task_id, name, cmd, t_type, v1, v2):
+        import shlex, os
+        runner_path = os.path.join(CUSTOM_SCRIPTS_DIR, "runner.py")
+        pid_file = os.path.join(CUSTOM_SCRIPTS_DIR, "pids", f"{task_id}.pid")
+        log_file = os.path.join(CUSTOM_SCRIPTS_DIR, "logs", f"{task_id}.log")
+        exec_start = f'python3 {shlex.quote(runner_path)} {shlex.quote(pid_file)} {shlex.quote(cmd)} {shlex.quote(log_file)}'
+        
+        srv = f"""[Unit]
+Description=GSAM Görev: {name}
+
+[Service]
+Type=oneshot
+ExecStart={exec_start}
+"""
+        with open(os.path.join(SYSTEMD_USER_DIR, f"{task_id}.service"), "w") as f: f.write(srv)
+        
+        tmr = f"""[Unit]
+Description=Timer: {name}
+
+[Timer]
+Persistent=true
+"""
+        if t_type == 'interval': tmr += f"OnUnitActiveSec={v1}{v2}\n"
+        elif t_type == 'calendar': tmr += f"OnCalendar={v1}\n"
+        elif t_type == 'boot': tmr += f"OnBootSec={v1}s\n"
+        elif t_type == 'login': tmr += f"OnStartupSec={v1}s\n"
+        tmr += "[Install]\nWantedBy=timers.target\n"
+        
+        with open(os.path.join(SYSTEMD_USER_DIR, f"{task_id}.timer"), "w") as f: f.write(tmr)
+
+    def on_sched_rem(self, widget):
+        if not getattr(self, 'current_sched_paths', []): return
+        dialog = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO, text=_("Seçili görevleri silmek istiyor musunuz?"))
+        if dialog.run() == Gtk.ResponseType.YES:
+            import subprocess, os
+            for path in self.current_sched_paths:
+                treeiter = self.store_sched.get_iter(path)
+                t_id = self.store_sched[treeiter][0]
+                subprocess.run(["systemctl", "--user", "disable", "--now", f"{t_id}.timer"])
+                sf = os.path.join(SYSTEMD_USER_DIR, f"{t_id}.service")
+                tf = os.path.join(SYSTEMD_USER_DIR, f"{t_id}.timer")
+                if os.path.exists(sf): os.remove(sf)
+                if os.path.exists(tf): os.remove(tf)
+            subprocess.run(["systemctl", "--user", "daemon-reload"])
+            self.load_sched_tasks()
+        dialog.destroy()
+
+    def load_sched_tasks(self):
+        if not hasattr(self, 'store_sched'): return
+        self.store_sched.clear()
+        import os
+        if not os.path.exists(SYSTEMD_USER_DIR): return
+        
+        import subprocess, configparser
+        res = subprocess.run(["systemctl", "--user", "is-enabled", "*"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        # Parse timers
+        import glob
+        for tf in glob.glob(os.path.join(SYSTEMD_USER_DIR, "gsam-*.timer")):
+            t_id = os.path.basename(tf).replace(".timer", "")
+            sf = os.path.join(SYSTEMD_USER_DIR, f"{t_id}.service")
+            if not os.path.exists(sf): continue
+            
+            c = configparser.ConfigParser(strict=False)
+            try: c.read(tf)
+            except: pass
+            
+            s = configparser.ConfigParser(strict=False)
+            try: s.read(sf)
+            except: pass
+            
+            name = s.get("Unit", "Description", fallback=t_id).replace("GSAM Görev: ", "")
+            enabled = (subprocess.run(["systemctl", "--user", "is-active", f"{t_id}.timer"], stdout=subprocess.PIPE).returncode == 0)
+            
+            cmd = ""
+            with open(sf, "r") as s_file:
+                for line in s_file:
+                    if line.startswith("ExecStart="):
+                        cmd_full = line.split("=", 1)[1].strip()
+                        import shlex
+                        parts = shlex.split(cmd_full)
+                        if len(parts) >= 4:
+                            cmd = parts[3]
+            
+            t_type, v1, v2, t_desc = "", "", "", "Bilinmiyor"
+            if c.has_option("Timer", "OnUnitActiveSec"):
+                t_type = "interval"
+                v = c.get("Timer", "OnUnitActiveSec")
+                v1, v2 = "".join(filter(str.isdigit, v)), "".join(filter(str.isalpha, v))
+                t_desc = f"Her {v1} {v2}"
+            elif c.has_option("Timer", "OnCalendar"):
+                t_type = "calendar"
+                v1 = c.get("Timer", "OnCalendar")
+                t_desc = f"Takvim: {v1}"
+            elif c.has_option("Timer", "OnBootSec"):
+                t_type = "boot"
+                v1 = c.get("Timer", "OnBootSec").replace("s", "")
+                t_desc = f"Boot ({v1}s)"
+            elif c.has_option("Timer", "OnStartupSec"):
+                t_type = "login"
+                v1 = c.get("Timer", "OnStartupSec").replace("s", "")
+                t_desc = f"Login ({v1}s)"
+                
+            self.store_sched.append([t_id, enabled, name, t_desc, "-", cmd, t_type, v1, v2])
+
 if __name__ == "__main__":
+
     app = AutostartManager()
     import sys
     if "--tray" in sys.argv:
