@@ -216,7 +216,7 @@ class AutostartManager(Gtk.Window):
         hb.pack_start(self.search_entry)
 
         if AppIndicator3:
-            self.btn_tray = Gtk.Button(label="Tray'a İndir")
+            self.btn_tray = Gtk.Button()
             self.btn_tray.add(Gtk.Image.new_from_icon_name("go-down-symbolic", Gtk.IconSize.BUTTON))
             self.btn_tray.set_tooltip_text(_("Uygulamayı arka plana (Tray) gizle"))
             self.btn_tray.connect("clicked", self.on_tray_clicked)
@@ -392,9 +392,7 @@ class AutostartManager(Gtk.Window):
         self.indicator = None
         if AppIndicator3:
             self.indicator = AppIndicator3.Indicator.new("gnome-startup-manager-indicator", APP_ICON, AppIndicator3.IndicatorCategory.APPLICATION_STATUS)
-            status = AppIndicator3.IndicatorStatus.ACTIVE if self.tray_enabled else AppIndicator3.IndicatorStatus.PASSIVE
-            self.indicator.set_status(status)
-            self.indicator.set_title(_("Başlangıç Uygulamaları Yöneticisi"))
+            self.indicator.set_status(AppIndicator3.IndicatorStatus.PASSIVE)
             self.update_tray_menu()
 
     def update_tray_menu(self):
