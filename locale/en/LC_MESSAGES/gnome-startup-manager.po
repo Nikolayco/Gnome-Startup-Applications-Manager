@@ -1,0 +1,130 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "İptal"
+msgstr "Cancel"
+
+msgid "Kaydet"
+msgstr "Save"
+
+msgid "Uygulama Adı:"
+msgstr "Application Name:"
+
+msgid "Örn: Yedekleme"
+msgstr "e.g., Backup"
+
+msgid "Açıklama (İsteğe):"
+msgstr "Comment (Optional):"
+
+msgid "Kısaca açıklama yazın..."
+msgstr "Write a short description..."
+
+msgid "Gecikme (Sn):"
+msgstr "Delay (Sec):"
+
+msgid "Sistem açıldıktan kaç saniye sonra çalışsın?"
+msgstr "Seconds to wait after system startup?"
+
+msgid "Terminalde (Ekranda) çalıştır"
+msgstr "Run in Terminal"
+
+msgid "Çalışacak Dosya/Kod:"
+msgstr "File/Code to run:"
+
+msgid "Dosya yolu veya komut..."
+msgstr "File path or command..."
+
+msgid "Mevcut Dosya / Komut Seç"
+msgstr "Select File / Command"
+
+msgid "Mini Editör (Kodu Buraya Yaz)"
+msgstr "Mini Editor (Write Code Here)"
+
+msgid "Çalıştırılacak Dosyayı Seçin"
+msgstr "Select Executable File"
+
+msgid "Seç"
+msgstr "Select"
+
+msgid "Tüm Dosyalar"
+msgstr "All Files"
+
+msgid "Başlangıç Uygulamaları Yöneticisi"
+msgstr "Startup Applications Manager"
+
+msgid "Sistem ve Kullanıcı uygulamalarını yönetin"
+msgstr "Manage system and user applications"
+
+msgid "Uygulama Ara..."
+msgstr "Search Application..."
+
+msgid "Yeni uygulama veya script ekle"
+msgstr "Add new application or script"
+
+msgid "Başlat (Test)"
+msgstr "Start (Test)"
+
+msgid "Uygulamayı hemen çalıştırarak test et"
+msgstr "Run application immediately to test"
+
+msgid "Ayarları düzenle"
+msgstr "Edit settings"
+
+msgid "Kalıcı olarak sil"
+msgstr "Delete permanently"
+
+msgid "<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları</span>"
+msgstr "<span size='large' weight='bold' color='#2A7BDE'>User Applications</span>"
+
+msgid "<span size='large' weight='bold' color='#E35D5D'>Sistem Uygulamaları</span>"
+msgstr "<span size='large' weight='bold' color='#E35D5D'>System Applications</span>"
+
+msgid "-- Hızlı Başlat --"
+msgstr "-- Quick Start --"
+
+msgid "Uygulama bulunamadı"
+msgstr "No application found"
+
+msgid "⚙️ Yöneticiyi Aç"
+msgstr "⚙️ Open Manager"
+
+msgid "❌ Çıkış Yap"
+msgstr "❌ Quit"
+
+msgid "Aktif"
+msgstr "Active"
+
+msgid "Uygulama Adı"
+msgstr "App Name"
+
+msgid "Komut"
+msgstr "Command"
+
+msgid "Terminal"
+msgstr "Terminal"
+
+msgid "Evet"
+msgstr "Yes"
+
+msgid "Gecikme"
+msgstr "Delay"
+
+msgid "Yeni Başlangıç Öğesi Ekle"
+msgstr "Add New Startup Item"
+
+msgid "Öğeyi Düzenle"
+msgstr "Edit Item"
+
+msgid "Bu öğeyi KALICI OLARAK silmek istiyor musunuz?\nGeçici olarak durdurmak için listeden 'Aktif' tikini kaldırabilirsiniz."
+msgstr "Do you want to PERMANENTLY delete this item?\nYou can untick 'Active' from the list to temporarily disable it."
+
+msgid "Uygulama/Script Başlatıldı!"
+msgstr "App/Script Started!"
+
+msgid "Çalıştırma Hatası!"
+msgstr "Execution Error!"
+

@@ -3,9 +3,27 @@ import os
 import glob
 import shlex
 import subprocess
+import gettext
+import locale
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GLib, Gdk
+
+# i18n / Gettext Setup
+APP_NAME = "gnome-startup-manager"
+LOCALE_DIR = os.path.expanduser("~/.local/share/locale")
+
+try:
+    locale.setlocale(locale.LC_ALL, '')
+except locale.Error:
+    pass
+
+try:
+    gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
+    gettext.textdomain(APP_NAME)
+    _ = gettext.gettext
+except Exception:
+    _ = lambda s: s
 
 try:
     gi.require_version('AyatanaAppIndicator3', '0.1')
@@ -20,8 +38,6 @@ except ValueError:
 AUTOSTART_DIR = os.path.expanduser("~/.config/autostart")
 SYS_AUTOSTART_DIR = "/etc/xdg/autostart"
 CUSTOM_SCRIPTS_DIR = os.path.expanduser("~/.local/share/Gnome-Startup-Applications-Manager/scripts")
-
-# Uygulama ikonunu belirleyelim (Tüm pencerelerde ve menülerde bu kullanılacak)
 APP_ICON = "system-run"
 
 class AutostartApp:
@@ -43,7 +59,7 @@ class AppDialog(Gtk.Dialog):
         super().__init__(title=title, transient_for=parent, flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
         self.set_default_size(550, 400)
         
-        self.add_buttons("İptal", Gtk.ResponseType.CANCEL, "Kaydet", Gtk.ResponseType.OK)
+        self.add_buttons(_("İptal"), Gtk.ResponseType.CANCEL, _("Kaydet"), Gtk.ResponseType.OK)
         save_btn = self.get_widget_for_response(Gtk.ResponseType.OK)
         save_btn.get_style_context().add_class("suggested-action")
         
@@ -59,46 +75,39 @@ class AppDialog(Gtk.Dialog):
         grid.set_column_spacing(15)
         box.pack_start(grid, True, True, 0)
         
-        # 1. Uygulama Adı
-        lbl_name = Gtk.Label(label="Uygulama Adı:", xalign=0)
+        lbl_name = Gtk.Label(label=_("Uygulama Adı:"), xalign=0)
         lbl_name.get_style_context().add_class("dim-label")
         grid.attach(lbl_name, 0, 0, 1, 1)
-        self.entry_name = Gtk.Entry(placeholder_text="Örn: Yedekleme")
+        self.entry_name = Gtk.Entry(placeholder_text=_("Örn: Yedekleme"))
         self.entry_name.set_hexpand(True)
         grid.attach(self.entry_name, 1, 0, 1, 1)
         
-        # 2. Açıklama
-        lbl_comment = Gtk.Label(label="Açıklama (İsteğe):", xalign=0)
+        lbl_comment = Gtk.Label(label=_("Açıklama (İsteğe):"), xalign=0)
         lbl_comment.get_style_context().add_class("dim-label")
         grid.attach(lbl_comment, 0, 1, 1, 1)
-        self.entry_comment = Gtk.Entry(placeholder_text="Kısaca açıklama yazın...")
+        self.entry_comment = Gtk.Entry(placeholder_text=_("Kısaca açıklama yazın..."))
         grid.attach(self.entry_comment, 1, 1, 1, 1)
 
-        # 3. Gecikme Süresi (Delay)
-        lbl_delay = Gtk.Label(label="Gecikme (Sn):", xalign=0)
+        lbl_delay = Gtk.Label(label=_("Gecikme (Sn):"), xalign=0)
         lbl_delay.get_style_context().add_class("dim-label")
         grid.attach(lbl_delay, 0, 2, 1, 1)
         
         self.spin_delay = Gtk.SpinButton.new_with_range(0, 300, 1)
-        self.spin_delay.set_tooltip_text("Sistem açıldıktan kaç saniye sonra çalışsın?")
+        self.spin_delay.set_tooltip_text(_("Sistem açıldıktan kaç saniye sonra çalışsın?"))
         grid.attach(self.spin_delay, 1, 2, 1, 1)
 
-        # 4. Terminal Modu
-        self.check_terminal = Gtk.CheckButton(label="Terminalde (Ekranda) çalıştır")
+        self.check_terminal = Gtk.CheckButton(label=_("Terminalde (Ekranda) çalıştır"))
         grid.attach(self.check_terminal, 1, 3, 1, 1)
 
-        # 5. Dosya veya Kod Seçimi
-        lbl_source = Gtk.Label(label="Çalışacak Dosya/Kod:", xalign=0)
+        lbl_source = Gtk.Label(label=_("Çalışacak Dosya/Kod:"), xalign=0)
         lbl_source.get_style_context().add_class("dim-label")
         grid.attach(lbl_source, 0, 4, 1, 1)
         
-        # Stack for switching between File Selection and Code Editor
         self.stack = Gtk.Stack()
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         
-        # File selector box
         file_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        self.entry_cmd = Gtk.Entry(placeholder_text="Dosya yolu veya komut...")
+        self.entry_cmd = Gtk.Entry(placeholder_text=_("Dosya yolu veya komut..."))
         self.entry_cmd.set_hexpand(True)
         file_box.pack_start(self.entry_cmd, True, True, 0)
         btn_browse = Gtk.Button()
@@ -106,7 +115,6 @@ class AppDialog(Gtk.Dialog):
         btn_browse.connect("clicked", self.on_browse_clicked)
         file_box.pack_start(btn_browse, False, False, 0)
         
-        # Code Editor box
         self.text_buffer = Gtk.TextBuffer()
         self.text_view = Gtk.TextView(buffer=self.text_buffer)
         self.text_view.set_wrap_mode(Gtk.WrapMode.WORD)
@@ -116,8 +124,8 @@ class AppDialog(Gtk.Dialog):
         scroll_tv.set_size_request(-1, 100)
         scroll_tv.add(self.text_view)
         
-        self.stack.add_titled(file_box, "file", "Mevcut Dosya / Komut Seç")
-        self.stack.add_titled(scroll_tv, "code", "Mini Editör (Kodu Buraya Yaz)")
+        self.stack.add_titled(file_box, "file", _("Mevcut Dosya / Komut Seç"))
+        self.stack.add_titled(scroll_tv, "code", _("Mini Editör (Kodu Buraya Yaz)"))
         
         switcher = Gtk.StackSwitcher()
         switcher.set_stack(self.stack)
@@ -151,11 +159,11 @@ class AppDialog(Gtk.Dialog):
         self.show_all()
 
     def on_browse_clicked(self, widget):
-        dialog = Gtk.FileChooserDialog(title="Çalıştırılacak Dosyayı Seçin", parent=self, action=Gtk.FileChooserAction.OPEN)
-        dialog.add_buttons("İptal", Gtk.ResponseType.CANCEL, "Seç", Gtk.ResponseType.OK)
+        dialog = Gtk.FileChooserDialog(title=_("Çalıştırılacak Dosyayı Seçin"), parent=self, action=Gtk.FileChooserAction.OPEN)
+        dialog.add_buttons(_("İptal"), Gtk.ResponseType.CANCEL, _("Seç"), Gtk.ResponseType.OK)
         
         filter_all = Gtk.FileFilter()
-        filter_all.set_name("Tüm Dosyalar")
+        filter_all.set_name(_("Tüm Dosyalar"))
         filter_all.add_pattern("*")
         dialog.add_filter(filter_all)
         
@@ -175,7 +183,7 @@ class AppDialog(Gtk.Dialog):
 
 class AutostartManager(Gtk.Window):
     def __init__(self):
-        super().__init__(title="Başlangıç Uygulamaları Yöneticisi")
+        super().__init__(title=_("Başlangıç Uygulamaları Yöneticisi"))
         self.set_default_size(900, 650)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_icon_name(APP_ICON)
@@ -184,17 +192,17 @@ class AutostartManager(Gtk.Window):
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
         hb.set_title(self.get_title())
-        hb.set_subtitle("Sistem ve Kullanıcı uygulamalarını yönetin")
+        hb.set_subtitle(_("Sistem ve Kullanıcı uygulamalarını yönetin"))
         self.set_titlebar(hb)
 
         self.search_entry = Gtk.SearchEntry()
-        self.search_entry.set_placeholder_text("Uygulama Ara...")
+        self.search_entry.set_placeholder_text(_("Uygulama Ara..."))
         self.search_entry.connect("search-changed", self.on_search_changed)
         hb.pack_start(self.search_entry)
 
         btn_add = Gtk.Button()
         btn_add.add(Gtk.Image.new_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON))
-        btn_add.set_tooltip_text("Yeni uygulama veya script ekle")
+        btn_add.set_tooltip_text(_("Yeni uygulama veya script ekle"))
         btn_add.connect("clicked", self.on_add_clicked)
         btn_add.get_style_context().add_class("suggested-action")
         hb.pack_end(btn_add)
@@ -202,23 +210,23 @@ class AutostartManager(Gtk.Window):
         self.btn_start = Gtk.Button()
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         box.pack_start(Gtk.Image.new_from_icon_name("media-playback-start-symbolic", Gtk.IconSize.BUTTON), False, False, 0)
-        box.pack_start(Gtk.Label(label="Başlat (Test)"), False, False, 0)
+        box.pack_start(Gtk.Label(label=_("Başlat (Test)")), False, False, 0)
         self.btn_start.add(box)
-        self.btn_start.set_tooltip_text("Uygulamayı hemen çalıştırarak test et")
+        self.btn_start.set_tooltip_text(_("Uygulamayı hemen çalıştırarak test et"))
         self.btn_start.connect("clicked", self.on_start_clicked)
         self.btn_start.set_sensitive(False)
         hb.pack_end(self.btn_start)
 
         self.btn_edit = Gtk.Button()
         self.btn_edit.add(Gtk.Image.new_from_icon_name("document-edit-symbolic", Gtk.IconSize.BUTTON))
-        self.btn_edit.set_tooltip_text("Ayarları düzenle")
+        self.btn_edit.set_tooltip_text(_("Ayarları düzenle"))
         self.btn_edit.connect("clicked", self.on_edit_clicked)
         self.btn_edit.set_sensitive(False)
         hb.pack_end(self.btn_edit)
 
         self.btn_remove = Gtk.Button()
         self.btn_remove.add(Gtk.Image.new_from_icon_name("user-trash-symbolic", Gtk.IconSize.BUTTON))
-        self.btn_remove.set_tooltip_text("Kalıcı olarak sil")
+        self.btn_remove.set_tooltip_text(_("Kalıcı olarak sil"))
         self.btn_remove.connect("clicked", self.on_remove_clicked)
         self.btn_remove.get_style_context().add_class("destructive-action")
         self.btn_remove.set_sensitive(False)
@@ -241,7 +249,7 @@ class AutostartManager(Gtk.Window):
         self.filter_user.set_visible_func(self.filter_func)
         
         lbl_user = Gtk.Label(xalign=0)
-        lbl_user.set_markup("<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları</span>")
+        lbl_user.set_markup(_("<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları</span>"))
         box_lists.pack_start(lbl_user, False, False, 0)
         
         self.tree_user = self.create_treeview(self.filter_user)
@@ -254,7 +262,7 @@ class AutostartManager(Gtk.Window):
         self.filter_sys.set_visible_func(self.filter_func)
         
         lbl_sys = Gtk.Label(xalign=0)
-        lbl_sys.set_markup("<span size='large' weight='bold' color='#E35D5D'>Sistem Uygulamaları</span>")
+        lbl_sys.set_markup(_("<span size='large' weight='bold' color='#E35D5D'>Sistem Uygulamaları</span>"))
         box_lists.pack_start(lbl_sys, False, False, 0)
         
         self.tree_sys = self.create_treeview(self.filter_sys)
@@ -266,12 +274,8 @@ class AutostartManager(Gtk.Window):
         os.makedirs(AUTOSTART_DIR, exist_ok=True)
         os.makedirs(CUSTOM_SCRIPTS_DIR, exist_ok=True)
         
-        # Load apps first so the stores are populated
         self.load_apps()
-        
-        # Then setup tray menu which relies on store_user
         self.setup_tray()
-        
         self.connect("delete-event", self.on_delete_event)
 
     def on_delete_event(self, widget, event):
@@ -291,14 +295,14 @@ class AutostartManager(Gtk.Window):
                 AppIndicator3.IndicatorCategory.APPLICATION_STATUS
             )
             self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
-            self.indicator.set_title("Başlangıç Yöneticisi")
+            self.indicator.set_title(_("Başlangıç Uygulamaları Yöneticisi"))
             self.update_tray_menu()
 
     def update_tray_menu(self):
         if not self.indicator: return
         menu = Gtk.Menu()
         
-        item_title = Gtk.MenuItem(label="-- Hızlı Başlat --")
+        item_title = Gtk.MenuItem(label=_("-- Hızlı Başlat --"))
         item_title.set_sensitive(False)
         menu.append(item_title)
         
@@ -312,17 +316,17 @@ class AutostartManager(Gtk.Window):
             menu.append(item)
             
         if count == 0:
-            empty = Gtk.MenuItem(label="Uygulama bulunamadı")
+            empty = Gtk.MenuItem(label=_("Uygulama bulunamadı"))
             empty.set_sensitive(False)
             menu.append(empty)
             
         menu.append(Gtk.SeparatorMenuItem())
         
-        item_show = Gtk.MenuItem(label="⚙️ Yöneticiyi Aç")
+        item_show = Gtk.MenuItem(label=_("⚙️ Yöneticiyi Aç"))
         item_show.connect("activate", lambda w: self.present())
         menu.append(item_show)
         
-        item_quit = Gtk.MenuItem(label="❌ Çıkış Yap")
+        item_quit = Gtk.MenuItem(label=_("❌ Çıkış Yap"))
         item_quit.connect("activate", Gtk.main_quit)
         menu.append(item_quit)
         
@@ -354,10 +358,10 @@ class AutostartManager(Gtk.Window):
         
         render_toggle = Gtk.CellRendererToggle()
         render_toggle.connect("toggled", self.on_app_toggled, model)
-        col_toggle = Gtk.TreeViewColumn("Aktif", render_toggle, active=1)
+        col_toggle = Gtk.TreeViewColumn(_("Aktif"), render_toggle, active=1)
         tree.append_column(col_toggle)
 
-        col_name = Gtk.TreeViewColumn("Uygulama Adı")
+        col_name = Gtk.TreeViewColumn(_("Uygulama Adı"))
         col_name.set_resizable(True)
         col_name.set_expand(True)
         render_icon = Gtk.CellRendererPixbuf()
@@ -371,7 +375,7 @@ class AutostartManager(Gtk.Window):
         col_name.add_attribute(render_name, "text", 2)
         tree.append_column(col_name)
 
-        col_cmd = Gtk.TreeViewColumn("Komut")
+        col_cmd = Gtk.TreeViewColumn(_("Komut"))
         col_cmd.set_resizable(True)
         col_cmd.set_expand(True)
         render_cmd = Gtk.CellRendererText()
@@ -381,16 +385,16 @@ class AutostartManager(Gtk.Window):
         col_cmd.add_attribute(render_cmd, "text", 3)
         tree.append_column(col_cmd)
         
-        col_term = Gtk.TreeViewColumn("Terminal")
+        col_term = Gtk.TreeViewColumn(_("Terminal"))
         render_term = Gtk.CellRendererText()
         col_term.pack_start(render_term, False)
-        col_term.set_cell_data_func(render_term, lambda c, cell, m, i, d: cell.set_property("text", "Evet" if m[i][8] else "-"))
+        col_term.set_cell_data_func(render_term, lambda c, cell, m, i, d: cell.set_property("text", _("Evet") if m[i][8] else _("-")))
         tree.append_column(col_term)
 
-        col_delay = Gtk.TreeViewColumn("Gecikme")
+        col_delay = Gtk.TreeViewColumn(_("Gecikme"))
         render_delay = Gtk.CellRendererText()
         col_delay.pack_start(render_delay, False)
-        col_delay.set_cell_data_func(render_delay, lambda c, cell, m, i, d: cell.set_property("text", f"{m[i][9]} sn" if m[i][9]>0 else "-"))
+        col_delay.set_cell_data_func(render_delay, lambda c, cell, m, i, d: cell.set_property("text", f"{m[i][9]} sn" if m[i][9]>0 else _("-")))
         tree.append_column(col_delay)
         
         return tree
@@ -507,7 +511,7 @@ class AutostartManager(Gtk.Window):
         return script_path
 
     def on_add_clicked(self, widget):
-        dialog = AppDialog(self, "Yeni Başlangıç Öğesi Ekle")
+        dialog = AppDialog(self, _("Yeni Başlangıç Öğesi Ekle"))
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             name = dialog.entry_name.get_text()
@@ -539,7 +543,7 @@ class AutostartManager(Gtk.Window):
         path = model[treeiter][6]
         app = self.parse_desktop_file(path)
         
-        dialog = AppDialog(self, "Öğeyi Düzenle", app)
+        dialog = AppDialog(self, _("Öğeyi Düzenle"), app)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             name = dialog.entry_name.get_text()
@@ -571,7 +575,7 @@ class AutostartManager(Gtk.Window):
         user_path = os.path.join(AUTOSTART_DIR, filename)
         
         dialog = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.WARNING,
-                                   buttons=Gtk.ButtonsType.YES_NO, text="Bu öğeyi KALICI OLARAK silmek istiyor musunuz?\nGeçici olarak durdurmak için listeden 'Aktif' tikini kaldırabilirsiniz.")
+                                   buttons=Gtk.ButtonsType.YES_NO, text=_("Bu öğeyi KALICI OLARAK silmek istiyor musunuz?\\nGeçici olarak durdurmak için listeden 'Aktif' tikini kaldırabilirsiniz."))
         response = dialog.run()
         dialog.destroy()
         
@@ -599,11 +603,11 @@ class AutostartManager(Gtk.Window):
                 cmd_clean = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
                 subprocess.Popen(shlex.split(cmd_clean), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 
-            d = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.INFO, buttons=Gtk.ButtonsType.OK, text="Uygulama/Script Başlatıldı!")
+            d = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.INFO, buttons=Gtk.ButtonsType.OK, text=_("Uygulama/Script Başlatıldı!"))
             d.run()
             d.destroy()
         except Exception as e:
-            d = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text="Çalıştırma Hatası!")
+            d = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=_("Çalıştırma Hatası!"))
             d.format_secondary_text(str(e))
             d.run()
             d.destroy()

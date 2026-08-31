@@ -1,0 +1,130 @@
+msgid ""
+msgstr ""
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "İptal"
+msgstr "Отказ"
+
+msgid "Kaydet"
+msgstr "Запазване"
+
+msgid "Uygulama Adı:"
+msgstr "Име на приложение:"
+
+msgid "Örn: Yedekleme"
+msgstr "напр. Резервно копие"
+
+msgid "Açıklama (İsteğe):"
+msgstr "Коментар (Опция):"
+
+msgid "Kısaca açıklama yazın..."
+msgstr "Напишете кратко описание..."
+
+msgid "Gecikme (Sn):"
+msgstr "Забавяне (Сек):"
+
+msgid "Sistem açıldıktan kaç saniye sonra çalışsın?"
+msgstr "Секунди за изчакване след старт?"
+
+msgid "Terminalde (Ekranda) çalıştır"
+msgstr "Изпълни в терминал"
+
+msgid "Çalışacak Dosya/Kod:"
+msgstr "Файл/Код за изпълнение:"
+
+msgid "Dosya yolu veya komut..."
+msgstr "Път до файла или команда..."
+
+msgid "Mevcut Dosya / Komut Seç"
+msgstr "Избор на файл / команда"
+
+msgid "Mini Editör (Kodu Buraya Yaz)"
+msgstr "Мини Редактор (Код тук)"
+
+msgid "Çalıştırılacak Dosyayı Seçin"
+msgstr "Изберете изпълним файл"
+
+msgid "Seç"
+msgstr "Избери"
+
+msgid "Tüm Dosyalar"
+msgstr "Всички файлове"
+
+msgid "Başlangıç Uygulamaları Yöneticisi"
+msgstr "Мениджър на стартиращи приложения"
+
+msgid "Sistem ve Kullanıcı uygulamalarını yönetin"
+msgstr "Управление на приложенията"
+
+msgid "Uygulama Ara..."
+msgstr "Търсене на приложение..."
+
+msgid "Yeni uygulama veya script ekle"
+msgstr "Добави ново приложение"
+
+msgid "Başlat (Test)"
+msgstr "Старт (Тест)"
+
+msgid "Uygulamayı hemen çalıştırarak test et"
+msgstr "Стартирай веднага за тест"
+
+msgid "Ayarları düzenle"
+msgstr "Редактиране"
+
+msgid "Kalıcı olarak sil"
+msgstr "Изтриване завинаги"
+
+msgid "<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları</span>"
+msgstr "<span size='large' weight='bold' color='#2A7BDE'>Потребителски приложения</span>"
+
+msgid "<span size='large' weight='bold' color='#E35D5D'>Sistem Uygulamaları</span>"
+msgstr "<span size='large' weight='bold' color='#E35D5D'>Системни приложения</span>"
+
+msgid "-- Hızlı Başlat --"
+msgstr "-- Бърз старт --"
+
+msgid "Uygulama bulunamadı"
+msgstr "Не е намерено приложение"
+
+msgid "⚙️ Yöneticiyi Aç"
+msgstr "⚙️ Отвори мениджъра"
+
+msgid "❌ Çıkış Yap"
+msgstr "❌ Изход"
+
+msgid "Aktif"
+msgstr "Активен"
+
+msgid "Uygulama Adı"
+msgstr "Име"
+
+msgid "Komut"
+msgstr "Команда"
+
+msgid "Terminal"
+msgstr "Терминал"
+
+msgid "Evet"
+msgstr "Да"
+
+msgid "Gecikme"
+msgstr "Забавяне"
+
+msgid "Yeni Başlangıç Öğesi Ekle"
+msgstr "Добави нов елемент"
+
+msgid "Öğeyi Düzenle"
+msgstr "Редактиране на елемент"
+
+msgid "Bu öğeyi KALICI OLARAK silmek istiyor musunuz?\nGeçici olarak durdurmak için listeden 'Aktif' tikini kaldırabilirsiniz."
+msgstr "Искате ли завинаги да изтриете този елемент?\nПремахнете отметката от 'Активен', за временно спиране."
+
+msgid "Uygulama/Script Başlatıldı!"
+msgstr "Приложение/скрипт стартира!"
+
+msgid "Çalıştırma Hatası!"
+msgstr "Грешка при изпълнение!"
+

@@ -1,25 +1,42 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-mkdir -p ~/.local/bin ~/.local/share/applications
+APP_NAME="baslangic-yoneticisi"
+BIN_DIR="$HOME/.local/bin"
+APP_DIR="$HOME/.local/share/applications"
+LOCALE_DIR="$HOME/.local/share/locale"
 
-echo "Kodlar ~/.local/bin klasörüne kopyalanıyor..."
-cp baslangic-yoneticisi.py ~/.local/bin/baslangic-yoneticisi
-chmod +x ~/.local/bin/baslangic-yoneticisi
+mkdir -p "$BIN_DIR"
+mkdir -p "$APP_DIR"
+mkdir -p "$LOCALE_DIR"
 
-echo "Masaüstü kısayolu oluşturuluyor..."
-cat << DESKTOP > ~/.local/share/applications/baslangic-yoneticisi.desktop
+# Copy python script
+cp "${APP_NAME}.py" "$BIN_DIR/${APP_NAME}"
+chmod +x "$BIN_DIR/${APP_NAME}"
+
+# Copy translations
+if [ -d "locale" ]; then
+    cp -r locale/* "$LOCALE_DIR/"
+fi
+
+# Create desktop shortcut
+cat << DESKTOP > "$APP_DIR/${APP_NAME}.desktop"
 [Desktop Entry]
 Name=Başlangıç Uygulamaları Yöneticisi
-Comment=Sistem başlangıcındaki uygulamaları yönetin ve test edin
-Exec=$HOME/.local/bin/baslangic-yoneticisi
+Name[en]=Startup Applications Manager
+Name[bg]=Мениджър на стартиращи приложения
+Name[ru]=Менеджер автозапуска приложений
+Comment=Sistem ve Kullanıcı uygulamalarını yönetin
+Comment[en]=Manage system and user applications
+Exec=$BIN_DIR/${APP_NAME}
 Icon=system-run
 Terminal=false
 Type=Application
-Categories=Settings;System;
+Categories=Settings;System;Utility;
+Keywords=startup;autostart;manager;
 DESKTOP
 
-update-desktop-database ~/.local/share/applications 2>/dev/null || true
+chmod +x "$APP_DIR/${APP_NAME}.desktop"
+update-desktop-database "$APP_DIR" 2>/dev/null || true
 
-echo "---------------------------------------------------"
-echo "Kurulum başarıyla tamamlandı!"
-echo "Uygulama menüsünde 'Başlangıç Uygulamaları Yöneticisi' olarak aratabilirsiniz."
+echo "Kurulum tamamlandi! (Installation complete!)"
+echo "Uygulama menusunde 'Baslangic Uygulamalari Yoneticisi' olarak bulabilirsiniz."
