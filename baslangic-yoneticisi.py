@@ -725,6 +725,7 @@ class AutostartManager(Gtk.Window):
         tree.set_rules_hint(True)
         tree.connect("row-activated", self.on_row_activated)
         selection = tree.get_selection()
+        selection.set_mode(Gtk.SelectionMode.MULTIPLE)
         selection.connect("changed", self.on_selection_changed, tree)
         
         render_toggle = Gtk.CellRendererToggle()
@@ -898,17 +899,21 @@ class AutostartManager(Gtk.Window):
         if hasattr(self, 'indicator'): self.update_tray_menu()
 
     def on_selection_changed(self, selection, treeview):
-        model, treeiter = selection.get_selected()
-        if treeiter is not None:
+        model, paths = selection.get_selected_rows()
+        if paths:
             other = self.tree_sys if treeview == self.tree_user else self.tree_user
             other.get_selection().unselect_all()
-            self.current_selection = (model, treeiter)
+            self.current_selection_paths = paths
+            self.current_model = model
+            self.current_selection = (model, model.get_iter(paths[0]))
             self.btn_start.set_sensitive(True)
-            self.btn_stop.set_sensitive(model[treeiter][11])
+            self.btn_stop.set_sensitive(any(model[model.get_iter(p)][11] for p in paths))
             self.btn_remove.set_sensitive(True)
-            self.btn_edit.set_sensitive(True)
+            self.btn_edit.set_sensitive(len(paths) == 1)
         else:
-            if not self.tree_user.get_selection().get_selected()[1] and not self.tree_sys.get_selection().get_selected()[1]:
+            if not self.tree_user.get_selection().get_selected_rows()[1] and not self.tree_sys.get_selection().get_selected_rows()[1]:
+                self.current_selection_paths = []
+                self.current_model = None
                 self.current_selection = None
                 self.btn_start.set_sensitive(False)
                 self.btn_stop.set_sensitive(False)
@@ -994,14 +999,20 @@ class AutostartManager(Gtk.Window):
         dialog.destroy()
 
     def on_remove_clicked(self, widget):
-        if not self.current_selection: return
-        model, treeiter = self.current_selection
-        dialog = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.WARNING, buttons=Gtk.ButtonsType.YES_NO, text=_("Bu öğeyi KALICI OLARAK silmek istiyor musunuz?\\nGeçici olarak durdurmak için listeden 'Aktif' tikini kaldırabilirsiniz."))
+        if not getattr(self, 'current_selection_paths', []): return
+        model = self.current_model
+        count = len(self.current_selection_paths)
+        msg = _("Bu öğeyi silmek istediğinize emin misiniz?") if count == 1 else _(f"Seçili {count} öğeyi silmek istediğinize emin misiniz?")
+        dialog = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.QUESTION,
+                                   buttons=Gtk.ButtonsType.YES_NO, text=msg)
         if dialog.run() == Gtk.ResponseType.YES:
-            if model[treeiter][5]:
-                with open(os.path.join(AUTOSTART_DIR, model[treeiter][7]), 'w', encoding='utf-8') as f: f.write("[Desktop Entry]\nHidden=true\nX-GNOME-Autostart-enabled=false\n")
-            else:
-                if os.path.exists(os.path.join(AUTOSTART_DIR, model[treeiter][7])): os.remove(os.path.join(AUTOSTART_DIR, model[treeiter][7]))
+            paths = [Gtk.TreePath(p) for p in self.current_selection_paths]
+            paths.sort(reverse=True)
+            for path in paths:
+                treeiter = model.get_iter(path)
+                filename = model[treeiter][7]
+                filepath = os.path.join(AUTOSTART_DIR, filename)
+                if os.path.exists(filepath): os.remove(filepath)
             self.load_apps()
         dialog.destroy()
 
