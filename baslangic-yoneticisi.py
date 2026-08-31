@@ -202,6 +202,12 @@ class AutostartManager(Gtk.Window):
         self.set_icon_name(APP_ICON)
         self.current_selection = None
         
+        self.tray_conf_path = os.path.join(CUSTOM_SCRIPTS_DIR, "tray_enabled.conf")
+        self.tray_enabled = True
+        if os.path.exists(self.tray_conf_path):
+            with open(self.tray_conf_path, "r") as cf:
+                self.tray_enabled = (cf.read().strip() != "0")
+                
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
         hb.set_title(self.get_title())
@@ -214,11 +220,18 @@ class AutostartManager(Gtk.Window):
         hb.pack_start(self.search_entry)
 
         if AppIndicator3:
-            btn_tray = Gtk.Button()
-            btn_tray.add(Gtk.Image.new_from_icon_name("go-down-symbolic", Gtk.IconSize.BUTTON))
-            btn_tray.set_tooltip_text(_("Arka planda (Tray) çalışmaya devam et"))
-            btn_tray.connect("clicked", lambda w: self.hide())
-            hb.pack_end(btn_tray)
+            self.btn_tray_toggle = Gtk.ToggleButton(label="Tray")
+            self.btn_tray_toggle.set_active(self.tray_enabled)
+            self.btn_tray_toggle.set_tooltip_text(_("Tray ikonunu göster/gizle"))
+            self.btn_tray_toggle.connect("toggled", self.on_tray_toggle_clicked)
+            hb.pack_end(self.btn_tray_toggle)
+            
+            self.btn_tray = Gtk.Button()
+            self.btn_tray.add(Gtk.Image.new_from_icon_name("go-down-symbolic", Gtk.IconSize.BUTTON))
+            self.btn_tray.set_tooltip_text(_("Arka planda (Tray) çalışmaya devam et"))
+            self.btn_tray.connect("clicked", lambda w: self.hide())
+            self.btn_tray.set_visible(self.tray_enabled)
+            hb.pack_end(self.btn_tray)
 
         self.btn_remove = Gtk.Button()
         self.btn_remove.add(Gtk.Image.new_from_icon_name("user-trash-symbolic", Gtk.IconSize.BUTTON))
@@ -372,6 +385,20 @@ class AutostartManager(Gtk.Window):
             
         return True
 
+    def on_tray_toggle_clicked(self, widget):
+        self.tray_enabled = widget.get_active()
+        with open(self.tray_conf_path, "w") as cf:
+            cf.write("1" if self.tray_enabled else "0")
+        
+        if hasattr(self, 'btn_tray'):
+            self.btn_tray.set_visible(self.tray_enabled)
+            
+        if self.indicator:
+            if self.tray_enabled:
+                self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+            else:
+                self.indicator.set_status(AppIndicator3.IndicatorStatus.PASSIVE)
+
     def on_delete_event(self, widget, event):
         Gtk.main_quit()
         return False
@@ -380,7 +407,8 @@ class AutostartManager(Gtk.Window):
         self.indicator = None
         if AppIndicator3:
             self.indicator = AppIndicator3.Indicator.new("gnome-startup-manager-indicator", APP_ICON, AppIndicator3.IndicatorCategory.APPLICATION_STATUS)
-            self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+            status = AppIndicator3.IndicatorStatus.ACTIVE if self.tray_enabled else AppIndicator3.IndicatorStatus.PASSIVE
+            self.indicator.set_status(status)
             self.indicator.set_title(_("Başlangıç Uygulamaları Yöneticisi"))
             self.update_tray_menu()
 
