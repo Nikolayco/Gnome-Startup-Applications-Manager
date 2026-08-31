@@ -47,3 +47,29 @@ python3 baslangic-yoneticisi.py
 ---
 
 *Developed by Nikolayco — Version 1.1*
+
+---
+
+## 🗑️ Uninstallation
+
+To completely remove the application and all its data:
+
+```bash
+# Remove the application binary
+rm -f ~/.local/bin/baslangic-yoneticisi
+
+# Remove all app data (PID files, settings, runner script)
+rm -rf ~/.local/share/Gnome-Startup-Applications-Manager/
+
+# Remove all scheduled tasks (systemd timers created by the app)
+for f in ~/.config/systemd/user/gsam-*.timer ~/.config/systemd/user/gsam-*.service; do
+    [ -f "$f" ] && systemctl --user disable --now "$(basename $f)" 2>/dev/null
+    rm -f "$f"
+done
+systemctl --user daemon-reload
+
+# Remove autostart entries created by the app
+rm -f ~/.config/autostart/gsam-*.desktop
+```
+
+> **Note:** Your own `.desktop` autostart entries (apps you added manually) will NOT be deleted by this process. Only files created by this application are removed.

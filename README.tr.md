@@ -47,3 +47,29 @@ python3 baslangic-yoneticisi.py
 ---
 
 *Geliştirici: Nikolayco — Sürüm 1.1*
+
+---
+
+## 🗑️ Kaldırma
+
+Uygulamayı ve tüm verilerini tamamen kaldırmak için:
+
+```bash
+# Uygulama ikili dosyasını kaldır
+rm -f ~/.local/bin/baslangic-yoneticisi
+
+# Tüm uygulama verilerini kaldır (PID dosyaları, ayarlar, runner script)
+rm -rf ~/.local/share/Gnome-Startup-Applications-Manager/
+
+# Uygulama tarafından oluşturulan tüm zamanlanmış görevleri kaldır (systemd timer)
+for f in ~/.config/systemd/user/gsam-*.timer ~/.config/systemd/user/gsam-*.service; do
+    [ -f "$f" ] && systemctl --user disable --now "$(basename $f)" 2>/dev/null
+    rm -f "$f"
+done
+systemctl --user daemon-reload
+
+# Uygulama tarafından oluşturulan autostart girişlerini kaldır
+rm -f ~/.config/autostart/gsam-*.desktop
+```
+
+> **Not:** Kendinizin elle eklediği `.desktop` başlangıç uygulamaları bu işlemden etkilenmez. Yalnızca uygulamanın kendi oluşturduğu dosyalar silinir.
