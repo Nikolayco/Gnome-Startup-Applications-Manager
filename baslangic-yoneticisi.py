@@ -259,14 +259,14 @@ class AutostartManager(Gtk.Window):
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(vbox)
 
-        scroll = Gtk.ScrolledWindow()
-        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        paned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
+        paned.set_position(300)
         
-        box_lists = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
-        box_lists.set_margin_start(10)
-        box_lists.set_margin_end(10)
-        box_lists.set_margin_top(15)
-        box_lists.set_margin_bottom(15)
+        # Kullanici listesi alani
+        box_user = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        box_user.set_margin_start(10)
+        box_user.set_margin_end(10)
+        box_user.set_margin_top(15)
         
         self.store_user = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str, bool)
         self.filter_user = self.store_user.filter_new()
@@ -274,26 +274,38 @@ class AutostartManager(Gtk.Window):
         
         lbl_user = Gtk.Label(xalign=0)
         lbl_user.set_markup(_("<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları</span>"))
-        box_lists.pack_start(lbl_user, False, False, 0)
+        box_user.pack_start(lbl_user, False, False, 0)
         
+        scroll_user = Gtk.ScrolledWindow()
+        scroll_user.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.tree_user = self.create_treeview(self.filter_user)
-        box_lists.pack_start(self.tree_user, False, False, 0)
+        scroll_user.add(self.tree_user)
+        box_user.pack_start(scroll_user, True, True, 0)
         
-        box_lists.pack_start(Gtk.Separator(), False, False, 10)
+        # Sistem listesi alani
+        box_sys = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        box_sys.set_margin_start(10)
+        box_sys.set_margin_end(10)
+        box_sys.set_margin_top(15)
         
         self.store_sys = Gtk.ListStore(str, bool, str, str, str, bool, str, str, bool, int, str, bool)
         self.filter_sys = self.store_sys.filter_new()
         self.filter_sys.set_visible_func(self.filter_func)
         
         lbl_sys = Gtk.Label(xalign=0)
-        lbl_sys.set_markup(_("<span size='large' weight='bold' color='#E35D5D'>Sistem Uygulamaları</span>"))
-        box_lists.pack_start(lbl_sys, False, False, 0)
+        lbl_sys.set_markup(_("<span size='large' weight='bold' color='#E03C31'>Sistem Uygulamaları</span>"))
+        box_sys.pack_start(lbl_sys, False, False, 0)
         
+        scroll_sys = Gtk.ScrolledWindow()
+        scroll_sys.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.tree_sys = self.create_treeview(self.filter_sys)
-        box_lists.pack_start(self.tree_sys, False, False, 0)
+        scroll_sys.add(self.tree_sys)
+        box_sys.pack_start(scroll_sys, True, True, 0)
         
-        scroll.add(box_lists)
-        vbox.pack_start(scroll, True, True, 0)
+        paned.pack1(box_user, True, False)
+        paned.pack2(box_sys, True, False)
+        
+        vbox.pack_start(paned, True, True, 0)
 
         os.makedirs(AUTOSTART_DIR, exist_ok=True)
         os.makedirs(CUSTOM_SCRIPTS_DIR, exist_ok=True)
