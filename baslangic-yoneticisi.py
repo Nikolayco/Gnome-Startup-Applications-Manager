@@ -98,8 +98,16 @@ class AppDialog(Gtk.Dialog):
         if response == Gtk.ResponseType.OK:
             filepath = dialog.get_filename()
             if " " in filepath:
-                filepath = f'"{filepath}"'
-            self.entry_cmd.set_text(filepath)
+                self.entry_cmd.set_text(f'"{filepath}"')
+            else:
+                self.entry_cmd.set_text(filepath)
+                
+            # Otomatik İsim Doldurma (Auto-fill Name)
+            if not self.entry_name.get_text().strip():
+                filename_only = os.path.basename(filepath)
+                name_no_ext = os.path.splitext(filename_only)[0]
+                self.entry_name.set_text(name_no_ext.replace("-", " ").replace("_", " ").title())
+                
         dialog.destroy()
 
 class AutostartManager(Gtk.Window):
@@ -236,7 +244,6 @@ class AutostartManager(Gtk.Window):
             if not app.hidden and app.cmd:
                 all_apps.append(app)
                 
-        # Sort: User apps (False) first, then System apps (True). Then by name.
         all_apps.sort(key=lambda x: (x.is_sys, x.name.lower()))
                 
         for app in all_apps:
