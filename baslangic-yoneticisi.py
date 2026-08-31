@@ -549,6 +549,11 @@ class AutostartManager(Gtk.Window):
             self.btn_sched_add.connect("clicked", self.on_sched_add)
             sched_toolbar.pack_start(self.btn_sched_add, False, False, 0)
             
+            self.btn_sched_run = Gtk.Button(label=_("Şimdi Çalıştır"))
+            self.btn_sched_run.set_sensitive(False)
+            self.btn_sched_run.connect("clicked", self.on_sched_run)
+            sched_toolbar.pack_start(self.btn_sched_run, False, False, 0)
+            
             self.btn_sched_edit = Gtk.Button(label=_("Düzenle"))
             self.btn_sched_edit.set_sensitive(False)
             self.btn_sched_edit.connect("clicked", self.on_sched_edit)
@@ -1221,8 +1226,18 @@ class AutostartManager(Gtk.Window):
     def on_sched_selection_changed(self, selection):
         model, paths = selection.get_selected_rows()
         self.current_sched_paths = paths
+        self.btn_sched_run.set_sensitive(len(paths) > 0)
         self.btn_sched_edit.set_sensitive(len(paths) == 1)
         self.btn_sched_rem.set_sensitive(len(paths) > 0)
+
+    def on_sched_run(self, widget):
+        if not getattr(self, 'current_sched_paths', []): return
+        import subprocess
+        for path in self.current_sched_paths:
+            treeiter = self.store_sched.get_iter(path)
+            t_id = self.store_sched[treeiter][0]
+            # Servisi manuel tetikle
+            subprocess.Popen(["systemctl", "--user", "start", f"{t_id}.service"])
 
     def on_sched_add(self, widget):
         dialog = ScheduleDialog(self, _("Yeni Görev"))
