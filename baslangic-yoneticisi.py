@@ -1172,9 +1172,6 @@ class AutostartManager(Gtk.Window):
             is_run, usage = is_running(row)
             if row[11] != is_run: row[11] = is_run
             if row[12] != usage: row[12] = usage
-        for row in self.store_sys: 
-            new_val = is_running(row)
-            if row[11] != new_val: row[11] = new_val
         
         if self.current_selection:
             model, treeiter = self.current_selection
