@@ -322,7 +322,7 @@ _BG_DICT = {
 
 _LANG = os.environ.get("LANG", "en").split("_")[0]
 
-VERSION = "v260901.203126"
+VERSION = "v260901.203138"
 
 
 def _(text):
