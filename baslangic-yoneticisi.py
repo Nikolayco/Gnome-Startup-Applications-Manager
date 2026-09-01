@@ -830,20 +830,24 @@ class AutostartManager(Gtk.Window):
         import shutil
         if shutil.which("loginctl"):
             page_settings.pack_start(Gtk.Separator(), False, False, 10)
-            box_linger = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+            box_linger_main = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=15)
+            
+            box_linger_text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
             lbl_linger_title = Gtk.Label(label=_("<b>Gelişmiş Arka Plan İzni (Lingering)</b>"), use_markup=True, xalign=0)
             lbl_linger_desc = Gtk.Label(label=_("Bilgisayar açıldığında, siz henüz şifre girip oturum açmasanız bile\nzamanlanmış görevlerin (Sistem Açılışında - Boot) çalışabilmesi için gereklidir."), xalign=0)
             lbl_linger_desc.get_style_context().add_class("dim-label")
-            box_linger.pack_start(lbl_linger_title, False, False, 0)
-            box_linger.pack_start(lbl_linger_desc, False, False, 0)
+            box_linger_text.pack_start(lbl_linger_title, False, False, 0)
+            box_linger_text.pack_start(lbl_linger_desc, False, False, 0)
             
-            box_linger_btn = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-            self.btn_linger = Gtk.ToggleButton(label=_("İzin Ver / Kaldır"))
-            self.btn_linger.connect("toggled", self.on_linger_toggled)
-            box_linger_btn.pack_start(self.btn_linger, False, False, 0)
-            box_linger.pack_start(box_linger_btn, False, False, 5)
+            box_linger_main.pack_start(box_linger_text, True, True, 0)
             
-            page_settings.pack_start(box_linger, False, False, 0)
+            self.btn_linger = Gtk.Switch()
+            self.btn_linger.connect("notify::active", self.on_linger_toggled)
+            self.btn_linger.set_valign(Gtk.Align.CENTER)
+            
+            box_linger_main.pack_start(self.btn_linger, False, False, 0)
+            
+            page_settings.pack_start(box_linger_main, False, False, 0)
             self.check_linger_status()
 
         
@@ -1624,10 +1628,9 @@ class AutostartManager(Gtk.Window):
         
         self.btn_linger.handler_block_by_func(self.on_linger_toggled)
         self.btn_linger.set_active(is_linger)
-        self.btn_linger.set_label(_("İzin Verildi (Aktif)") if is_linger else _("İzin Ver (Lingering'i Aç)"))
         self.btn_linger.handler_unblock_by_func(self.on_linger_toggled)
 
-    def on_linger_toggled(self, widget):
+    def on_linger_toggled(self, widget, *args):
         import subprocess, os
         enable = widget.get_active()
         cmd = "enable-linger" if enable else "disable-linger"
