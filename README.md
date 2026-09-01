@@ -78,4 +78,4 @@ bash uninstall.sh
 
 ---
 
-*Developed by Nikolayco — Version v260901.200947*
+*Developed by Nikolayco *
