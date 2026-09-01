@@ -861,20 +861,22 @@ class AutostartManager(Gtk.Window):
             page_about.pack_start(img, False, False, 0)
         except: pass
         
-        lbl_title = Gtk.Label(label=_("<b>Başlangıç Uygulamaları Yöneticisi</b>"), use_markup=True)
+        lbl_title = Gtk.Label(use_markup=True)
+        lbl_title.set_markup("<span size='xx-large' weight='bold'>" + _("Başlangıç Uygulamaları Yöneticisi") + "</span>")
         page_about.pack_start(lbl_title, False, False, 0)
         
-        lbl_desc = Gtk.Label(label=_("Sürüm: v260901.200947\nGeliştirici: Nikolayco"))
+        lbl_desc = Gtk.Label(use_markup=True)
+        lbl_desc.set_markup("<span size='large'>" + _("Sürüm: v260901.200947\nGeliştirici: Nikolayco") + "</span>")
         lbl_desc.set_justify(Gtk.Justification.CENTER)
         page_about.pack_start(lbl_desc, False, False, 0)
         
-        lbl_mail = Gtk.Label()
-        lbl_mail.set_markup('<a href="mailto:nikolayco@gmail.com">nikolayco@gmail.com</a>')
+        lbl_mail = Gtk.Label(use_markup=True)
+        lbl_mail.set_markup("<span size='large'><a href='mailto:nikolayco@gmail.com'>nikolayco@gmail.com</a></span>")
         lbl_mail.set_justify(Gtk.Justification.CENTER)
         page_about.pack_start(lbl_mail, False, False, 0)
         
-        lbl_gh = Gtk.Label()
-        lbl_gh.set_markup('<a href="https://github.com/Nikolayco/Gnome-Startup-Applications-Manager">GitHub</a>')
+        lbl_gh = Gtk.Label(use_markup=True)
+        lbl_gh.set_markup("<span size='large'><a href='https://github.com/Nikolayco/Gnome-Startup-Applications-Manager'>GitHub Sayfası</a></span>")
         page_about.pack_start(lbl_gh, False, False, 0)
         
         # Kayitlar (Logs) Sayfasi
