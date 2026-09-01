@@ -78,4 +78,4 @@ bash uninstall.sh
 
 ---
 
-*Geliştirici: Nikolayco — Sürüm 1.2*
+*Geliştirici: Nikolayco — Sürüm v260901.200947*

@@ -62,7 +62,7 @@ _EN_DICT = {
     "Sistem ve Kullanıcı uygulamalarını yönetin": "Manage system and user startup applications",
     "Sistem Çekmecesinde (Tray) Her Zaman Göster:": "Always Show in System Tray:",
     "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor.": "Task Scheduler is unavailable because systemd is not found on your system.",
-    "Sürüm: 1.2\nGeliştirici: Nikolayco": "Version: 1.2\nDeveloper: Nikolayco",
+    "Sürüm: v260901.200947\nGeliştirici: Nikolayco": "Version: v260901.200947\nDeveloper: Nikolayco",
     "Sıradaki Çalışma": "Next Run",
     "Terminal": "Terminal",
     "Terminalde Çalıştır:": "Run in Terminal:",
@@ -163,7 +163,7 @@ _RU_DICT = {
     "Sistem ve Kullanıcı uygulamalarını yönetin": "Управление приложениями автозапуска",
     "Sistem Çekmecesinde (Tray) Her Zaman Göster:": "Всегда показывать в трее:",
     "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor.": "Планировщик недоступен: systemd не найден в системе.",
-    "Sürüm: 1.2\nGeliştirici: Nikolayco": "Версия: 1.2\nРазработчик: Nikolayco",
+    "Sürüm: v260901.200947\nGeliştirici: Nikolayco": "Версия: v260901.200947\nРазработчик: Nikolayco",
     "Sıradaki Çalışma": "Следующий запуск",
     "Terminal": "Терминал",
     "Terminalde Çalıştır:": "Запустить в терминале:",
@@ -264,7 +264,7 @@ _BG_DICT = {
     "Sistem ve Kullanıcı uygulamalarını yönetin": "Управление на приложения за автостартиране",
     "Sistem Çekmecesinde (Tray) Her Zaman Göster:": "Винаги показвай в системния трей:",
     "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor.": "Планировщикът е недостъпен: systemd не е намерен в системата.",
-    "Sürüm: 1.2\nGeliştirici: Nikolayco": "Версия: 1.2\nРазработчик: Nikolayco",
+    "Sürüm: v260901.200947\nGeliştirici: Nikolayco": "Версия: v260901.200947\nРазработчик: Nikolayco",
     "Sıradaki Çalışma": "Следващо изпълнение",
     "Terminal": "Терминал",
     "Terminalde Çalıştır:": "Изпълни в терминал:",
@@ -864,7 +864,7 @@ class AutostartManager(Gtk.Window):
         lbl_title = Gtk.Label(label=_("<b>Başlangıç Uygulamaları Yöneticisi</b>"), use_markup=True)
         page_about.pack_start(lbl_title, False, False, 0)
         
-        lbl_desc = Gtk.Label(label=_("Sürüm: 1.2\nGeliştirici: Nikolayco"))
+        lbl_desc = Gtk.Label(label=_("Sürüm: v260901.200947\nGeliştirici: Nikolayco"))
         lbl_desc.set_justify(Gtk.Justification.CENTER)
         page_about.pack_start(lbl_desc, False, False, 0)
         
