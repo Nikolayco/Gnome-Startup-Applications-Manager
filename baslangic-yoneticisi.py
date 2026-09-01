@@ -322,13 +322,20 @@ _BG_DICT = {
 
 _LANG = os.environ.get("LANG", "en").split("_")[0]
 
-try:
-    import os, datetime
-    mtime = os.path.getmtime(__file__)
-    dt = datetime.datetime.fromtimestamp(mtime)
-    VERSION = dt.strftime("v%y%m%d.%H%M%S")
-except:
-    VERSION = "Unknown"
+VERSION = "AUTO_VERSION"
+if VERSION == "AUTO_VERSION":
+    try:
+        import os, datetime, subprocess
+        repo_dir = os.path.dirname(os.path.abspath(__file__))
+        res = subprocess.run(["git", "log", "-1", "--format=%ct", "--", __file__], capture_output=True, text=True, cwd=repo_dir)
+        if res.returncode == 0 and res.stdout.strip():
+            mtime = int(res.stdout.strip())
+        else:
+            mtime = os.path.getmtime(__file__)
+        dt = datetime.datetime.fromtimestamp(mtime)
+        VERSION = dt.strftime("v%y%m%d.%H%M%S")
+    except:
+        VERSION = "Unknown"
 
 
 def _(text):
