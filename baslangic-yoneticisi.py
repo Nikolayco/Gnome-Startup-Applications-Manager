@@ -63,6 +63,8 @@ _EN_DICT = {
     "Sistem Çekmecesinde (Tray) Her Zaman Göster:": "Always Show in System Tray:",
     "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor.": "Task Scheduler is unavailable because systemd is not found on your system.",
     "Sürüm: v260901.200947\nGeliştirici: Nikolayco": "Version: v260901.200947\nDeveloper: Nikolayco",
+    "Sürüm": "Version",
+    "Geliştirici": "Developer",
     "Sıradaki Çalışma": "Next Run",
     "Terminal": "Terminal",
     "Terminalde Çalıştır:": "Run in Terminal:",
@@ -164,6 +166,10 @@ _RU_DICT = {
     "Sistem Çekmecesinde (Tray) Her Zaman Göster:": "Всегда показывать в трее:",
     "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor.": "Планировщик недоступен: systemd не найден в системе.",
     "Sürüm: v260901.200947\nGeliştirici: Nikolayco": "Версия: v260901.200947\nРазработчик: Nikolayco",
+    "Sürüm": "Версия",
+    "Geliştirici": "Разработчик",
+    "Sürüm": "Версия",
+    "Geliştirici": "Разработчик",
     "Sıradaki Çalışma": "Следующий запуск",
     "Terminal": "Терминал",
     "Terminalde Çalıştır:": "Запустить в терминале:",
@@ -265,6 +271,10 @@ _BG_DICT = {
     "Sistem Çekmecesinde (Tray) Her Zaman Göster:": "Винаги показвай в системния трей:",
     "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor.": "Планировщикът е недостъпен: systemd не е намерен в системата.",
     "Sürüm: v260901.200947\nGeliştirici: Nikolayco": "Версия: v260901.200947\nРазработчик: Nikolayco",
+    "Sürüm": "Версия",
+    "Geliştirici": "Разработчик",
+    "Sürüm": "Версия",
+    "Geliştirici": "Разработчик",
     "Sıradaki Çalışma": "Следващо изпълнение",
     "Terminal": "Терминал",
     "Terminalde Çalıştır:": "Изпълни в терминал:",
@@ -311,6 +321,15 @@ _BG_DICT = {
 }
 
 _LANG = os.environ.get("LANG", "en").split("_")[0]
+
+try:
+    import os, datetime
+    mtime = os.path.getmtime(__file__)
+    dt = datetime.datetime.fromtimestamp(mtime)
+    VERSION = dt.strftime("v%y%m%d.%H%M%S")
+except:
+    VERSION = "Unknown"
+
 
 def _(text):
     if _LANG == "tr": return text
@@ -866,7 +885,7 @@ class AutostartManager(Gtk.Window):
         page_about.pack_start(lbl_title, False, False, 0)
         
         lbl_desc = Gtk.Label(use_markup=True)
-        lbl_desc.set_markup("<span size='large'>" + _("Sürüm: v260901.200947\nGeliştirici: Nikolayco") + "</span>")
+        lbl_desc.set_markup(f"<span size='large'>{_('Sürüm')}: {VERSION}\n{_('Geliştirici')}: Nikolayco</span>")
         lbl_desc.set_justify(Gtk.Justification.CENTER)
         page_about.pack_start(lbl_desc, False, False, 0)
         
