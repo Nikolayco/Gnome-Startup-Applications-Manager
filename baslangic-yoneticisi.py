@@ -1518,17 +1518,49 @@ class AutostartManager(Gtk.Window):
         return script_path
 
     def on_add_clicked(self, widget):
+        import os
         dialog = AppDialog(self, _("Yeni Başlangıç Öğesi Ekle"))
-        if dialog.run() == Gtk.ResponseType.OK:
-            name, comment, terminal, term_size, delay, icon = dialog.entry_name.get_text(), dialog.entry_comment.get_text(), dialog.check_terminal.get_active(), dialog.combo_term_size.get_active_id(), int(dialog.spin_delay.get_value()), dialog.original_icon
-            if dialog.stack.get_visible_child_name() == "file": cmd = dialog.entry_cmd.get_text()
-            else:
-                buf = dialog.text_buffer
-                code = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True).strip()
-                cmd = self.save_custom_script(name.lower().replace(" ", "-").replace("/", "") + ".desktop", code) if code else ""
-            if name and cmd:
-                self.write_desktop_file(name.lower().replace(" ", "-").replace("/", "") + ".desktop", name, cmd, comment, terminal, term_size, delay, True)
+        while True:
+            if dialog.run() == Gtk.ResponseType.OK:
+                name = dialog.entry_name.get_text().strip()
+                is_file = (dialog.stack.get_visible_child_name() == "file")
+                
+                cmd = ""
+                if is_file:
+                    cmd = dialog.entry_cmd.get_text().strip()
+                else:
+                    buf = dialog.text_buffer
+                    cmd = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True).strip()
+                
+                if not name and cmd:
+                    if is_file:
+                        name = os.path.splitext(os.path.basename(cmd.split()[0]))[0].title()
+                    else:
+                        name = "Ozel Kod"
+                    dialog.entry_name.set_text(name)
+                
+                if not name or not cmd:
+                    err = Gtk.MessageDialog(transient_for=dialog, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=_("Eksik Bilgi!"))
+                    err.format_secondary_text(_("Lütfen isim ve komut kısımlarını boş bırakmayınız."))
+                    err.run()
+                    err.destroy()
+                    continue
+                
+                comment = dialog.entry_comment.get_text()
+                terminal = dialog.check_terminal.get_active()
+                term_size = dialog.combo_term_size.get_active_id()
+                delay = int(dialog.spin_delay.get_value())
+                icon = dialog.original_icon
+                
+                file_id = name.lower().replace(" ", "-").replace("/", "") + ".desktop"
+                if not is_file:
+                    cmd = self.save_custom_script(file_id, cmd)
+                    
+                self.write_desktop_file(file_id, name, cmd, comment, terminal, term_size, delay, True)
                 self.load_apps()
+                break
+            else:
+                break
         dialog.destroy()
 
     def on_edit_clicked(self, widget):
@@ -1536,16 +1568,46 @@ class AutostartManager(Gtk.Window):
         model, treeiter = self.current_selection
         app = self.parse_desktop_file(model[treeiter][6])
         dialog = AppDialog(self, _("Öğeyi Düzenle"), app)
-        if dialog.run() == Gtk.ResponseType.OK:
-            name, comment, terminal, term_size, delay, icon = dialog.entry_name.get_text(), dialog.entry_comment.get_text(), dialog.check_terminal.get_active(), dialog.combo_term_size.get_active_id(), int(dialog.spin_delay.get_value()), dialog.original_icon
-            if dialog.stack.get_visible_child_name() == "file": cmd = dialog.entry_cmd.get_text()
-            else:
-                buf = dialog.text_buffer
-                code = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True).strip()
-                cmd = self.save_custom_script(app.filename, code) if code else app.cmd
-            if name and cmd:
+        while True:
+            if dialog.run() == Gtk.ResponseType.OK:
+                name = dialog.entry_name.get_text().strip()
+                is_file = (dialog.stack.get_visible_child_name() == "file")
+                
+                cmd = ""
+                if is_file:
+                    cmd = dialog.entry_cmd.get_text().strip()
+                else:
+                    buf = dialog.text_buffer
+                    cmd = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True).strip()
+                
+                if not name and cmd:
+                    if is_file:
+                        name = os.path.splitext(os.path.basename(cmd.split()[0]))[0].title()
+                    else:
+                        name = "Ozel Kod"
+                    dialog.entry_name.set_text(name)
+                
+                if not name or not cmd:
+                    err = Gtk.MessageDialog(transient_for=dialog, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=_("Eksik Bilgi!"))
+                    err.format_secondary_text(_("Lütfen isim ve komut kısımlarını boş bırakmayınız."))
+                    err.run()
+                    err.destroy()
+                    continue
+                    
+                comment = dialog.entry_comment.get_text()
+                terminal = dialog.check_terminal.get_active()
+                term_size = dialog.combo_term_size.get_active_id()
+                delay = int(dialog.spin_delay.get_value())
+                icon = dialog.original_icon
+                
+                if not is_file:
+                    cmd = self.save_custom_script(app.filename, cmd)
+                    
                 self.write_desktop_file(app.filename, name, cmd, comment, terminal, term_size, delay, app.enabled)
                 self.load_apps()
+                break
+            else:
+                break
         dialog.destroy()
 
     def on_remove_clicked(self, widget):
@@ -1667,8 +1729,10 @@ class AutostartManager(Gtk.Window):
 
     def on_sched_add(self, widget):
         dialog = ScheduleDialog(self, _("Yeni Görev"))
-        if dialog.run() == Gtk.ResponseType.OK:
-            self._save_dialog_to_sched(dialog)
+        while True:
+            if dialog.run() == Gtk.ResponseType.OK:
+                if self._save_dialog_to_sched(dialog): break
+            else: break
         dialog.destroy()
 
     def on_sched_edit(self, widget):
@@ -1686,14 +1750,27 @@ class AutostartManager(Gtk.Window):
             'val_delay': int(self.store_sched[treeiter][7]) if self.store_sched[treeiter][6] in ['boot', 'login'] else 0
         }
         dialog = ScheduleDialog(self, _("Görevi Düzenle"), task)
-        if dialog.run() == Gtk.ResponseType.OK:
-            self._save_dialog_to_sched(dialog, task_id=task['id'])
+        while True:
+            if dialog.run() == Gtk.ResponseType.OK:
+                if self._save_dialog_to_sched(dialog, task_id=task['id']): break
+            else: break
         dialog.destroy()
 
     def _save_dialog_to_sched(self, dialog, task_id=None):
+        import os
         name = dialog.entry_name.get_text().strip()
         cmd = dialog.entry_cmd.get_text().strip()
-        if not name or not cmd: return
+        
+        if not name and cmd:
+            name = os.path.splitext(os.path.basename(cmd.split()[0]))[0].title()
+            dialog.entry_name.set_text(name)
+            
+        if not name or not cmd:
+            err = Gtk.MessageDialog(transient_for=dialog, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=_("Eksik Bilgi!"))
+            err.format_secondary_text(_("Lütfen görev adını ve çalıştırılacak komutu boş bırakmayınız."))
+            err.run()
+            err.destroy()
+            return False
         
         if dialog.switch_term.get_active() and not cmd.startswith("gnome-terminal"):
             cmd = f"gnome-terminal -- {cmd}" 
@@ -1723,6 +1800,7 @@ class AutostartManager(Gtk.Window):
         subprocess.run(["systemctl", "--user", "daemon-reload"])
         subprocess.run(["systemctl", "--user", "enable", "--now", f"{task_id}.timer"])
         self.load_sched_tasks()
+        return True
 
     def _write_systemd_files(self, task_id, name, cmd, t_type, v1, v2):
         import shlex, os
