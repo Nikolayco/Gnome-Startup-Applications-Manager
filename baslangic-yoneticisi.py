@@ -107,7 +107,24 @@ _EN_DICT = {
     "Seçili uygulamayı sil": "Delete selected application",
     "Arama kutusuna odaklan": "Focus the search box",
     "Çalışıyor": "Running",
-    "Durdu": "Stopped"
+    "Durdu": "Stopped",
+    "Takvim": "Calendar",
+    "Gelişmiş": "Advanced",
+    "Her Gün": "Every Day",
+    "Tarih Seç": "Select Date",
+    "Saat:": "Time:",
+    "Hafta": "Weeks",
+    "Ay": "Months",
+    "Yıl": "Years",
+    "Başlat": "Start",
+    "Durdur": "Stop",
+    "Dosya Konumunu Aç": "Open File Location",
+    "Dosya konumunu aç": "Open file location",
+    "Görev Başlatılamadı": "Failed to Start Task",
+    "Geçersiz zamanlayıcı ayarı.": "Invalid scheduler configuration.",
+    "Belirli Tarih...": "Specific Date...",
+    "<b>Gelişmiş Arka Plan İzni (Lingering)</b>": "<b>Advanced Background Permission (Lingering)</b>",
+    "<b>Klavye Kısayolları</b>": "<b>Keyboard Shortcuts</b>"
 }
 
 _RU_DICT = {
@@ -212,7 +229,24 @@ _RU_DICT = {
     "Seçili uygulamayı sil": "Удалить выбранное приложение",
     "Arama kutusuna odaklan": "Перейти в поле поиска",
     "Çalışıyor": "Работает",
-    "Durdu": "Остановлено"
+    "Durdu": "Остановлено",
+    "Takvim": "Календарь",
+    "Gelişmiş": "Расширенные",
+    "Her Gün": "Каждый день",
+    "Tarih Seç": "Выбрать дату",
+    "Saat:": "Время:",
+    "Hafta": "Недели",
+    "Ay": "Месяцы",
+    "Yıl": "Годы",
+    "Başlat": "Запустить",
+    "Durdur": "Остановить",
+    "Dosya Konumunu Aç": "Откр. расположение файла",
+    "Dosya konumunu aç": "Откр. расположение файла",
+    "Görev Başlatılamadı": "Не удалось запустить",
+    "Geçersiz zamanlayıcı ayarı.": "Недопустимая конфигурация.",
+    "Belirli Tarih...": "Конкретная дата...",
+    "<b>Gelişmiş Arka Plan İzni (Lingering)</b>": "<b>Разрешение на фон (Lingering)</b>",
+    "<b>Klavye Kısayolları</b>": "<b>Горячие клавиши</b>"
 }
 
 _BG_DICT = {
