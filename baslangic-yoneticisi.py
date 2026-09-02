@@ -714,6 +714,58 @@ class ScheduleDialog(Gtk.Dialog):
                 self.entry_name.set_text(os.path.splitext(os.path.basename(filepath))[0].title())
         dialog.destroy()
 
+    def on_adv_toggled(self, btn):
+        if btn.get_active():
+            if self.chk_everyday.get_active():
+                date_str = "*-*-*"
+            else:
+                y, m, d = self.cal_widget.get_date()
+                date_str = f"{y}-{m+1:02d}-{d:02d}"
+            time_str = f"{int(self.spin_cal_h.get_value()):02d}:{int(self.spin_cal_m.get_value()):02d}:00"
+            self.entry_cal.set_text(f"{date_str} {time_str}")
+            self.stack_cal_ui.set_visible_child_name("advanced")
+        else:
+            val = self.entry_cal.get_text().strip()
+            parts = val.split(" ")
+            if len(parts) >= 2:
+                if parts[0] == "*-*-*":
+                    self.chk_everyday.set_active(True)
+                else:
+                    try:
+                        y, m, d = parts[0].split("-")
+                        self.cal_widget.select_month(int(m)-1, int(y))
+                        self.cal_widget.select_day(int(d))
+                        self.chk_everyday.set_active(False)
+                        self.cal_date_btn.set_label(parts[0])
+                    except: pass
+                try:
+                    h, m = parts[1].split(":")[:2]
+                    self.spin_cal_h.set_value(int(h))
+                    self.spin_cal_m.set_value(int(m))
+                except: pass
+            self.stack_cal_ui.set_visible_child_name("easy")
+            
+    def on_everyday_toggled(self, btn):
+        self.cal_date_btn.set_sensitive(not btn.get_active())
+        if not btn.get_active():
+            y, m, d = self.cal_widget.get_date()
+            self.cal_date_btn.set_label(f"{y}-{m+1:02d}-{d:02d}")
+            
+    def on_cal_day_selected(self, cal):
+        y, m, d = cal.get_date()
+        self.cal_date_btn.set_label(f"{y}-{m+1:02d}-{d:02d}")
+        
+    def get_cal_string(self):
+        if self.chk_adv.get_active():
+            return self.entry_cal.get_text()
+        else:
+            if self.chk_everyday.get_active():
+                date_str = "*-*-*"
+            else:
+                y, m, d = self.cal_widget.get_date()
+                date_str = f"{y}-{m+1:02d}-{d:02d}"
+            return f"{date_str} {int(self.spin_cal_h.get_value()):02d}:{int(self.spin_cal_m.get_value()):02d}:00"
+
 class AutostartManager(Gtk.Window):
     def __init__(self):
         super().__init__(title=_("Başlangıç Uygulamaları Yöneticisi"))
