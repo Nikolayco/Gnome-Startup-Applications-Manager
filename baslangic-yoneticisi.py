@@ -635,7 +635,7 @@ class ScheduleDialog(Gtk.Dialog):
         popover = Gtk.Popover()
         self.cal_widget = Gtk.Calendar()
         popover.add(self.cal_widget)
-        popover.show_all()
+        self.cal_widget.show()
         self.cal_date_btn.set_popover(popover)
         box_easy.pack_start(self.cal_date_btn, False, False, 0)
         
