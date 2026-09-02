@@ -6,6 +6,8 @@
 
 > Hem GNOME başlangıç uygulamalarını yönetebilen hem de gerçek anlamda bir görev zamanlayıcı olarak çalışabilen — belirli aralıklarla, açılışta veya belirli bir saatte script çalıştırabilen — tek bir uygulama aradım. Böyle bir şey bulamadım, o yüzden kendim geliştirdim.
 
+
+![GNOME Startup Applications Manager Screenshot](images/image1.png)
 ---
 
 `systemd --user` altyapısıyla tam kapsamlı bir **Görev Zamanlayıcı** içeren, modern GTK tabanlı GNOME başlangıç uygulama yöneticisi. Tamamen Python ile yazılmıştır — sıfır ek bağımlılık.

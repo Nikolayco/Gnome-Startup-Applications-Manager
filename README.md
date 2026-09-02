@@ -6,6 +6,8 @@
 
 > I was looking for a single application that could both manage GNOME startup applications **and** work as a proper task scheduler — running scripts at specific intervals, on boot, or at a set time. I couldn’t find anything that did both well, so I built it myself.
 
+
+![GNOME Startup Applications Manager Screenshot](images/image1.png)
 ---
 
 A powerful, modern GTK-based manager for GNOME startup applications with a full-fledged **Task Scheduler** backed by `systemd --user`. Built entirely in Python — zero extra dependencies.
