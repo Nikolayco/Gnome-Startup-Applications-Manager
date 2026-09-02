@@ -608,9 +608,13 @@ class ScheduleDialog(Gtk.Dialog):
         box_int = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         self.spin_int = Gtk.SpinButton.new_with_range(1, 1000, 1)
         self.combo_int_unit = Gtk.ComboBoxText()
+        self.combo_int_unit.append("s", _("Saniye"))
         self.combo_int_unit.append("min", _("Dakika"))
         self.combo_int_unit.append("h", _("Saat"))
         self.combo_int_unit.append("d", _("Gün"))
+        self.combo_int_unit.append("w", _("Hafta"))
+        self.combo_int_unit.append("M", _("Ay"))
+        self.combo_int_unit.append("y", _("Yıl"))
         self.combo_int_unit.set_active_id("min")
         box_int.pack_start(self.spin_int, False, False, 0)
         box_int.pack_start(self.combo_int_unit, False, False, 0)
@@ -1226,6 +1230,23 @@ class AutostartManager(Gtk.Window):
                 self.btn_start.set_sensitive(not all(m[m.get_iter(p)][11] for p in self.current_selection_paths))
             except: pass
             
+        # Refresh scheduler next runs
+        if hasattr(self, 'store_sched'):
+            import subprocess
+            next_runs = {}
+            timer_res = subprocess.run(["systemctl", "--user", "list-timers", "--all", "--no-pager"], stdout=subprocess.PIPE, text=True)
+            for line in timer_res.stdout.splitlines():
+                if "gsam-" in line and ".timer" in line:
+                    parts = line.strip().split()
+                    if len(parts) >= 2 and parts[0] != "-":
+                        timer_name = [p for p in parts if p.endswith(".timer") and p.startswith("gsam-")]
+                        if timer_name:
+                            next_runs[timer_name[0]] = f"{parts[0]} {parts[1]}"
+            for row in self.store_sched:
+                t_id = row[0]
+                n_run = next_runs.get(f"{t_id}.timer", "-")
+                if row[4] != n_run: row[4] = n_run
+                
         return True
 
     def on_tray_clicked(self, widget):
@@ -2055,7 +2076,25 @@ class AutostartManager(Gtk.Window):
         self._write_systemd_files(task_id, name, cmd, t_type, v1, v2)
         import subprocess
         subprocess.run(["systemctl", "--user", "daemon-reload"])
-        subprocess.run(["systemctl", "--user", "enable", "--now", f"{task_id}.timer"])
+        res = subprocess.run(["systemctl", "--user", "enable", "--now", f"{task_id}.timer"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if res.returncode != 0:
+            err_msg = res.stderr.strip() or _("Geçersiz zamanlayıcı ayarı.")
+            err_dialog = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.ERROR,
+                                           buttons=Gtk.ButtonsType.OK, text=_("Görev Başlatılamadı"))
+            err_dialog.format_secondary_text(err_msg)
+            err_dialog.run()
+            err_dialog.destroy()
+            
+            # Geri al (sil)
+            import os
+            sf = os.path.join(SYSTEMD_USER_DIR, f"{task_id}.service")
+            tf = os.path.join(SYSTEMD_USER_DIR, f"{task_id}.timer")
+            if os.path.exists(sf): os.remove(sf)
+            if os.path.exists(tf): os.remove(tf)
+            subprocess.run(["systemctl", "--user", "daemon-reload"])
+            
+            return False
+            
         self.load_sched_tasks()
         return True
 
@@ -2112,10 +2151,32 @@ Persistent=true
         import os
         if not os.path.exists(SYSTEMD_USER_DIR): return
         
-        import subprocess, configparser
-        res = subprocess.run(["systemctl", "--user", "is-enabled", "*"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        # Parse timers
-        import glob
+        import subprocess, configparser, glob, shlex
+        
+        # Batch fetch active states
+        active_states = {}
+        show_res = subprocess.run(["systemctl", "--user", "show", "-p", "Id,ActiveState", "gsam-*.timer"], stdout=subprocess.PIPE, text=True)
+        current_id = None
+        for line in show_res.stdout.splitlines():
+            if line.startswith("Id="): current_id = line.split("=", 1)[1].strip()
+            elif line.startswith("ActiveState=") and current_id:
+                active_states[current_id] = (line.split("=", 1)[1].strip() == "active")
+        
+        # Batch fetch next runs
+        next_runs = {}
+        timer_res = subprocess.run(["systemctl", "--user", "list-timers", "--all", "--no-pager"], stdout=subprocess.PIPE, text=True)
+        for line in timer_res.stdout.splitlines():
+            if "gsam-" in line and ".timer" in line:
+                parts = line.strip().split()
+                if len(parts) >= 2 and parts[0] != "-":
+                    # NEXT usually spans 2-3 tokens, we can just grab up to the unit name
+                    # Let's find the .timer unit name index
+                    timer_name = [p for p in parts if p.endswith(".timer") and p.startswith("gsam-")]
+                    if timer_name:
+                        t_name = timer_name[0]
+                        # Just grab date and time
+                        next_runs[t_name] = f"{parts[0]} {parts[1]}"
+        
         for tf in glob.glob(os.path.join(SYSTEMD_USER_DIR, "gsam-*.timer")):
             t_id = os.path.basename(tf).replace(".timer", "")
             sf = os.path.join(SYSTEMD_USER_DIR, f"{t_id}.service")
@@ -2130,7 +2191,7 @@ Persistent=true
             except: pass
             
             name = s.get("Unit", "Description", fallback=t_id).replace("GSAM Görev: ", "")
-            enabled = (subprocess.run(["systemctl", "--user", "is-active", f"{t_id}.timer"], stdout=subprocess.PIPE).returncode == 0)
+            enabled = active_states.get(f"{t_id}.timer", False)
             
             cmd = ""
             with open(sf, "r") as s_file:
