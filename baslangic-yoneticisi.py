@@ -725,6 +725,13 @@ class AutostartManager(Gtk.Window):
         self.btn_start.set_sensitive(False)
         hb.pack_end(self.btn_start)
 
+        self.btn_open = Gtk.Button()
+        self.btn_open.add(Gtk.Image.new_from_icon_name("folder-open-symbolic", Gtk.IconSize.BUTTON))
+        self.btn_open.set_tooltip_text(_("Dosya konumunu aç"))
+        self.btn_open.connect("clicked", self.on_open_location_clicked)
+        self.btn_open.set_sensitive(False)
+        hb.pack_end(self.btn_open)
+
         self.btn_edit = Gtk.Button()
         self.btn_edit.add(Gtk.Image.new_from_icon_name("document-edit-symbolic", Gtk.IconSize.BUTTON))
         self.btn_edit.set_tooltip_text(_("Ayarları düzenle"))
@@ -944,6 +951,7 @@ class AutostartManager(Gtk.Window):
             # id, enabled, name, trigger_desc, next_run, cmd, type, val1, val2
             self.store_sched = Gtk.ListStore(str, bool, str, str, str, str, str, str, str)
             self.tree_sched = Gtk.TreeView(model=self.store_sched)
+            self.tree_sched.connect("button-press-event", self.on_sched_tree_button_press)
             
             render_toggle_sched = Gtk.CellRendererToggle()
             render_toggle_sched.connect("toggled", self.on_sched_toggled)
@@ -1173,10 +1181,11 @@ class AutostartManager(Gtk.Window):
             if row[11] != is_run: row[11] = is_run
             if row[12] != usage: row[12] = usage
         
-        if self.current_selection:
-            model, treeiter = self.current_selection
+        if getattr(self, 'current_selection_paths', []) and getattr(self, 'current_model', None):
             try:
-                self.btn_stop.set_sensitive(model[treeiter][11])
+                m = self.current_model
+                self.btn_stop.set_sensitive(any(m[m.get_iter(p)][11] for p in self.current_selection_paths))
+                self.btn_start.set_sensitive(not all(m[m.get_iter(p)][11] for p in self.current_selection_paths))
             except: pass
             
         return True
@@ -1278,6 +1287,114 @@ class AutostartManager(Gtk.Window):
             subprocess.Popen(shlex.split(cmd_clean), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except: pass
 
+
+    def create_icon_menu_item(self, icon_name, label_text):
+        item = Gtk.MenuItem()
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        icon = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.MENU)
+        label = Gtk.Label(label=label_text, xalign=0)
+        box.pack_start(icon, False, False, 0)
+        box.pack_start(label, True, True, 0)
+        item.add(box)
+        return item
+
+    def on_open_location_clicked(self, widget):
+        if self.current_selection:
+            model, treeiter = self.current_selection
+            path = model[treeiter][6]
+            if os.path.exists(path):
+                subprocess.Popen(["xdg-open", os.path.dirname(path)])
+
+    def on_tree_button_press(self, treeview, event):
+        if event.button == 3:
+            path_info = treeview.get_path_at_pos(int(event.x), int(event.y))
+            if path_info:
+                path, col, cell_x, cell_y = path_info
+                treeview.set_cursor(path, col, 0)
+                
+                is_running = False
+                is_all_running = False
+                if getattr(self, 'current_selection_paths', []) and getattr(self, 'current_model', None):
+                    model = self.current_model
+                    is_running = any(model[model.get_iter(p)][11] for p in self.current_selection_paths)
+                    is_all_running = all(model[model.get_iter(p)][11] for p in self.current_selection_paths)
+
+                menu = Gtk.Menu()
+                # Add custom CSS class for modern rounded look if supported
+                context = menu.get_style_context()
+                context.add_class("csd")
+                
+                item_start = self.create_icon_menu_item("media-playback-start-symbolic", _("Başlat"))
+                item_start.connect("activate", self.on_start_clicked)
+                item_start.set_sensitive(not is_all_running)
+                menu.append(item_start)
+                
+                item_stop = self.create_icon_menu_item("media-playback-stop-symbolic", _("Durdur"))
+                item_stop.connect("activate", self.on_stop_clicked)
+                item_stop.set_sensitive(is_running)
+                menu.append(item_stop)
+                
+                item_edit = self.create_icon_menu_item("document-edit-symbolic", _("Düzenle"))
+                item_edit.connect("activate", self.on_edit_clicked)
+                menu.append(item_edit)
+                
+                item_remove = self.create_icon_menu_item("user-trash-symbolic", _("Sil"))
+                item_remove.connect("activate", self.on_remove_clicked)
+                menu.append(item_remove)
+                
+                menu.append(Gtk.SeparatorMenuItem())
+                
+                item = self.create_icon_menu_item("folder-open-symbolic", _("Dosya Konumunu Aç"))
+                item.connect("activate", self.on_open_location_clicked)
+                menu.append(item)
+                
+                menu.show_all()
+                menu.popup_at_pointer(event)
+                return True
+        return False
+
+    def on_sched_tree_button_press(self, treeview, event):
+        if event.button == 3:
+            path_info = treeview.get_path_at_pos(int(event.x), int(event.y))
+            if path_info:
+                path, col, cell_x, cell_y = path_info
+                treeview.set_cursor(path, col, 0)
+                menu = Gtk.Menu()
+                context = menu.get_style_context()
+                context.add_class("csd")
+                
+                item_run = self.create_icon_menu_item("media-playback-start-symbolic", _("Şimdi Çalıştır"))
+                item_run.connect("activate", self.on_sched_run)
+                menu.append(item_run)
+                
+                item_edit = self.create_icon_menu_item("document-edit-symbolic", _("Düzenle"))
+                item_edit.connect("activate", self.on_sched_edit)
+                menu.append(item_edit)
+                
+                item_rem = self.create_icon_menu_item("user-trash-symbolic", _("Sil"))
+                item_rem.connect("activate", self.on_sched_rem)
+                menu.append(item_rem)
+                
+                menu.append(Gtk.SeparatorMenuItem())
+                
+                item = self.create_icon_menu_item("folder-open-symbolic", _("Dosya Konumunu Aç"))
+                item.connect("activate", self.on_sched_open_location)
+                menu.append(item)
+                
+                menu.show_all()
+                menu.popup_at_pointer(event)
+                return True
+        return False
+
+    def on_sched_open_location(self, widget):
+        selection = self.tree_sched.get_selection()
+        model, treeiter = selection.get_selected()
+        if treeiter:
+            task_id = model[treeiter][0]
+            path = os.path.expanduser(f"~/.config/systemd/user/{task_id}.service")
+            if os.path.exists(path):
+                subprocess.Popen(["xdg-open", os.path.dirname(path)])
+
     def on_search_changed(self, widget):
         self.filter_user.refilter()
         self.filter_sys.refilter()
@@ -1291,6 +1408,7 @@ class AutostartManager(Gtk.Window):
         tree = Gtk.TreeView(model=model)
         tree.set_rules_hint(True)
         tree.connect("row-activated", self.on_row_activated)
+        tree.connect("button-press-event", self.on_tree_button_press)
         selection = tree.get_selection()
         selection.set_mode(Gtk.SelectionMode.MULTIPLE)
         selection.connect("changed", self.on_selection_changed, tree)
@@ -1487,10 +1605,11 @@ class AutostartManager(Gtk.Window):
             self.current_selection_paths = paths
             self.current_model = model
             self.current_selection = (model, model.get_iter(paths[0]))
-            self.btn_start.set_sensitive(True)
+            self.btn_start.set_sensitive(not all(model[model.get_iter(p)][11] for p in paths))
             self.btn_stop.set_sensitive(any(model[model.get_iter(p)][11] for p in paths))
             self.btn_remove.set_sensitive(True)
             self.btn_edit.set_sensitive(len(paths) == 1)
+            self.btn_open.set_sensitive(len(paths) == 1)
         else:
             if not self.tree_user.get_selection().get_selected_rows()[1] and not self.tree_sys.get_selection().get_selected_rows()[1]:
                 self.current_selection_paths = []
@@ -1500,6 +1619,7 @@ class AutostartManager(Gtk.Window):
                 self.btn_stop.set_sensitive(False)
                 self.btn_remove.set_sensitive(False)
                 self.btn_edit.set_sensitive(False)
+                self.btn_open.set_sensitive(False)
 
     def on_row_activated(self, treeview, path, column):
         self.on_edit_clicked(None)
@@ -1655,8 +1775,23 @@ class AutostartManager(Gtk.Window):
             for path in paths:
                 treeiter = model.get_iter(path)
                 filename = model[treeiter][7]
-                filepath = os.path.join(AUTOSTART_DIR, filename)
-                if os.path.exists(filepath): os.remove(filepath)
+                user_path = os.path.join(AUTOSTART_DIR, filename)
+                sys_path = os.path.join(SYS_AUTOSTART_DIR, filename)
+                
+                deleted = False
+                if os.path.exists(user_path):
+                    os.remove(user_path)
+                    deleted = True
+                
+                if model == getattr(self, 'store_sys', None) and os.path.exists(sys_path):
+                    import subprocess
+                    subprocess.run(["pkexec", "rm", "-f", sys_path])
+                    deleted = True
+                    
+                if not deleted and os.path.exists(sys_path):
+                    # fallback just in case model check fails
+                    import subprocess
+                    subprocess.run(["pkexec", "rm", "-f", sys_path])
             self.load_apps()
         dialog.destroy()
 

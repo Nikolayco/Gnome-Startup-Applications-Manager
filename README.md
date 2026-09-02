@@ -23,6 +23,8 @@ The application **automatically detects your system language** and displays in T
 - **Safe Process Stopping** — uses PID files; never kills the wrong process
 - **Terminal Mode** — optionally open scripts in a visible GNOME Terminal window
 - **Startup Delay** — configure per-app delay in seconds
+- **Modern Context Menu** — right-click on any row with native symbolic icons to Start, Stop, Edit, Delete, or Open File Location.
+- **Root Uninstaller** — safely deletes stubborn system-level autostart apps with Polkit authentication.
 
 ### Task Scheduler (Cron Alternative)
 - **Interval** — run every N minutes / hours / days
