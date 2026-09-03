@@ -10,7 +10,6 @@ from gi.repository import Gtk, GLib, Gio, GdkPixbuf, Gdk
 _EN_DICT = {
     "-": "-",
     "-- Hızlı Başlat --": "-- Quick Launch --",
-    "<b>Başlangıç Uygulamaları Yöneticisi</b>": "<b>Startup Applications Manager</b>",
     "<b>Gelişmiş Arka Plan İzni (Lingering)</b>": "<b>Advanced Background Permission (Lingering)</b>",
     "Aktif": "Enabled",
     "Ayarlar": "Settings",
@@ -87,9 +86,6 @@ _EN_DICT = {
     "Örn: Yedekleme": "e.g. Backup",
     "Öğeyi Düzenle": "Edit Item",
     "İptal": "Cancel",
-    "İzin Ver (Lingering'i Aç)": "Enable (Turn on Lingering)",
-    "İzin Ver / Kaldır": "Enable / Disable",
-    "İzin Verildi (Aktif)": "Enabled (Active)",
     "Şimdi Çalıştır": "Run Now",
     "Klavye Kısayolları": "Keyboard Shortcuts",
     "Kısayol": "Shortcut",
@@ -105,6 +101,16 @@ _EN_DICT = {
     "Eksik Bilgi!": "Missing Information!",
     "Lütfen görev adını ve çalıştırılacak komutu boş bırakmayınız.": "Please do not leave the task name and command fields empty.",
     "Lütfen isim ve komut kısımlarını boş bırakmayınız.": "Please do not leave the name and command fields empty.",
+    "Durum Tarama Sıklığı (Saniye):": "Status Refresh Rate (Seconds):",
+    "Pencere Boyutu ve Pozisyonu:": "Window Size and Position:",
+    "Pencere Modu:": "Window Mode:",
+    "Varsayılan Boyuta Dön": "Restore Default Size",
+    "⚙️ Yöneticiyi Aç": "⚙️ Open Manager",
+    "❌ Çıkış Yap": "❌ Quit",
+    "Her": "Every",
+    "Takvim:": "Calendar:",
+
+
 
     "Takvim": "Calendar",
     "Gelişmiş": "Advanced",
@@ -120,7 +126,6 @@ _EN_DICT = {
     "Dosya konumunu aç": "Open file location",
     "Görev Başlatılamadı": "Failed to Start Task",
     "Geçersiz zamanlayıcı ayarı.": "Invalid scheduler configuration.",
-    "Belirli Tarih...": "Specific Date...",
     "<b>Gelişmiş Arka Plan İzni (Lingering)</b>": "<b>Advanced Background Permission (Lingering)</b>",
     "<b>Klavye Kısayolları</b>": "<b>Keyboard Shortcuts</b>"
 }
@@ -128,7 +133,6 @@ _EN_DICT = {
 _RU_DICT = {
     "-": "-",
     "-- Hızlı Başlat --": "-- Быстрый запуск --",
-    "<b>Başlangıç Uygulamaları Yöneticisi</b>": "<b>Менеджер автозапуска</b>",
     "Aktif": "Активен",
     "Ayarlar": "Настройки",
     "Ayarları düzenle": "Изменить настройки",
@@ -204,9 +208,6 @@ _RU_DICT = {
     "Örn: Yedekleme": "Напр: Резервная копия",
     "Öğeyi Düzenle": "Изменить элемент",
     "İptal": "Отмена",
-    "İzin Ver (Lingering'i Aç)": "Разрешить (включить Lingering)",
-    "İzin Ver / Kaldır": "Включить / Отключить",
-    "İzin Verildi (Aktif)": "Разрешено (Активно)",
     "Şimdi Çalıştır": "Запустить сейчас",
     "Klavye Kısayolları": "Горячие клавиши",
     "Kısayol": "Сочетание",
@@ -222,6 +223,16 @@ _RU_DICT = {
     "Eksik Bilgi!": "Недостаточно информации!",
     "Lütfen görev adını ve çalıştırılacak komutu boş bırakmayınız.": "Пожалуйста, не оставляйте поля имени задачи и команды пустыми.",
     "Lütfen isim ve komut kısımlarını boş bırakmayınız.": "Пожалуйста, не оставляйте поля имени и команды пустыми.",
+    "Durum Tarama Sıklığı (Saniye):": "Частота обновления (сек):",
+    "Pencere Boyutu ve Pozisyonu:": "Размер и положение окна:",
+    "Pencere Modu:": "Режим окна:",
+    "Varsayılan Boyuta Dön": "Восстановить размер по умолчанию",
+    "⚙️ Yöneticiyi Aç": "⚙️ Открыть менеджер",
+    "❌ Çıkış Yap": "❌ Выйти",
+    "Her": "Каждые",
+    "Takvim:": "Календарь:",
+
+
 
     "Takvim": "Календарь",
     "Gelişmiş": "Расширенные",
@@ -237,7 +248,6 @@ _RU_DICT = {
     "Dosya konumunu aç": "Откр. расположение файла",
     "Görev Başlatılamadı": "Не удалось запустить",
     "Geçersiz zamanlayıcı ayarı.": "Недопустимая конфигурация.",
-    "Belirli Tarih...": "Конкретная дата...",
     "<b>Gelişmiş Arka Plan İzni (Lingering)</b>": "<b>Разрешение на фон (Lingering)</b>",
     "<b>Klavye Kısayolları</b>": "<b>Горячие клавиши</b>"
 }
@@ -245,7 +255,6 @@ _RU_DICT = {
 _BG_DICT = {
     "-": "-",
     "-- Hızlı Başlat --": "-- Бърз старт --",
-    "<b>Başlangıç Uygulamaları Yöneticisi</b>": "<b>Мениджър за автостартиране</b>",
     "Aktif": "Активен",
     "Ayarlar": "Настройки",
     "Ayarları düzenle": "Редактирай настройките",
@@ -321,9 +330,6 @@ _BG_DICT = {
     "Örn: Yedekleme": "Напр: Архив",
     "Öğeyi Düzenle": "Редактирай елемента",
     "İptal": "Отказ",
-    "İzin Ver (Lingering'i Aç)": "Разреши (включи Lingering)",
-    "İzin Ver / Kaldır": "Включи / Изключи",
-    "İzin Verildi (Aktif)": "Разрешено (Активно)",
     "Şimdi Çalıştır": "Изпълни сега",
     "Klavye Kısayolları": "Клавишни комбинации",
     "Kısayol": "Комбинация",
@@ -350,12 +356,21 @@ _BG_DICT = {
     "Dosya konumunu aç": "Отвори местоположението",
     "Görev Başlatılamadı": "Неуспешно стартиране",
     "Geçersiz zamanlayıcı ayarı.": "Невалидна конфигурация.",
-    "Belirli Tarih...": "Конкретна дата...",
     "<b>Gelişmiş Arka Plan İzni (Lingering)</b>": "<b>Разрешение за фон (Lingering)</b>",
     "<b>Klavye Kısayolları</b>": "<b>Клавишни комбинации</b>",
     "Eksik Bilgi!": "Липсваща информация!",
     "Lütfen görev adını ve çalıştırılacak komutu boş bırakmayınız.": "Моля, не оставяйте полетата за име на задачата и команда празни.",
     "Lütfen isim ve komut kısımlarını boş bırakmayınız.": "Моля, не оставяйте полетата за име и команда празни.",
+    "Durum Tarama Sıklığı (Saniye):": "Честота на обновяване (сек):",
+    "Pencere Boyutu ve Pozisyonu:": "Размер и позиция на прозореца:",
+    "Pencere Modu:": "Режим на прозореца:",
+    "Varsayılan Boyuta Dön": "Възстанови размера по подразбиране",
+    "⚙️ Yöneticiyi Aç": "⚙️ Отвори мениджъра",
+    "❌ Çıkış Yap": "❌ Изход",
+    "Her": "Всеки",
+    "Takvim:": "Календар:",
+
+
 
 }
 
@@ -2101,10 +2116,10 @@ class AutostartManager(Gtk.Window):
         if t_type == 'interval':
             v1 = str(int(dialog.spin_int.get_value()))
             v2 = dialog.combo_int_unit.get_active_id()
-            t_desc = f"Her {v1} {dialog.combo_int_unit.get_active_text()}"
+            t_desc = f"{_('Her')} {v1} {dialog.combo_int_unit.get_active_text()}"
         elif t_type == 'calendar':
             v1 = dialog.get_cal_string().strip()
-            t_desc = f"Takvim: {v1}"
+            t_desc = f"{_('Takvim:')} {v1}"
         elif t_type == 'boot':
             v1 = str(int(dialog.spin_boot.get_value()))
             t_desc = f"Sistem açılışında ({v1}s)"
@@ -2247,11 +2262,11 @@ Persistent=true
                 t_type = "interval"
                 v = c.get("Timer", "OnUnitActiveSec")
                 v1, v2 = "".join(filter(str.isdigit, v)), "".join(filter(str.isalpha, v))
-                t_desc = f"Her {v1} {v2}"
+                t_desc = f"{_('Her')} {v1} {v2}"
             elif c.has_option("Timer", "OnCalendar"):
                 t_type = "calendar"
                 v1 = c.get("Timer", "OnCalendar")
-                t_desc = f"Takvim: {v1}"
+                t_desc = f"{_('Takvim:')} {v1}"
             elif c.has_option("Timer", "OnBootSec"):
                 t_type = "boot"
                 v1 = c.get("Timer", "OnBootSec").replace("s", "")
