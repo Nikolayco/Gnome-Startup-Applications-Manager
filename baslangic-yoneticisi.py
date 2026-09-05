@@ -1995,8 +1995,12 @@ class AutostartManager(Gtk.Window):
                         target = parts[idx+1] if len(parts) > idx+1 else parts[0]
                     else:
                         target = parts[0]
-                    if target in ["bash", "sh", "python3", "python"] and len(parts) >= 2:
-                        target = parts[-1] 
+                        
+                    base_target = os.path.basename(target)
+                    if base_target in ["bash", "sh", "python3", "python"]:
+                        if len(parts) >= 2:
+                            target = parts[1] 
+                            
                     base = os.path.basename(target)
                     search_term = target if "/" in target else base
                     if search_term in ["bash", "sh", "env"]: continue
