@@ -2003,9 +2003,21 @@ class AutostartManager(Gtk.Window):
         if not self.current_selection: return
         model, treeiter = self.current_selection
         try:
-            app_info = Gio.DesktopAppInfo.new_from_filename(model[treeiter][6])
-            if app_info: app_info.launch([], Gdk.Display.get_default().get_app_launch_context())
-            else: subprocess.Popen(shlex.split(model[treeiter][3].replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            app_info = None
+            filepath = model[treeiter][6]
+            if filepath and os.path.exists(filepath):
+                try:
+                    app_info = Gio.DesktopAppInfo.new_from_filename(filepath)
+                except TypeError:
+                    pass
+            
+            if app_info:
+                app_info.launch([], Gdk.Display.get_default().get_app_launch_context())
+            else:
+                cmd = model[treeiter][3]
+                if cmd:
+                    cmd_clean = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
+                    subprocess.Popen(shlex.split(cmd_clean), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception as e:
             d = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=_("Çalıştırma Hatası!"))
             d.format_secondary_text(str(e))
