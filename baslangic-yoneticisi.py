@@ -2003,25 +2003,41 @@ class AutostartManager(Gtk.Window):
         if not self.current_selection: return
         model, treeiter = self.current_selection
         try:
-            cmd = model[treeiter][3]
-            if cmd:
-                cmd_clean = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
-                is_terminal = model[treeiter][8]
-                term_size = model[treeiter][10]
-                
-                if is_terminal:
-                    # If it's supposed to run in a terminal, wrap it explicitly
-                    if term_size == "maximize":
-                        final_cmd = f"gnome-terminal --maximize -- {cmd_clean}"
-                    elif term_size == "minimize":
-                        safe_name = "".join([c for c in model[treeiter][2] if c.isalnum()])
-                        final_cmd = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- {cmd_clean}'
-                    else:
-                        final_cmd = f"gnome-terminal -- {cmd_clean}"
-                else:
-                    final_cmd = cmd_clean
+            filepath = model[treeiter][6]
+            exec_cmd = None
+            
+            # Read Exec line directly from the .desktop file if it exists
+            if filepath and os.path.exists(filepath):
+                with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                    for line in f:
+                        if line.startswith("Exec="):
+                            exec_cmd = line.strip().split("=", 1)[1]
+                            break
+                            
+            if exec_cmd:
+                # Launch exact desktop file command (which includes runner.py for PID tracking)
+                exec_cmd = exec_cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
+                subprocess.Popen(shlex.split(exec_cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            else:
+                # Fallback to model command if file doesn't exist
+                cmd = model[treeiter][3]
+                if cmd:
+                    cmd_clean = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
+                    is_terminal = model[treeiter][8]
+                    term_size = model[treeiter][10]
                     
-                subprocess.Popen(shlex.split(final_cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    if is_terminal:
+                        if term_size == "maximize":
+                            final_cmd = f"gnome-terminal --maximize -- {cmd_clean}"
+                        elif term_size == "minimize":
+                            safe_name = "".join([c for c in model[treeiter][2] if c.isalnum()])
+                            final_cmd = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- {cmd_clean}'
+                        else:
+                            final_cmd = f"gnome-terminal -- {cmd_clean}"
+                    else:
+                        final_cmd = cmd_clean
+                        
+                    subprocess.Popen(shlex.split(final_cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception as e:
             d = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=_("Çalıştırma Hatası!"))
             d.format_secondary_text(str(e))
