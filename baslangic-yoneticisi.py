@@ -1184,7 +1184,20 @@ class AutostartManager(Gtk.Window):
 
         runner_path = os.path.join(CUSTOM_SCRIPTS_DIR, "runner.py")
         with open(runner_path, "w") as f:
-            f.write("""#!/usr/bin/env python3\nimport sys, os, subprocess, signal\npid_file = sys.argv[1]\ncmd = sys.argv[2]\nlog_file = sys.argv[3]\nwith open(pid_file, 'w') as f:\n    f.write(str(os.getpid()))\nwith open(log_file, 'w') as lf:\n    proc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid, stdout=lf, stderr=subprocess.STDOUT)\n    def handler(signum, frame):\n        os.killpg(proc.pid, signal.SIGTERM)\n        sys.exit(0)\n    signal.signal(signal.SIGTERM, handler)\n    proc.wait()\n""")
+            f.write("#!/usr/bin/env python3\n")
+            f.write("import sys, os, subprocess, signal\n")
+            f.write("pid_file = sys.argv[1]\n")
+            f.write("cmd = sys.argv[2]\n")
+            f.write("log_file = sys.argv[3]\n")
+            f.write("with open(pid_file, 'w') as f:\n")
+            f.write("    f.write(str(os.getpid()))\n")
+            f.write("with open(log_file, 'w') as lf:\n")
+            f.write("    proc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid, stdout=lf, stderr=subprocess.STDOUT)\n")
+            f.write("    def handler(signum, frame):\n")
+            f.write("        os.killpg(proc.pid, signal.SIGKILL)\n")
+            f.write("        sys.exit(0)\n")
+            f.write("    signal.signal(signal.SIGTERM, handler)\n")
+            f.write("    proc.wait()\n")
         os.chmod(runner_path, 0o755)
             
         self.load_apps()
@@ -2004,7 +2017,7 @@ class AutostartManager(Gtk.Window):
                     base = os.path.basename(target)
                     search_term = target if "/" in target else base
                     if search_term in ["bash", "sh", "env"]: continue
-                    subprocess.run(["pkill", "-f", search_term])
+                    subprocess.run(["pkill", "-9", "-f", search_term])
                 except: pass
                 
             # Always clean up stale PID files
