@@ -1980,8 +1980,9 @@ class AutostartManager(Gtk.Window):
                     with open(pid_file, "r") as f:
                         pid = f.read().strip()
                     if pid.isdigit():
-                        subprocess.run(["kill", "-TERM", pid])
-                        killed = True
+                        res = subprocess.run(["kill", "-TERM", pid], capture_output=True)
+                        if res.returncode == 0:
+                            killed = True
                 except: pass
                 
             if not killed:
@@ -2001,6 +2002,12 @@ class AutostartManager(Gtk.Window):
                     if search_term in ["bash", "sh", "env"]: continue
                     subprocess.run(["pkill", "-f", search_term])
                 except: pass
+                
+            # Always clean up stale PID files
+            if os.path.exists(pid_file):
+                try: os.remove(pid_file)
+                except: pass
+                
         self.refresh_status()
 
     def on_start_clicked(self, widget):
