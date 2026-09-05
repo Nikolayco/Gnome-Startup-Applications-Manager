@@ -1317,9 +1317,12 @@ class AutostartManager(Gtk.Window):
                     target = parts[idx+1] if len(parts) > idx+1 else parts[0]
                 else:
                     target = parts[0]
-                if target in ["bash", "sh", "python3", "python"] and len(parts) >= 2:
-                    target = parts[-1] 
-                
+                if target in ["bash", "sh", "python3", "python"] or os.path.basename(target) in ["bash", "sh", "python3", "python"]:
+                    for arg in parts[1:]:
+                        if not arg.startswith("-"):
+                            target = arg
+                            break
+
                 if "runner.py" in target: return False, ""
                     
                 base = os.path.basename(target)
@@ -2011,8 +2014,10 @@ class AutostartManager(Gtk.Window):
                         
                     base_target = os.path.basename(target)
                     if base_target in ["bash", "sh", "python3", "python"]:
-                        if len(parts) >= 2:
-                            target = parts[1] 
+                        for arg in parts[1:]:
+                            if not arg.startswith("-"):
+                                target = arg
+                                break 
                             
                     base = os.path.basename(target)
                     search_term = target if "/" in target else base
