@@ -1729,6 +1729,18 @@ class AutostartManager(Gtk.Window):
             cmd = cmd.replace("gnome-terminal -- ", "", 1)
             term_size = "normal"
             terminal = True
+        elif cmd.startswith("x-terminal-emulator -e "):
+            cmd = cmd.replace("x-terminal-emulator -e ", "", 1).strip('"')
+            term_size = "normal"
+            terminal = True
+        elif cmd.startswith("xfce4-terminal -e "):
+            cmd = cmd.replace("xfce4-terminal -e ", "", 1).strip('"')
+            term_size = "normal"
+            terminal = True
+        elif cmd.startswith("xterm -e "):
+            cmd = cmd.replace("xterm -e ", "", 1).strip('"')
+            term_size = "normal"
+            terminal = True
 
         # Clean up runner wrapper from cmd
         import shlex
@@ -1832,12 +1844,22 @@ class AutostartManager(Gtk.Window):
         runner_exec = f'python3 {shlex.quote(runner_path)} {shlex.quote(pid_file)} {shlex.quote(base_cmd)} {shlex.quote(log_file)}'
         
         if terminal:
-            if term_size == "maximize":
-                final_cmd = f"gnome-terminal --maximize -- {runner_exec}"
-            elif term_size == "minimize":
-                final_cmd = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- {runner_exec}'
+            import shutil
+            term = "gnome-terminal"
+            if not shutil.which("gnome-terminal"):
+                if shutil.which("x-terminal-emulator"): term = "x-terminal-emulator"
+                elif shutil.which("xfce4-terminal"): term = "xfce4-terminal"
+                elif shutil.which("xterm"): term = "xterm"
+                
+            if term == "gnome-terminal":
+                if term_size == "maximize":
+                    final_cmd = f"gnome-terminal --maximize -- {runner_exec}"
+                elif term_size == "minimize":
+                    final_cmd = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- {runner_exec}'
+                else:
+                    final_cmd = f"gnome-terminal -- {runner_exec}"
             else:
-                final_cmd = f"gnome-terminal -- {runner_exec}"
+                final_cmd = f"{term} -e \"{runner_exec}\""
         else:
             final_cmd = runner_exec
                 
@@ -2050,7 +2072,19 @@ class AutostartManager(Gtk.Window):
             if exec_cmd:
                 # Launch exact desktop file command (which includes runner.py for PID tracking)
                 exec_cmd = exec_cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
-                subprocess.Popen(shlex.split(exec_cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                try:
+                    subprocess.Popen(shlex.split(exec_cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                except Exception as e:
+                    dialog = Gtk.MessageDialog(
+                        transient_for=self,
+                        flags=0,
+                        message_type=Gtk.MessageType.ERROR,
+                        buttons=Gtk.ButtonsType.OK,
+                        text="Başlatma Hatası",
+                    )
+                    dialog.format_secondary_text(f"Uygulama başlatılamadı (Örn: terminal yüklü değil):\n{str(e)}")
+                    dialog.run()
+                    dialog.destroy()
             else:
                 # Fallback to model command if file doesn't exist
                 cmd = model[treeiter][3]
