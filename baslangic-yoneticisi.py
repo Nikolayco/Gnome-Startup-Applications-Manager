@@ -1716,28 +1716,32 @@ class AutostartManager(Gtk.Window):
 
         # Clean up runner wrapper from cmd
         import shlex
-        if "runner.py" in cmd:
+        while "runner.py" in cmd:
             try:
                 parts = shlex.split(cmd)
-                if "runner.py" in parts[1] or "runner.py" in parts[3] or "runner.py" in parts[-4] or "runner.py" in parts[0]:
-                    # Find runner.py index
-                    idx = -1
-                    for i, p in enumerate(parts):
-                        if "runner.py" in p:
-                            idx = i
-                            break
-                    if idx != -1 and len(parts) > idx + 2:
-                        base_cmd = parts[idx+2]
-                        if "minimize_wrapper.sh" in base_cmd:
-                            m_parts = shlex.split(base_cmd)
-                            if len(m_parts) >= 3:
-                                cmd = " ".join(m_parts[2:])
-                            else:
-                                cmd = base_cmd
+                idx = -1
+                for i, p in enumerate(parts):
+                    if "runner.py" in p:
+                        idx = i
+                        break
+                if idx != -1 and len(parts) > idx + 2:
+                    base_cmd = parts[idx+2]
+                    if "minimize_wrapper.sh" in base_cmd:
+                        m_parts = shlex.split(base_cmd)
+                        if len(m_parts) >= 3:
+                            cmd = " ".join(m_parts[2:])
                         else:
                             cmd = base_cmd
-            except: pass
-            
+                    else:
+                        cmd = base_cmd
+                else:
+                    break
+            except Exception:
+                if "runner.py" in cmd:
+                    try:
+                        cmd = cmd.split("runner.py")[1].split(".pid")[1].split(".log")[0].strip().strip('"').strip("'")
+                    except: break
+                break
         is_sys_actual = os.path.exists(os.path.join(SYS_AUTOSTART_DIR, os.path.basename(path)))
         return AutostartApp(os.path.basename(path), name, cmd, comment, hidden, is_sys_actual, path, icon, terminal, delay, term_size)
 
