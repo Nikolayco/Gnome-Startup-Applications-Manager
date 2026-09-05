@@ -2003,21 +2003,25 @@ class AutostartManager(Gtk.Window):
         if not self.current_selection: return
         model, treeiter = self.current_selection
         try:
-            app_info = None
-            filepath = model[treeiter][6]
-            if filepath and os.path.exists(filepath):
-                try:
-                    app_info = Gio.DesktopAppInfo.new_from_filename(filepath)
-                except TypeError:
-                    pass
-            
-            if app_info:
-                app_info.launch([], Gdk.Display.get_default().get_app_launch_context())
-            else:
-                cmd = model[treeiter][3]
-                if cmd:
-                    cmd_clean = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
-                    subprocess.Popen(shlex.split(cmd_clean), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            cmd = model[treeiter][3]
+            if cmd:
+                cmd_clean = cmd.replace("%f", "").replace("%u", "").replace("%F", "").replace("%U", "")
+                is_terminal = model[treeiter][8]
+                term_size = model[treeiter][10]
+                
+                if is_terminal:
+                    # If it's supposed to run in a terminal, wrap it explicitly
+                    if term_size == "maximize":
+                        final_cmd = f"gnome-terminal --maximize -- {cmd_clean}"
+                    elif term_size == "minimize":
+                        safe_name = "".join([c for c in model[treeiter][2] if c.isalnum()])
+                        final_cmd = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- {cmd_clean}'
+                    else:
+                        final_cmd = f"gnome-terminal -- {cmd_clean}"
+                else:
+                    final_cmd = cmd_clean
+                    
+                subprocess.Popen(shlex.split(final_cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception as e:
             d = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=_("Çalıştırma Hatası!"))
             d.format_secondary_text(str(e))
