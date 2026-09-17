@@ -33,6 +33,11 @@ sed -i "s/VERSION = \"AUTO_VERSION\"/VERSION = \"$VER\"/g" "$BIN_DIR/baslangic-y
 
 echo "✓ Uygulama yüklendi (Sürüm: $VER)."
 
+# Çeviri dosyaları (locale/<dil>/LC_MESSAGES/*.mo)
+rm -rf "$BIN_DIR/locale"
+cp -r locale "$BIN_DIR/locale"
+echo "✓ Çeviri dosyaları kuruldu."
+
 # .desktop
 mkdir -p "$APPS_DIR"
 cp baslangic-yoneticisi.desktop "$APPS_DIR/baslangic-yoneticisi.desktop"

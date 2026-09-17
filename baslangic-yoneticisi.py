@@ -8,379 +8,6 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib, Gio, GdkPixbuf, Gdk
 
-_EN_DICT = {
-    "-": "-",
-    "-- Hızlı Başlat --": "-- Quick Launch --",
-    "<b>Gelişmiş Arka Plan İzni (Lingering)</b>": "<b>Advanced Background Permission (Lingering)</b>",
-    "Aktif": "Enabled",
-    "Ayarlar": "Settings",
-    "Ayarları düzenle": "Edit settings",
-    "Açıklama (İsteğe):": "Description (Optional):",
-    "Başlangıç": "Startup",
-    "Başlangıç Uygulamaları Yöneticisi": "Startup Applications Manager",
-    "Belirli Aralıklarla (Tekrarla)": "Interval (Repeat)",
-    "Belirli Gün/Saat (Takvim)": "Specific Day/Time (Calendar)",
-    "Bilgisayar açıldığında, siz henüz şifre girip oturum açmasanız bile\nzamanlanmış görevlerin (Sistem Açılışında - Boot) çalışabilmesi için gereklidir.": "Required for scheduled tasks (Boot) to run\nin the background before you even log in.",
-    "Bu öğeyi silmek istediğinize emin misiniz?": "Are you sure you want to delete this item?",
-    "Dakika": "Minutes",
-    "Dosya Seç": "Select File",
-    "Durum": "Status",
-    "Düzenle": "Edit",
-    "Evet (Max)": "Yes (Max)",
-    "Evet (Min)": "Yes (Min)",
-    "Evet (Normal)": "Yes (Normal)",
-    "Gecikme": "Delay",
-    "Gecikme (Sn):": "Delay (Sec):",
-    "Gecikme:": "Delay:",
-    "Görev": "Task",
-    "Görev Adı:": "Task Name:",
-    "Görevi Düzenle": "Edit Task",
-    "Gün": "Days",
-    "Hakkında": "About",
-    "Kalıcı olarak sil": "Delete permanently",
-    "Kaydet": "Save",
-    "Kaynak": "Resources",
-    "Komut": "Command",
-    "Komut / Dosya:": "Command / File:",
-    "Kullanıcı Uygulamaları": "User Applications",
-    "Kurulu Uygulamalar": "Installed Applications",
-    "Kısaca açıklama yazın...": "Write a short description...",
-    "Mevcut Dosya / Komut Seç": "Select Existing File / Command",
-    "Mini Editör (Kodu Buraya Yaz)": "Mini Editor (Write Code Here)",
-    "Oturum Açılışında (Login)": "At Login (Startup)",
-    "Saat": "Hours",
-    "Saniye": "Seconds",
-    "Seç": "Select",
-    "Seçileni Kullan": "Use Selected",
-    "Seçili görevleri silmek istiyor musunuz?": "Are you sure you want to delete the selected tasks?",
-    "Sil": "Delete",
-    "Sistem Açılışında (Boot)": "At System Boot",
-    "Sistem Uygulamaları": "System Applications",
-    "Sistem Uygulamalarını (Alt Liste) Göster:": "Show System Applications (Sublist):",
-    "Sistem açıldıktan kaç saniye sonra çalışsın?": "How many seconds after boot should it run?",
-    "Sistem ve Kullanıcı uygulamalarını yönetin": "Manage system and user startup applications",
-    "Sistem Çekmecesinde (Tray) Her Zaman Göster:": "Always Show in System Tray:",
-    "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor.": "Task Scheduler is unavailable because systemd is not found on your system.",
-    "Sürüm: v260901.200947\nGeliştirici: Nikolayco": "Version: v260901.200947\nDeveloper: Nikolayco",
-    "Sürüm": "Version",
-    "Geliştirici": "Developer",
-    "Sıradaki Çalışma": "Next Run",
-    "Terminal": "Terminal",
-    "Terminalde Çalıştır:": "Run in Terminal:",
-    "Terminalde çalıştır": "Run in terminal",
-    "Tetikleyici": "Trigger",
-    "Tetikleyici:": "Trigger:",
-    "Tüm Dosyalar": "All Files",
-    "Uygulama Adı": "App Name",
-    "Uygulama Adı:": "App Name:",
-    "Uygulama Ara...": "Search app...",
-    "Uygulama bulunamadı": "No application found",
-    "Uygulamayı arka plana (Tray) gizle": "Hide application to Tray",
-    "Uygulamayı hemen çalıştırarak test et": "Run application immediately to test",
-    "Yeni Başlangıç Öğesi Ekle": "Add New Startup Item",
-    "Yeni Görev": "New Task",
-    "Yeni uygulama veya script ekle": "Add new app or script",
-    "Zamanlayıcı": "Task Scheduler",
-    "Çalışacak Dosya/Kod:": "File/Code to Run:",
-    "Çalışan uygulamayı durdur (Kapat)": "Stop running application (Kill)",
-    "Çalıştırma Hatası!": "Execution Error!",
-    "Çalıştırılacak Dosyayı Seçin": "Select File to Run",
-    "Örn: Otomatik Yedekleme": "e.g. Auto Backup",
-    "Örn: Yedekleme": "e.g. Backup",
-    "Öğeyi Düzenle": "Edit Item",
-    "İptal": "Cancel",
-    "Şimdi Çalıştır": "Run Now",
-    "Klavye Kısayolları": "Keyboard Shortcuts",
-    "Kısayol": "Shortcut",
-    "İşlev": "Function",
-    "Yeni başlangıç uygulaması ekle": "Add a new startup application",
-    "Seçili uygulamayı düzenle": "Edit selected application",
-    "Seçili uygulamayı başlat": "Start selected application",
-    "Seçili uygulamayı durdur (öldür)": "Stop (kill) selected application",
-    "Seçili uygulamayı sil": "Delete selected application",
-    "Arama kutusuna odaklan": "Focus the search box",
-    "Çalışıyor": "Running",
-    "Durdu": "Stopped",
-    "Eksik Bilgi!": "Missing Information!",
-    "Lütfen görev adını ve çalıştırılacak komutu boş bırakmayınız.": "Please do not leave the task name and command fields empty.",
-    "Lütfen isim ve komut kısımlarını boş bırakmayınız.": "Please do not leave the name and command fields empty.",
-    "Durum Tarama Sıklığı (Saniye):": "Status Refresh Rate (Seconds):",
-    "Pencere Boyutu ve Pozisyonu:": "Window Size and Position:",
-    "Pencere Modu:": "Window Mode:",
-    "Varsayılan Boyuta Dön": "Restore Default Size",
-    "⚙️ Yöneticiyi Aç": "⚙️ Open Manager",
-    "❌ Çıkış Yap": "❌ Quit",
-    "Her": "Every",
-    "Takvim:": "Calendar:",
-
-
-
-    "Takvim": "Calendar",
-    "Gelişmiş": "Advanced",
-    "Her Gün": "Every Day",
-    "Tarih Seç": "Select Date",
-    "Saat:": "Time:",
-    "Hafta": "Weeks",
-    "Ay": "Months",
-    "Yıl": "Years",
-    "Başlat": "Start",
-    "Durdur": "Stop",
-    "Dosya Konumunu Aç": "Open File Location",
-    "Dosya konumunu aç": "Open file location",
-    "Görev Başlatılamadı": "Failed to Start Task",
-    "Geçersiz zamanlayıcı ayarı.": "Invalid scheduler configuration.",
-    "<b>Gelişmiş Arka Plan İzni (Lingering)</b>": "<b>Advanced Background Permission (Lingering)</b>",
-    "<b>Klavye Kısayolları</b>": "<b>Keyboard Shortcuts</b>"
-}
-
-_RU_DICT = {
-    "-": "-",
-    "-- Hızlı Başlat --": "-- Быстрый запуск --",
-    "Aktif": "Активен",
-    "Ayarlar": "Настройки",
-    "Ayarları düzenle": "Изменить настройки",
-    "Açıklama (İsteğe):": "Описание (необяз.):",
-    "Başlangıç": "Автозапуск",
-    "Başlangıç Uygulamaları Yöneticisi": "Менеджер автозапуска",
-    "Belirli Aralıklarla (Tekrarla)": "С интервалом (повтор)",
-    "Belirli Gün/Saat (Takvim)": "По расписанию (календарь)",
-    "Bilgisayar açıldığında, siz henüz şifre girip oturum açmasanız bile\nzamanlanmış görevlerin (Sistem Açılışında - Boot) çalışabilmesi için gereklidir.": "Требуется для запуска задач при загрузке системы,\nдаже если вы ещё не вошли в систему.",
-    "Bu öğeyi silmek istediğinize emin misiniz?": "Вы уверены, что хотите удалить этот элемент?",
-    "Dakika": "Минуты",
-    "Dosya Seç": "Выбрать файл",
-    "Durum": "Статус",
-    "Düzenle": "Изменить",
-    "Evet (Max)": "Да (Макс)",
-    "Evet (Min)": "Да (Мин)",
-    "Evet (Normal)": "Да (Норм)",
-    "Gecikme": "Задержка",
-    "Gecikme (Sn):": "Задержка (сек):",
-    "Gecikme:": "Задержка:",
-    "Görev": "Задача",
-    "Görev Adı:": "Название задачи:",
-    "Görevi Düzenle": "Изменить задачу",
-    "Gün": "Дни",
-    "Hakkında": "О программе",
-    "Kalıcı olarak sil": "Удалить навсегда",
-    "Kaydet": "Сохранить",
-    "Kaynak": "Ресурсы",
-    "Komut": "Команда",
-    "Komut / Dosya:": "Команда / Файл:",
-    "Kullanıcı Uygulamaları": "Приложения пользователя",
-    "Kurulu Uygulamalar": "Установленные приложения",
-    "Kısaca açıklama yazın...": "Краткое описание...",
-    "Mevcut Dosya / Komut Seç": "Выбрать файл / команду",
-    "Mini Editör (Kodu Buraya Yaz)": "Мини-редактор (вставьте код)",
-    "Oturum Açılışında (Login)": "При входе в систему",
-    "Saat": "Часы",
-    "Saniye": "Секунды",
-    "Seç": "Выбрать",
-    "Seçileni Kullan": "Использовать выбранное",
-    "Seçili görevleri silmek istiyor musunuz?": "Удалить выбранные задачи?",
-    "Sil": "Удалить",
-    "Sistem Açılışında (Boot)": "При загрузке системы",
-    "Sistem Uygulamaları": "Системные приложения",
-    "Sistem Uygulamalarını (Alt Liste) Göster:": "Показывать системные приложения:",
-    "Sistem açıldıktan kaç saniye sonra çalışsın?": "Через сколько секунд после загрузки запустить?",
-    "Sistem ve Kullanıcı uygulamalarını yönetin": "Управление приложениями автозапуска",
-    "Sistem Çekmecesinde (Tray) Her Zaman Göster:": "Всегда показывать в трее:",
-    "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor.": "Планировщик недоступен: systemd не найден в системе.",
-    "Sürüm: v260901.200947\nGeliştirici: Nikolayco": "Версия: v260901.200947\nРазработчик: Nikolayco",
-    "Sürüm": "Версия",
-    "Geliştirici": "Разработчик",
-    "Sıradaki Çalışma": "Следующий запуск",
-    "Terminal": "Терминал",
-    "Terminalde Çalıştır:": "Запустить в терминале:",
-    "Terminalde çalıştır": "Запустить в терминале",
-    "Tetikleyici": "Триггер",
-    "Tetikleyici:": "Триггер:",
-    "Tüm Dosyalar": "Все файлы",
-    "Uygulama Adı": "Имя приложения",
-    "Uygulama Adı:": "Имя приложения:",
-    "Uygulama Ara...": "Поиск приложения...",
-    "Uygulama bulunamadı": "Приложение не найдено",
-    "Uygulamayı arka plana (Tray) gizle": "Свернуть в трей",
-    "Uygulamayı hemen çalıştırarak test et": "Запустить немедленно для тестирования",
-    "Yeni Başlangıç Öğesi Ekle": "Добавить элемент автозапуска",
-    "Yeni Görev": "Новая задача",
-    "Yeni uygulama veya script ekle": "Добавить приложение или скрипт",
-    "Zamanlayıcı": "Планировщик",
-    "Çalışacak Dosya/Kod:": "Файл/код для запуска:",
-    "Çalışan uygulamayı durdur (Kapat)": "Остановить приложение (завершить)",
-    "Çalıştırma Hatası!": "Ошибка запуска!",
-    "Çalıştırılacak Dosyayı Seçin": "Выберите файл для запуска",
-    "Örn: Otomatik Yedekleme": "Напр: Автоматическое резервное копирование",
-    "Örn: Yedekleme": "Напр: Резервная копия",
-    "Öğeyi Düzenle": "Изменить элемент",
-    "İptal": "Отмена",
-    "Şimdi Çalıştır": "Запустить сейчас",
-    "Klavye Kısayolları": "Горячие клавиши",
-    "Kısayol": "Сочетание",
-    "İşlev": "Функция",
-    "Yeni başlangıç uygulaması ekle": "Добавить новое приложение автозапуска",
-    "Seçili uygulamayı düzenle": "Изменить выбранное приложение",
-    "Seçili uygulamayı başlat": "Запустить выбранное приложение",
-    "Seçili uygulamayı durdur (öldür)": "Остановить выбранное приложение",
-    "Seçili uygulamayı sil": "Удалить выбранное приложение",
-    "Arama kutusuna odaklan": "Перейти в поле поиска",
-    "Çalışıyor": "Работает",
-    "Durdu": "Остановлено",
-    "Eksik Bilgi!": "Недостаточно информации!",
-    "Lütfen görev adını ve çalıştırılacak komutu boş bırakmayınız.": "Пожалуйста, не оставляйте поля имени задачи и команды пустыми.",
-    "Lütfen isim ve komut kısımlarını boş bırakmayınız.": "Пожалуйста, не оставляйте поля имени и команды пустыми.",
-    "Durum Tarama Sıklığı (Saniye):": "Частота обновления (сек):",
-    "Pencere Boyutu ve Pozisyonu:": "Размер и положение окна:",
-    "Pencere Modu:": "Режим окна:",
-    "Varsayılan Boyuta Dön": "Восстановить размер по умолчанию",
-    "⚙️ Yöneticiyi Aç": "⚙️ Открыть менеджер",
-    "❌ Çıkış Yap": "❌ Выйти",
-    "Her": "Каждые",
-    "Takvim:": "Календарь:",
-
-
-
-    "Takvim": "Календарь",
-    "Gelişmiş": "Расширенные",
-    "Her Gün": "Каждый день",
-    "Tarih Seç": "Выбрать дату",
-    "Saat:": "Время:",
-    "Hafta": "Недели",
-    "Ay": "Месяцы",
-    "Yıl": "Годы",
-    "Başlat": "Запустить",
-    "Durdur": "Остановить",
-    "Dosya Konumunu Aç": "Откр. расположение файла",
-    "Dosya konumunu aç": "Откр. расположение файла",
-    "Görev Başlatılamadı": "Не удалось запустить",
-    "Geçersiz zamanlayıcı ayarı.": "Недопустимая конфигурация.",
-    "<b>Gelişmiş Arka Plan İzni (Lingering)</b>": "<b>Разрешение на фон (Lingering)</b>",
-    "<b>Klavye Kısayolları</b>": "<b>Горячие клавиши</b>"
-}
-
-_BG_DICT = {
-    "-": "-",
-    "-- Hızlı Başlat --": "-- Бърз старт --",
-    "Aktif": "Активен",
-    "Ayarlar": "Настройки",
-    "Ayarları düzenle": "Редактирай настройките",
-    "Açıklama (İsteğe):": "Описание (незадълж.):",
-    "Başlangıç": "Автостартиране",
-    "Başlangıç Uygulamaları Yöneticisi": "Мениджър за автостартиране",
-    "Belirli Aralıklarla (Tekrarla)": "На интервали (повтаряй)",
-    "Belirli Gün/Saat (Takvim)": "По разписание (календар)",
-    "Bilgisayar açıldığında, siz henüz şifre girip oturum açmasanız bile\nzamanlanmış görevlerin (Sistem Açılışında - Boot) çalışabilmesi için gereklidir.": "Необходимо за изпълнение на задачи при стартиране,\nдори ако все още не сте влезли в системата.",
-    "Bu öğeyi silmek istediğinize emin misiniz?": "Сигурни ли сте, че искате да изтриете този елемент?",
-    "Dakika": "Минути",
-    "Dosya Seç": "Избери файл",
-    "Durum": "Статус",
-    "Düzenle": "Редактирай",
-    "Evet (Max)": "Да (Макс)",
-    "Evet (Min)": "Да (Мин)",
-    "Evet (Normal)": "Да (Норм)",
-    "Gecikme": "Закъснение",
-    "Gecikme (Sn):": "Закъснение (сек):",
-    "Gecikme:": "Закъснение:",
-    "Görev": "Задача",
-    "Görev Adı:": "Име на задачата:",
-    "Görevi Düzenle": "Редактирай задачата",
-    "Gün": "Дни",
-    "Hakkında": "За програмата",
-    "Kalıcı olarak sil": "Изтрий завинаги",
-    "Kaydet": "Запази",
-    "Kaynak": "Ресурси",
-    "Komut": "Команда",
-    "Komut / Dosya:": "Команда / Файл:",
-    "Kullanıcı Uygulamaları": "Потребителски приложения",
-    "Kurulu Uygulamalar": "Инсталирани приложения",
-    "Kısaca açıklama yazın...": "Кратко описание...",
-    "Mevcut Dosya / Komut Seç": "Избери файл / команда",
-    "Mini Editör (Kodu Buraya Yaz)": "Мини редактор (вмъкни код)",
-    "Oturum Açılışında (Login)": "При вход в системата",
-    "Saat": "Часове",
-    "Saniye": "Секунди",
-    "Seç": "Избери",
-    "Seçileni Kullan": "Използвай избраното",
-    "Seçili görevleri silmek istiyor musunuz?": "Да изтриете ли избраните задачи?",
-    "Sil": "Изтрий",
-    "Sistem Açılışında (Boot)": "При стартиране на системата",
-    "Sistem Uygulamaları": "Системни приложения",
-    "Sistem Uygulamalarını (Alt Liste) Göster:": "Покажи системни приложения:",
-    "Sistem açıldıktan kaç saniye sonra çalışsın?": "Колко секунди след стартиране да се изпълни?",
-    "Sistem ve Kullanıcı uygulamalarını yönetin": "Управление на приложения за автостартиране",
-    "Sistem Çekmecesinde (Tray) Her Zaman Göster:": "Винаги показвай в системния трей:",
-    "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor.": "Планировщикът е недостъпен: systemd не е намерен в системата.",
-    "Sürüm: v260901.200947\nGeliştirici: Nikolayco": "Версия: v260901.200947\nРазработчик: Nikolayco",
-    "Sürüm": "Версия",
-    "Geliştirici": "Разработчик",
-    "Sıradaki Çalışma": "Следващо изпълнение",
-    "Terminal": "Терминал",
-    "Terminalde Çalıştır:": "Изпълни в терминал:",
-    "Terminalde çalıştır": "Изпълни в терминал",
-    "Tetikleyici": "Тригер",
-    "Tetikleyici:": "Тригер:",
-    "Tüm Dosyalar": "Всички файлове",
-    "Uygulama Adı": "Ime на приложението",
-    "Uygulama Adı:": "Ime на приложението:",
-    "Uygulama Ara...": "Търси приложение...",
-    "Uygulama bulunamadı": "Приложението не е намерено",
-    "Uygulamayı arka plana (Tray) gizle": "Скрий в системния трей",
-    "Uygulamayı hemen çalıştırarak test et": "Стартирай незабавно за тест",
-    "Yeni Başlangıç Öğesi Ekle": "Добави елемент за автостартиране",
-    "Yeni Görev": "Нова задача",
-    "Yeni uygulama veya script ekle": "Добави приложение или скрипт",
-    "Zamanlayıcı": "Планировщик",
-    "Çalışacak Dosya/Kod:": "Файл/код за изпълнение:",
-    "Çalışan uygulamayı durdur (Kapat)": "Спри приложението (прекрати)",
-    "Çalıştırma Hatası!": "Грешка при стартиране!",
-    "Çalıştırılacak Dosyayı Seçin": "Избери файл за изпълнение",
-    "Örn: Otomatik Yedekleme": "Напр: Автоматично архивиране",
-    "Örn: Yedekleme": "Напр: Архив",
-    "Öğeyi Düzenle": "Редактирай елемента",
-    "İptal": "Отказ",
-    "Şimdi Çalıştır": "Изпълни сега",
-    "Klavye Kısayolları": "Клавишни комбинации",
-    "Kısayol": "Комбинация",
-    "İşlev": "Функция",
-    "Yeni başlangıç uygulaması ekle": "Добави ново приложение за автостартиране",
-    "Seçili uygulamayı düzenle": "Редактирай избраното приложение",
-    "Seçili uygulamayı başlat": "Стартирай избраното приложение",
-    "Seçili uygulamayı durdur (öldür)": "Спри избраното приложение",
-    "Seçili uygulamayı sil": "Изтрий избраното приложение",
-    "Arama kutusuna odaklan": "Фокусирай полето за търсене",
-    "Çalışıyor": "Работи",
-    "Durdu": "Спряно",
-    "Takvim": "Календар",
-    "Gelişmiş": "Разширени",
-    "Her Gün": "Всеки ден",
-    "Tarih Seç": "Избери дата",
-    "Saat:": "Час:",
-    "Hafta": "Седмици",
-    "Ay": "Месеци",
-    "Yıl": "Години",
-    "Başlat": "Старт",
-    "Durdur": "Стоп",
-    "Dosya Konumunu Aç": "Отвори местоположението",
-    "Dosya konumunu aç": "Отвори местоположението",
-    "Görev Başlatılamadı": "Неуспешно стартиране",
-    "Geçersiz zamanlayıcı ayarı.": "Невалидна конфигурация.",
-    "<b>Gelişmiş Arka Plan İzni (Lingering)</b>": "<b>Разрешение за фон (Lingering)</b>",
-    "<b>Klavye Kısayolları</b>": "<b>Клавишни комбинации</b>",
-    "Eksik Bilgi!": "Липсваща информация!",
-    "Lütfen görev adını ve çalıştırılacak komutu boş bırakmayınız.": "Моля, не оставяйте полетата за име на задачата и команда празни.",
-    "Lütfen isim ve komut kısımlarını boş bırakmayınız.": "Моля, не оставяйте полетата за име и команда празни.",
-    "Durum Tarama Sıklığı (Saniye):": "Честота на обновяване (сек):",
-    "Pencere Boyutu ve Pozisyonu:": "Размер и позиция на прозореца:",
-    "Pencere Modu:": "Режим на прозореца:",
-    "Varsayılan Boyuta Dön": "Възстанови размера по подразбиране",
-    "⚙️ Yöneticiyi Aç": "⚙️ Отвори мениджъра",
-    "❌ Çıkış Yap": "❌ Изход",
-    "Her": "Всеки",
-    "Takvim:": "Календар:",
-
-
-
-}
-
 _LANG = os.environ.get("LANG", "en").split("_")[0]
 
 VERSION = "AUTO_VERSION"
@@ -406,11 +33,21 @@ if VERSION == "AUTO_VERSION":
             VERSION = "Unknown"
 
 
+import gettext
+
+_GETTEXT_DOMAIN = "gnome-startup-manager"
+_LOCALE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "locale")
+_GETTEXT_LANG = _LANG if _LANG in ("ru", "bg") else "en"
+try:
+    _translation = gettext.translation(_GETTEXT_DOMAIN, localedir=_LOCALE_DIR, languages=[_GETTEXT_LANG], fallback=True)
+except Exception:
+    _translation = gettext.NullTranslations()
+
+
 def _(text):
-    if _LANG == "tr": return text
-    if _LANG == "ru": return _RU_DICT.get(text, _EN_DICT.get(text, text))
-    if _LANG == "bg": return _BG_DICT.get(text, _EN_DICT.get(text, text))
-    return _EN_DICT.get(text, text)
+    if _LANG == "tr":
+        return text
+    return _translation.gettext(text)
 
 
 
@@ -429,6 +66,80 @@ SYS_AUTOSTART_DIR = "/etc/xdg/autostart"
 CUSTOM_SCRIPTS_DIR = os.path.expanduser("~/.local/share/Gnome-Startup-Applications-Manager/scripts")
 APP_ICON = "system-run"
 SYSTEMD_USER_DIR = os.path.expanduser("~/.config/systemd/user")
+
+
+def encode_desktop_value(text):
+    """Escape a value for storage in a single-line custom .desktop key."""
+    return text.replace("\\", "\\\\").replace("\n", "\\n")
+
+
+def decode_desktop_value(text):
+    """Reverse encode_desktop_value()."""
+    out = []
+    i = 0
+    while i < len(text):
+        if text[i] == "\\" and i + 1 < len(text):
+            nxt = text[i + 1]
+            if nxt == "n":
+                out.append("\n")
+                i += 2
+                continue
+            if nxt == "\\":
+                out.append("\\")
+                i += 2
+                continue
+        out.append(text[i])
+        i += 1
+    return "".join(out)
+
+
+MINIMIZE_WRAPPER_SH_SOURCE = """#!/bin/bash
+TITLE=$1
+shift
+for i in {1..30}; do
+    WID=$(xdotool search --name "$TITLE" | head -1)
+    if [ -n "$WID" ]; then
+        xdotool windowminimize $WID
+        if xprop -id $WID | grep -q _NET_WM_STATE_HIDDEN; then
+            break
+        fi
+    fi
+    sleep 0.1
+done
+eval "$@"
+"""
+
+# Written to CUSTOM_SCRIPTS_DIR/runner.py and executed as a subprocess. It
+# tracks the launched command's PID (for the Start/Stop buttons) and, unless
+# launched inside a terminal, redirects its output to a per-app log file.
+RUNNER_PY_SOURCE = """#!/usr/bin/env python3
+import sys, os, subprocess, signal
+
+pid_file = sys.argv[1]
+cmd = sys.argv[2]
+log_file = sys.argv[3]
+is_terminal = len(sys.argv) > 4 and sys.argv[4] == '1'
+
+with open(pid_file, 'w') as f:
+    f.write(str(os.getpid()))
+
+lf = None if is_terminal else open(log_file, 'w')
+proc = subprocess.Popen(
+    cmd, shell=True, preexec_fn=os.setsid,
+    stdout=(None if is_terminal else lf),
+    stderr=(None if is_terminal else subprocess.STDOUT),
+)
+
+def handler(signum, frame):
+    os.killpg(proc.pid, signal.SIGKILL)
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, handler)
+proc.wait()
+if lf:
+    lf.close()
+"""
+
 
 class AutostartApp:
     def __init__(self, filename, name, cmd, comment, hidden, is_sys, path, icon, terminal, delay, term_size="normal"):
@@ -1309,27 +1020,12 @@ class AutostartManager(Gtk.Window):
         wrapper_path = os.path.join(CUSTOM_SCRIPTS_DIR, "minimize_wrapper.sh")
         if not os.path.exists(wrapper_path):
             with open(wrapper_path, "w") as f:
-                f.write("#!/bin/bash\nTITLE=$1\nshift\nfor i in {1..30}; do\n    WID=$(xdotool search --name \"$TITLE\" | head -1)\n    if [ -n \"$WID\" ]; then\n        xdotool windowminimize $WID\n        if xprop -id $WID | grep -q _NET_WM_STATE_HIDDEN; then\n            break\n        fi\n    fi\n    sleep 0.1\ndone\neval \"$@\"\n")
+                f.write(MINIMIZE_WRAPPER_SH_SOURCE)
             os.chmod(wrapper_path, 0o755)
 
         runner_path = os.path.join(CUSTOM_SCRIPTS_DIR, "runner.py")
         with open(runner_path, "w") as f:
-            f.write("#!/usr/bin/env python3\n")
-            f.write("import sys, os, subprocess, signal\n")
-            f.write("pid_file = sys.argv[1]\n")
-            f.write("cmd = sys.argv[2]\n")
-            f.write("log_file = sys.argv[3]\n")
-            f.write("is_terminal = len(sys.argv) > 4 and sys.argv[4] == '1'\n")
-            f.write("with open(pid_file, 'w') as f:\n")
-            f.write("    f.write(str(os.getpid()))\n")
-            f.write("lf = None if is_terminal else open(log_file, 'w')\n")
-            f.write("proc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid, stdout=(None if is_terminal else lf), stderr=(None if is_terminal else subprocess.STDOUT))\n")
-            f.write("def handler(signum, frame):\n")
-            f.write("    os.killpg(proc.pid, signal.SIGKILL)\n")
-            f.write("    sys.exit(0)\n")
-            f.write("signal.signal(signal.SIGTERM, handler)\n")
-            f.write("proc.wait()\n")
-            f.write("if lf: lf.close()\n")
+            f.write(RUNNER_PY_SOURCE)
         os.chmod(runner_path, 0o755)
 
         self.migrate_terminal_desktop_files()
@@ -1803,6 +1499,7 @@ class AutostartManager(Gtk.Window):
     def parse_desktop_file(self, path):
         name = os.path.basename(path).replace(".desktop", "")
         cmd, comment, hidden, icon, terminal, delay, term_size = "", "", False, "application-x-executable", False, 0, "normal"
+        gsam_cmd, gsam_terminal, gsam_term_size = None, None, None
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 for line in f:
@@ -1811,99 +1508,110 @@ class AutostartManager(Gtk.Window):
                     elif line.startswith("Exec="): cmd = line.split("=", 1)[1]
                     elif line.startswith("Comment="): comment = line.split("=", 1)[1]
                     elif line.startswith("Icon="): icon = line.split("=", 1)[1]
-                    elif line.startswith("X-GNOME-Autostart-Delay="): 
+                    elif line.startswith("X-GNOME-Autostart-Delay="):
                         try: delay = int(line.split("=", 1)[1])
                         except: pass
                     elif line.lower().startswith("terminal=true"): terminal = True
                     elif line.startswith("Hidden=true") or line.startswith("X-GNOME-Autostart-enabled=false"):
                         hidden = True
+                    elif line.startswith("X-GSAM-Cmd="): gsam_cmd = line.split("=", 1)[1]
+                    elif line.startswith("X-GSAM-Terminal="): gsam_terminal = line.split("=", 1)[1]
+                    elif line.startswith("X-GSAM-TermSize="): gsam_term_size = line.split("=", 1)[1]
         except: pass
         if "/" in icon or "." in icon: icon = "application-x-executable"
-        
-        safe_name = "".join([c for c in name if c.isalnum()])
-        wrapper_path = os.path.join(CUSTOM_SCRIPTS_DIR, "minimize_wrapper.sh")
-        
-        # Terminal checks MUST happen before runner.py cleanup!
-        prefix1 = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- bash -c "{wrapper_path} \'{safe_name}\' '
-        prefix2 = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- bash -c "{wrapper_path} \'MINIMIZE_{safe_name}\' '
-        prefix3 = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- bash -c "xdotool search --sync --name \\\'MINIMIZE_{safe_name}\\\' windowminimize; '
-        prefix4 = 'gnome-terminal -- bash -c "sleep 0.4 && xdotool getactivewindow windowminimize; '
-        prefix5 = 'gnome-terminal -- bash -c "xdotool getactivewindow windowminimize; '
-        prefix_new_min = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- '
 
-        if cmd.startswith("gnome-terminal --maximize -- "):
-            cmd = cmd.replace("gnome-terminal --maximize -- ", "", 1)
-            term_size = "maximize"
-            terminal = True
-        elif cmd.startswith(prefix1) and cmd.endswith('"'):
-            cmd = cmd[len(prefix1):-1]
-            term_size = "minimize"
-            terminal = True
-        elif cmd.startswith(prefix2) and cmd.endswith('"'):
-            cmd = cmd[len(prefix2):-1]
-            term_size = "minimize"
-            terminal = True
-        elif cmd.startswith(prefix3) and cmd.endswith('"'):
-            cmd = cmd[len(prefix3):-1]
-            term_size = "minimize"
-            terminal = True
-        elif cmd.startswith(prefix4) and cmd.endswith('"'):
-            cmd = cmd[len(prefix4):-1]
-            term_size = "minimize"
-            terminal = True
-        elif cmd.startswith(prefix5) and cmd.endswith('"'):
-            cmd = cmd[len(prefix5):-1]
-            term_size = "minimize"
-            terminal = True
-        elif cmd.startswith(prefix_new_min):
-            cmd = cmd.replace(prefix_new_min, "", 1)
-            term_size = "minimize"
-            terminal = True
-        elif cmd.startswith("gnome-terminal -- "):
-            cmd = cmd.replace("gnome-terminal -- ", "", 1)
-            term_size = "normal"
-            terminal = True
-        elif cmd.startswith("x-terminal-emulator -e "):
-            cmd = cmd.replace("x-terminal-emulator -e ", "", 1).strip('"')
-            term_size = "normal"
-            terminal = True
-        elif cmd.startswith("xfce4-terminal -e "):
-            cmd = cmd.replace("xfce4-terminal -e ", "", 1).strip('"')
-            term_size = "normal"
-            terminal = True
-        elif cmd.startswith("xterm -e "):
-            cmd = cmd.replace("xterm -e ", "", 1).strip('"')
-            term_size = "normal"
-            terminal = True
+        if gsam_cmd is not None:
+            # Reliable path: the command was stashed verbatim when this entry was
+            # written, so there is no need to reverse-engineer it from Exec=.
+            cmd = decode_desktop_value(gsam_cmd)
+            if gsam_terminal is not None: terminal = (gsam_terminal == "true")
+            if gsam_term_size is not None: term_size = gsam_term_size
+        else:
+            # Legacy fallback for entries written before X-GSAM-Cmd existed (or
+            # hand-edited/foreign .desktop files): reconstruct the original
+            # command by stripping the known terminal/runner.py wrapper shapes.
+            safe_name = "".join([c for c in name if c.isalnum()])
+            wrapper_path = os.path.join(CUSTOM_SCRIPTS_DIR, "minimize_wrapper.sh")
 
-        # Clean up runner wrapper from cmd
-        import shlex
-        while "runner.py" in cmd:
-            try:
-                parts = shlex.split(cmd)
-                idx = -1
-                for i, p in enumerate(parts):
-                    if "runner.py" in p:
-                        idx = i
-                        break
-                if idx != -1 and len(parts) > idx + 2:
-                    base_cmd = parts[idx+2]
-                    if "minimize_wrapper.sh" in base_cmd:
-                        m_parts = shlex.split(base_cmd)
-                        if len(m_parts) >= 3:
-                            cmd = " ".join(m_parts[2:])
+            prefix1 = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- bash -c "{wrapper_path} \'{safe_name}\' '
+            prefix2 = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- bash -c "{wrapper_path} \'MINIMIZE_{safe_name}\' '
+            prefix3 = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- bash -c "xdotool search --sync --name \\\'MINIMIZE_{safe_name}\\\' windowminimize; '
+            prefix4 = 'gnome-terminal -- bash -c "sleep 0.4 && xdotool getactivewindow windowminimize; '
+            prefix5 = 'gnome-terminal -- bash -c "xdotool getactivewindow windowminimize; '
+            prefix_new_min = f'gnome-terminal --title="MINIMIZE_{safe_name}" -- '
+
+            if cmd.startswith("gnome-terminal --maximize -- "):
+                cmd = cmd.replace("gnome-terminal --maximize -- ", "", 1)
+                term_size = "maximize"
+                terminal = True
+            elif cmd.startswith(prefix1) and cmd.endswith('"'):
+                cmd = cmd[len(prefix1):-1]
+                term_size = "minimize"
+                terminal = True
+            elif cmd.startswith(prefix2) and cmd.endswith('"'):
+                cmd = cmd[len(prefix2):-1]
+                term_size = "minimize"
+                terminal = True
+            elif cmd.startswith(prefix3) and cmd.endswith('"'):
+                cmd = cmd[len(prefix3):-1]
+                term_size = "minimize"
+                terminal = True
+            elif cmd.startswith(prefix4) and cmd.endswith('"'):
+                cmd = cmd[len(prefix4):-1]
+                term_size = "minimize"
+                terminal = True
+            elif cmd.startswith(prefix5) and cmd.endswith('"'):
+                cmd = cmd[len(prefix5):-1]
+                term_size = "minimize"
+                terminal = True
+            elif cmd.startswith(prefix_new_min):
+                cmd = cmd.replace(prefix_new_min, "", 1)
+                term_size = "minimize"
+                terminal = True
+            elif cmd.startswith("gnome-terminal -- "):
+                cmd = cmd.replace("gnome-terminal -- ", "", 1)
+                term_size = "normal"
+                terminal = True
+            elif cmd.startswith("x-terminal-emulator -e "):
+                cmd = cmd.replace("x-terminal-emulator -e ", "", 1).strip('"')
+                term_size = "normal"
+                terminal = True
+            elif cmd.startswith("xfce4-terminal -e "):
+                cmd = cmd.replace("xfce4-terminal -e ", "", 1).strip('"')
+                term_size = "normal"
+                terminal = True
+            elif cmd.startswith("xterm -e "):
+                cmd = cmd.replace("xterm -e ", "", 1).strip('"')
+                term_size = "normal"
+                terminal = True
+
+            # Clean up runner wrapper from cmd
+            while "runner.py" in cmd:
+                try:
+                    parts = shlex.split(cmd)
+                    idx = -1
+                    for i, p in enumerate(parts):
+                        if "runner.py" in p:
+                            idx = i
+                            break
+                    if idx != -1 and len(parts) > idx + 2:
+                        base_cmd = parts[idx+2]
+                        if "minimize_wrapper.sh" in base_cmd:
+                            m_parts = shlex.split(base_cmd)
+                            if len(m_parts) >= 3:
+                                cmd = " ".join(m_parts[2:])
+                            else:
+                                cmd = base_cmd
                         else:
                             cmd = base_cmd
                     else:
-                        cmd = base_cmd
-                else:
+                        break
+                except Exception:
+                    if "runner.py" in cmd:
+                        try:
+                            cmd = cmd.split("runner.py")[1].split(".pid")[1].split(".log")[0].strip().strip('"').strip("'")
+                        except: break
                     break
-            except Exception:
-                if "runner.py" in cmd:
-                    try:
-                        cmd = cmd.split("runner.py")[1].split(".pid")[1].split(".log")[0].strip().strip('"').strip("'")
-                    except: break
-                break
         is_sys_actual = os.path.exists(os.path.join(SYS_AUTOSTART_DIR, os.path.basename(path)))
         return AutostartApp(os.path.basename(path), name, cmd, comment, hidden, is_sys_actual, path, icon, terminal, delay, term_size)
 
@@ -1956,30 +1664,32 @@ class AutostartManager(Gtk.Window):
         self.on_edit_clicked(None)
 
     def migrate_terminal_desktop_files(self):
+        """Rewrite entries created by this app before X-GSAM-Cmd existed, so
+        their command no longer needs to be reverse-engineered from Exec=."""
         if not os.path.isdir(AUTOSTART_DIR):
             return
         for fname in os.listdir(AUTOSTART_DIR):
             if not fname.endswith(".desktop"):
                 continue
             path = os.path.join(AUTOSTART_DIR, fname)
-            exec_line = None
             try:
                 with open(path, 'r', encoding='utf-8', errors='ignore') as f:
-                    for line in f:
-                        if line.startswith("Exec="):
-                            exec_line = line.strip().split("=", 1)[1]
-                            break
+                    content = f.read()
             except Exception:
                 continue
+            if "X-GSAM-Cmd=" in content:
+                continue  # already in the robust format
+            exec_line = None
+            for line in content.splitlines():
+                if line.startswith("Exec="):
+                    exec_line = line.split("=", 1)[1]
+                    break
             if not exec_line or "runner.py" not in exec_line:
-                continue
-            is_terminal_cmd = exec_line.startswith(("gnome-terminal", "x-terminal-emulator", "xfce4-terminal", "xterm"))
-            if not is_terminal_cmd:
-                continue
-            if re.search(r"\.log['\"]?\s+1\s*$", exec_line):
-                continue  # already migrated (terminal flag already present)
+                continue  # not an entry created by this app; leave it alone
             try:
                 app = self.parse_desktop_file(path)
+                if not app.cmd:
+                    continue
                 self.write_desktop_file(app.filename, app.name, app.cmd, app.comment, app.terminal, app.term_size, app.delay, app.enabled, app.icon)
             except Exception:
                 continue
@@ -2031,6 +1741,11 @@ class AutostartManager(Gtk.Window):
         hidden_str = "false" if enabled else "true"
         content = f"[Desktop Entry]\nType=Application\nName={name}\nExec={final_cmd}\nComment={comment}\nIcon={icon}\nTerminal=false\nHidden={hidden_str}\nX-GNOME-Autostart-enabled={en_str}\n"
         if delay > 0: content += f"X-GNOME-Autostart-Delay={delay}\n"
+        # Stash the original command/settings verbatim so parse_desktop_file()
+        # never has to reverse-engineer them from the wrapped Exec= line.
+        content += f"X-GSAM-Cmd={encode_desktop_value(cmd)}\n"
+        content += f"X-GSAM-Terminal={'true' if terminal else 'false'}\n"
+        content += f"X-GSAM-TermSize={term_size}\n"
         with open(path, 'w', encoding='utf-8') as f: f.write(content)
 
     def save_custom_script(self, filename, code):

@@ -7,6 +7,10 @@ echo ""
 rm -f "$HOME/.local/bin/baslangic-yoneticisi"
 echo "✓ Uygulama dosyası kaldırıldı."
 
+# Çeviri dosyaları
+rm -rf "$HOME/.local/bin/locale"
+echo "✓ Çeviri dosyaları kaldırıldı."
+
 # Uygulama verisi (PID, settings, runner.py, logs)
 rm -rf "$HOME/.local/share/Gnome-Startup-Applications-Manager/"
 echo "✓ Uygulama verileri kaldırıldı."

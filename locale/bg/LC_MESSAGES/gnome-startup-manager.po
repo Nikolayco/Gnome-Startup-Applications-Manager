@@ -5,89 +5,347 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "İptal"
-msgstr "Отказ"
-
-msgid "Kaydet"
-msgstr "Запазване"
-
-msgid "Uygulama Adı:"
-msgstr "Име на приложение:"
-
-msgid "Örn: Yedekleme"
-msgstr "напр. Резервно копие"
-
-msgid "Açıklama (İsteğe):"
-msgstr "Коментар (Опция):"
-
-msgid "Kısaca açıklama yazın..."
-msgstr "Напишете кратко описание..."
-
-msgid "Gecikme (Sn):"
-msgstr "Забавяне (Сек):"
-
-msgid "Sistem açıldıktan kaç saniye sonra çalışsın?"
-msgstr "Секунди за изчакване след старт?"
-
-msgid "Terminalde (Ekranda) çalıştır"
-msgstr "Изпълни в терминал"
-
-msgid "Çalışacak Dosya/Kod:"
-msgstr "Файл/Код за изпълнение:"
-
-msgid "Dosya yolu veya komut..."
-msgstr "Път до файла или команда..."
-
-msgid "Mevcut Dosya / Komut Seç"
-msgstr "Избор на файл / команда"
-
-msgid "Mini Editör (Kodu Buraya Yaz)"
-msgstr "Мини Редактор (Код тук)"
-
-msgid "Çalıştırılacak Dosyayı Seçin"
-msgstr "Изберете изпълним файл"
-
-msgid "Seç"
-msgstr "Избери"
-
-msgid "Tüm Dosyalar"
-msgstr "Всички файлове"
-
-msgid "Başlangıç Uygulamaları Yöneticisi"
-msgstr "Мениджър на стартиращи приложения"
-
-msgid "Sistem ve Kullanıcı uygulamalarını yönetin"
-msgstr "Управление на приложенията"
-
-msgid "Uygulama Ara..."
-msgstr "Търсене на приложение..."
-
-msgid "Yeni uygulama veya script ekle"
-msgstr "Добави ново приложение"
-
-msgid "Başlat (Test)"
-msgstr "Старт (Тест)"
-
-msgid "Uygulamayı hemen çalıştırarak test et"
-msgstr "Стартирай веднага за тест"
-
-msgid "Ayarları düzenle"
-msgstr "Редактиране"
-
-msgid "Kalıcı olarak sil"
-msgstr "Изтриване завинаги"
-
-msgid "<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları</span>"
-msgstr "<span size='large' weight='bold' color='#2A7BDE'>Потребителски приложения</span>"
-
-msgid "<span size='large' weight='bold' color='#E35D5D'>Sistem Uygulamaları</span>"
-msgstr "<span size='large' weight='bold' color='#E35D5D'>Системни приложения</span>"
+msgid "-"
+msgstr "-"
 
 msgid "-- Hızlı Başlat --"
 msgstr "-- Бърз старт --"
 
+msgid "Aktif"
+msgstr "Активен"
+
+msgid "Ayarlar"
+msgstr "Настройки"
+
+msgid "Ayarları düzenle"
+msgstr "Редактирай настройките"
+
+msgid "Açıklama (İsteğe):"
+msgstr "Описание (незадълж.):"
+
+msgid "Başlangıç"
+msgstr "Автостартиране"
+
+msgid "Başlangıç Uygulamaları Yöneticisi"
+msgstr "Мениджър за автостартиране"
+
+msgid "Belirli Aralıklarla (Tekrarla)"
+msgstr "На интервали (повтаряй)"
+
+msgid "Belirli Gün/Saat (Takvim)"
+msgstr "По разписание (календар)"
+
+msgid "Bilgisayar açıldığında, siz henüz şifre girip oturum açmasanız bile\nzamanlanmış görevlerin (Sistem Açılışında - Boot) çalışabilmesi için gereklidir."
+msgstr "Необходимо за изпълнение на задачи при стартиране,\nдори ако все още не сте влезли в системата."
+
+msgid "Bu öğeyi silmek istediğinize emin misiniz?"
+msgstr "Сигурни ли сте, че искате да изтриете този елемент?"
+
+msgid "Dakika"
+msgstr "Минути"
+
+msgid "Dosya Seç"
+msgstr "Избери файл"
+
+msgid "Durum"
+msgstr "Статус"
+
+msgid "Düzenle"
+msgstr "Редактирай"
+
+msgid "Evet (Max)"
+msgstr "Да (Макс)"
+
+msgid "Evet (Min)"
+msgstr "Да (Мин)"
+
+msgid "Evet (Normal)"
+msgstr "Да (Норм)"
+
+msgid "Gecikme"
+msgstr "Закъснение"
+
+msgid "Gecikme (Sn):"
+msgstr "Закъснение (сек):"
+
+msgid "Gecikme:"
+msgstr "Закъснение:"
+
+msgid "Görev"
+msgstr "Задача"
+
+msgid "Görev Adı:"
+msgstr "Име на задачата:"
+
+msgid "Görevi Düzenle"
+msgstr "Редактирай задачата"
+
+msgid "Gün"
+msgstr "Дни"
+
+msgid "Hakkında"
+msgstr "За програмата"
+
+msgid "Kalıcı olarak sil"
+msgstr "Изтрий завинаги"
+
+msgid "Kaydet"
+msgstr "Запази"
+
+msgid "Kaynak"
+msgstr "Ресурси"
+
+msgid "Komut"
+msgstr "Команда"
+
+msgid "Komut / Dosya:"
+msgstr "Команда / Файл:"
+
+msgid "Kullanıcı Uygulamaları"
+msgstr "Потребителски приложения"
+
+msgid "Kurulu Uygulamalar"
+msgstr "Инсталирани приложения"
+
+msgid "Kısaca açıklama yazın..."
+msgstr "Кратко описание..."
+
+msgid "Mevcut Dosya / Komut Seç"
+msgstr "Избери файл / команда"
+
+msgid "Mini Editör (Kodu Buraya Yaz)"
+msgstr "Мини редактор (вмъкни код)"
+
+msgid "Oturum Açılışında (Login)"
+msgstr "При вход в системата"
+
+msgid "Saat"
+msgstr "Часове"
+
+msgid "Saniye"
+msgstr "Секунди"
+
+msgid "Seç"
+msgstr "Избери"
+
+msgid "Seçileni Kullan"
+msgstr "Използвай избраното"
+
+msgid "Seçili görevleri silmek istiyor musunuz?"
+msgstr "Да изтриете ли избраните задачи?"
+
+msgid "Sil"
+msgstr "Изтрий"
+
+msgid "Sistem Açılışında (Boot)"
+msgstr "При стартиране на системата"
+
+msgid "Sistem Uygulamaları"
+msgstr "Системни приложения"
+
+msgid "Sistem Uygulamalarını (Alt Liste) Göster:"
+msgstr "Покажи системни приложения:"
+
+msgid "Sistem açıldıktan kaç saniye sonra çalışsın?"
+msgstr "Колко секунди след стартиране да се изпълни?"
+
+msgid "Sistem ve Kullanıcı uygulamalarını yönetin"
+msgstr "Управление на приложения за автостартиране"
+
+msgid "Sistem Çekmecesinde (Tray) Her Zaman Göster:"
+msgstr "Винаги показвай в системния трей:"
+
+msgid "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor."
+msgstr "Планировщикът е недостъпен: systemd не е намерен в системата."
+
+msgid "Sürüm: v260901.200947\nGeliştirici: Nikolayco"
+msgstr "Версия: v260901.200947\nРазработчик: Nikolayco"
+
+msgid "Sürüm"
+msgstr "Версия"
+
+msgid "Geliştirici"
+msgstr "Разработчик"
+
+msgid "Sıradaki Çalışma"
+msgstr "Следващо изпълнение"
+
+msgid "Terminal"
+msgstr "Терминал"
+
+msgid "Terminalde Çalıştır:"
+msgstr "Изпълни в терминал:"
+
+msgid "Terminalde çalıştır"
+msgstr "Изпълни в терминал"
+
+msgid "Tetikleyici"
+msgstr "Тригер"
+
+msgid "Tetikleyici:"
+msgstr "Тригер:"
+
+msgid "Tüm Dosyalar"
+msgstr "Всички файлове"
+
+msgid "Uygulama Adı"
+msgstr "Ime на приложението"
+
+msgid "Uygulama Adı:"
+msgstr "Ime на приложението:"
+
+msgid "Uygulama Ara..."
+msgstr "Търси приложение..."
+
 msgid "Uygulama bulunamadı"
-msgstr "Не е намерено приложение"
+msgstr "Приложението не е намерено"
+
+msgid "Uygulamayı arka plana (Tray) gizle"
+msgstr "Скрий в системния трей"
+
+msgid "Uygulamayı hemen çalıştırarak test et"
+msgstr "Стартирай незабавно за тест"
+
+msgid "Yeni Başlangıç Öğesi Ekle"
+msgstr "Добави елемент за автостартиране"
+
+msgid "Yeni Görev"
+msgstr "Нова задача"
+
+msgid "Yeni uygulama veya script ekle"
+msgstr "Добави приложение или скрипт"
+
+msgid "Zamanlayıcı"
+msgstr "Планировщик"
+
+msgid "Çalışacak Dosya/Kod:"
+msgstr "Файл/код за изпълнение:"
+
+msgid "Çalışan uygulamayı durdur (Kapat)"
+msgstr "Спри приложението (прекрати)"
+
+msgid "Çalıştırma Hatası!"
+msgstr "Грешка при стартиране!"
+
+msgid "Çalıştırılacak Dosyayı Seçin"
+msgstr "Избери файл за изпълнение"
+
+msgid "Örn: Otomatik Yedekleme"
+msgstr "Напр: Автоматично архивиране"
+
+msgid "Örn: Yedekleme"
+msgstr "Напр: Архив"
+
+msgid "Öğeyi Düzenle"
+msgstr "Редактирай елемента"
+
+msgid "İptal"
+msgstr "Отказ"
+
+msgid "Şimdi Çalıştır"
+msgstr "Изпълни сега"
+
+msgid "Klavye Kısayolları"
+msgstr "Клавишни комбинации"
+
+msgid "Kısayol"
+msgstr "Комбинация"
+
+msgid "İşlev"
+msgstr "Функция"
+
+msgid "Yeni başlangıç uygulaması ekle"
+msgstr "Добави ново приложение за автостартиране"
+
+msgid "Seçili uygulamayı düzenle"
+msgstr "Редактирай избраното приложение"
+
+msgid "Seçili uygulamayı başlat"
+msgstr "Стартирай избраното приложение"
+
+msgid "Seçili uygulamayı durdur (öldür)"
+msgstr "Спри избраното приложение"
+
+msgid "Seçili uygulamayı sil"
+msgstr "Изтрий избраното приложение"
+
+msgid "Arama kutusuna odaklan"
+msgstr "Фокусирай полето за търсене"
+
+msgid "Çalışıyor"
+msgstr "Работи"
+
+msgid "Durdu"
+msgstr "Спряно"
+
+msgid "Takvim"
+msgstr "Календар"
+
+msgid "Gelişmiş"
+msgstr "Разширени"
+
+msgid "Her Gün"
+msgstr "Всеки ден"
+
+msgid "Tarih Seç"
+msgstr "Избери дата"
+
+msgid "Saat:"
+msgstr "Час:"
+
+msgid "Hafta"
+msgstr "Седмици"
+
+msgid "Ay"
+msgstr "Месеци"
+
+msgid "Yıl"
+msgstr "Години"
+
+msgid "Başlat"
+msgstr "Старт"
+
+msgid "Durdur"
+msgstr "Стоп"
+
+msgid "Dosya Konumunu Aç"
+msgstr "Отвори местоположението"
+
+msgid "Dosya konumunu aç"
+msgstr "Отвори местоположението"
+
+msgid "Görev Başlatılamadı"
+msgstr "Неуспешно стартиране"
+
+msgid "Geçersiz zamanlayıcı ayarı."
+msgstr "Невалидна конфигурация."
+
+msgid "<b>Gelişmiş Arka Plan İzni (Lingering)</b>"
+msgstr "<b>Разрешение за фон (Lingering)</b>"
+
+msgid "<b>Klavye Kısayolları</b>"
+msgstr "<b>Клавишни комбинации</b>"
+
+msgid "Eksik Bilgi!"
+msgstr "Липсваща информация!"
+
+msgid "Lütfen görev adını ve çalıştırılacak komutu boş bırakmayınız."
+msgstr "Моля, не оставяйте полетата за име на задачата и команда празни."
+
+msgid "Lütfen isim ve komut kısımlarını boş bırakmayınız."
+msgstr "Моля, не оставяйте полетата за име и команда празни."
+
+msgid "Durum Tarama Sıklığı (Saniye):"
+msgstr "Честота на обновяване (сек):"
+
+msgid "Pencere Boyutu ve Pozisyonu:"
+msgstr "Размер и позиция на прозореца:"
+
+msgid "Pencere Modu:"
+msgstr "Режим на прозореца:"
+
+msgid "Varsayılan Boyuta Dön"
+msgstr "Възстанови размера по подразбиране"
 
 msgid "⚙️ Yöneticiyi Aç"
 msgstr "⚙️ Отвори мениджъра"
@@ -95,36 +353,9 @@ msgstr "⚙️ Отвори мениджъра"
 msgid "❌ Çıkış Yap"
 msgstr "❌ Изход"
 
-msgid "Aktif"
-msgstr "Активен"
+msgid "Her"
+msgstr "Всеки"
 
-msgid "Uygulama Adı"
-msgstr "Име"
-
-msgid "Komut"
-msgstr "Команда"
-
-msgid "Terminal"
-msgstr "Терминал"
-
-msgid "Evet"
-msgstr "Да"
-
-msgid "Gecikme"
-msgstr "Забавяне"
-
-msgid "Yeni Başlangıç Öğesi Ekle"
-msgstr "Добави нов елемент"
-
-msgid "Öğeyi Düzenle"
-msgstr "Редактиране на елемент"
-
-msgid "Bu öğeyi KALICI OLARAK silmek istiyor musunuz?\nGeçici olarak durdurmak için listeden 'Aktif' tikini kaldırabilirsiniz."
-msgstr "Искате ли завинаги да изтриете този елемент?\nПремахнете отметката от 'Активен', за временно спиране."
-
-msgid "Uygulama/Script Başlatıldı!"
-msgstr "Приложение/скрипт стартира!"
-
-msgid "Çalıştırma Hatası!"
-msgstr "Грешка при изпълнение!"
+msgid "Takvim:"
+msgstr "Календар:"
 

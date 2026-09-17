@@ -5,89 +5,302 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "İptal"
-msgstr "Cancel"
+msgid "-"
+msgstr "-"
 
-msgid "Kaydet"
-msgstr "Save"
+msgid "-- Hızlı Başlat --"
+msgstr "-- Quick Launch --"
 
-msgid "Uygulama Adı:"
-msgstr "Application Name:"
+msgid "<b>Gelişmiş Arka Plan İzni (Lingering)</b>"
+msgstr "<b>Advanced Background Permission (Lingering)</b>"
 
-msgid "Örn: Yedekleme"
-msgstr "e.g., Backup"
+msgid "Aktif"
+msgstr "Enabled"
 
-msgid "Açıklama (İsteğe):"
-msgstr "Comment (Optional):"
-
-msgid "Kısaca açıklama yazın..."
-msgstr "Write a short description..."
-
-msgid "Gecikme (Sn):"
-msgstr "Delay (Sec):"
-
-msgid "Sistem açıldıktan kaç saniye sonra çalışsın?"
-msgstr "Seconds to wait after system startup?"
-
-msgid "Terminalde (Ekranda) çalıştır"
-msgstr "Run in Terminal"
-
-msgid "Çalışacak Dosya/Kod:"
-msgstr "File/Code to run:"
-
-msgid "Dosya yolu veya komut..."
-msgstr "File path or command..."
-
-msgid "Mevcut Dosya / Komut Seç"
-msgstr "Select File / Command"
-
-msgid "Mini Editör (Kodu Buraya Yaz)"
-msgstr "Mini Editor (Write Code Here)"
-
-msgid "Çalıştırılacak Dosyayı Seçin"
-msgstr "Select Executable File"
-
-msgid "Seç"
-msgstr "Select"
-
-msgid "Tüm Dosyalar"
-msgstr "All Files"
-
-msgid "Başlangıç Uygulamaları Yöneticisi"
-msgstr "Startup Applications Manager"
-
-msgid "Sistem ve Kullanıcı uygulamalarını yönetin"
-msgstr "Manage system and user applications"
-
-msgid "Uygulama Ara..."
-msgstr "Search Application..."
-
-msgid "Yeni uygulama veya script ekle"
-msgstr "Add new application or script"
-
-msgid "Başlat (Test)"
-msgstr "Start (Test)"
-
-msgid "Uygulamayı hemen çalıştırarak test et"
-msgstr "Run application immediately to test"
+msgid "Ayarlar"
+msgstr "Settings"
 
 msgid "Ayarları düzenle"
 msgstr "Edit settings"
 
+msgid "Açıklama (İsteğe):"
+msgstr "Description (Optional):"
+
+msgid "Başlangıç"
+msgstr "Startup"
+
+msgid "Başlangıç Uygulamaları Yöneticisi"
+msgstr "Startup Applications Manager"
+
+msgid "Belirli Aralıklarla (Tekrarla)"
+msgstr "Interval (Repeat)"
+
+msgid "Belirli Gün/Saat (Takvim)"
+msgstr "Specific Day/Time (Calendar)"
+
+msgid "Bilgisayar açıldığında, siz henüz şifre girip oturum açmasanız bile\nzamanlanmış görevlerin (Sistem Açılışında - Boot) çalışabilmesi için gereklidir."
+msgstr "Required for scheduled tasks (Boot) to run\nin the background before you even log in."
+
+msgid "Bu öğeyi silmek istediğinize emin misiniz?"
+msgstr "Are you sure you want to delete this item?"
+
+msgid "Dakika"
+msgstr "Minutes"
+
+msgid "Dosya Seç"
+msgstr "Select File"
+
+msgid "Durum"
+msgstr "Status"
+
+msgid "Düzenle"
+msgstr "Edit"
+
+msgid "Evet (Max)"
+msgstr "Yes (Max)"
+
+msgid "Evet (Min)"
+msgstr "Yes (Min)"
+
+msgid "Evet (Normal)"
+msgstr "Yes (Normal)"
+
+msgid "Gecikme"
+msgstr "Delay"
+
+msgid "Gecikme (Sn):"
+msgstr "Delay (Sec):"
+
+msgid "Gecikme:"
+msgstr "Delay:"
+
+msgid "Görev"
+msgstr "Task"
+
+msgid "Görev Adı:"
+msgstr "Task Name:"
+
+msgid "Görevi Düzenle"
+msgstr "Edit Task"
+
+msgid "Gün"
+msgstr "Days"
+
+msgid "Hakkında"
+msgstr "About"
+
 msgid "Kalıcı olarak sil"
 msgstr "Delete permanently"
 
-msgid "<span size='large' weight='bold' color='#2A7BDE'>Kullanıcı Uygulamaları</span>"
-msgstr "<span size='large' weight='bold' color='#2A7BDE'>User Applications</span>"
+msgid "Kaydet"
+msgstr "Save"
 
-msgid "<span size='large' weight='bold' color='#E35D5D'>Sistem Uygulamaları</span>"
-msgstr "<span size='large' weight='bold' color='#E35D5D'>System Applications</span>"
+msgid "Kaynak"
+msgstr "Resources"
 
-msgid "-- Hızlı Başlat --"
-msgstr "-- Quick Start --"
+msgid "Komut"
+msgstr "Command"
+
+msgid "Komut / Dosya:"
+msgstr "Command / File:"
+
+msgid "Kullanıcı Uygulamaları"
+msgstr "User Applications"
+
+msgid "Kurulu Uygulamalar"
+msgstr "Installed Applications"
+
+msgid "Kısaca açıklama yazın..."
+msgstr "Write a short description..."
+
+msgid "Mevcut Dosya / Komut Seç"
+msgstr "Select Existing File / Command"
+
+msgid "Mini Editör (Kodu Buraya Yaz)"
+msgstr "Mini Editor (Write Code Here)"
+
+msgid "Oturum Açılışında (Login)"
+msgstr "At Login (Startup)"
+
+msgid "Saat"
+msgstr "Hours"
+
+msgid "Saniye"
+msgstr "Seconds"
+
+msgid "Seç"
+msgstr "Select"
+
+msgid "Seçileni Kullan"
+msgstr "Use Selected"
+
+msgid "Seçili görevleri silmek istiyor musunuz?"
+msgstr "Are you sure you want to delete the selected tasks?"
+
+msgid "Sil"
+msgstr "Delete"
+
+msgid "Sistem Açılışında (Boot)"
+msgstr "At System Boot"
+
+msgid "Sistem Uygulamaları"
+msgstr "System Applications"
+
+msgid "Sistem Uygulamalarını (Alt Liste) Göster:"
+msgstr "Show System Applications (Sublist):"
+
+msgid "Sistem açıldıktan kaç saniye sonra çalışsın?"
+msgstr "How many seconds after boot should it run?"
+
+msgid "Sistem ve Kullanıcı uygulamalarını yönetin"
+msgstr "Manage system and user startup applications"
+
+msgid "Sistem Çekmecesinde (Tray) Her Zaman Göster:"
+msgstr "Always Show in System Tray:"
+
+msgid "Sisteminizde systemd bulunamadığı için zamanlayıcı kullanılamıyor."
+msgstr "Task Scheduler is unavailable because systemd is not found on your system."
+
+msgid "Sürüm: v260901.200947\nGeliştirici: Nikolayco"
+msgstr "Version: v260901.200947\nDeveloper: Nikolayco"
+
+msgid "Sürüm"
+msgstr "Version"
+
+msgid "Geliştirici"
+msgstr "Developer"
+
+msgid "Sıradaki Çalışma"
+msgstr "Next Run"
+
+msgid "Terminal"
+msgstr "Terminal"
+
+msgid "Terminalde Çalıştır:"
+msgstr "Run in Terminal:"
+
+msgid "Terminalde çalıştır"
+msgstr "Run in terminal"
+
+msgid "Tetikleyici"
+msgstr "Trigger"
+
+msgid "Tetikleyici:"
+msgstr "Trigger:"
+
+msgid "Tüm Dosyalar"
+msgstr "All Files"
+
+msgid "Uygulama Adı"
+msgstr "App Name"
+
+msgid "Uygulama Adı:"
+msgstr "App Name:"
+
+msgid "Uygulama Ara..."
+msgstr "Search app..."
 
 msgid "Uygulama bulunamadı"
 msgstr "No application found"
+
+msgid "Uygulamayı arka plana (Tray) gizle"
+msgstr "Hide application to Tray"
+
+msgid "Uygulamayı hemen çalıştırarak test et"
+msgstr "Run application immediately to test"
+
+msgid "Yeni Başlangıç Öğesi Ekle"
+msgstr "Add New Startup Item"
+
+msgid "Yeni Görev"
+msgstr "New Task"
+
+msgid "Yeni uygulama veya script ekle"
+msgstr "Add new app or script"
+
+msgid "Zamanlayıcı"
+msgstr "Task Scheduler"
+
+msgid "Çalışacak Dosya/Kod:"
+msgstr "File/Code to Run:"
+
+msgid "Çalışan uygulamayı durdur (Kapat)"
+msgstr "Stop running application (Kill)"
+
+msgid "Çalıştırma Hatası!"
+msgstr "Execution Error!"
+
+msgid "Çalıştırılacak Dosyayı Seçin"
+msgstr "Select File to Run"
+
+msgid "Örn: Otomatik Yedekleme"
+msgstr "e.g. Auto Backup"
+
+msgid "Örn: Yedekleme"
+msgstr "e.g. Backup"
+
+msgid "Öğeyi Düzenle"
+msgstr "Edit Item"
+
+msgid "İptal"
+msgstr "Cancel"
+
+msgid "Şimdi Çalıştır"
+msgstr "Run Now"
+
+msgid "Klavye Kısayolları"
+msgstr "Keyboard Shortcuts"
+
+msgid "Kısayol"
+msgstr "Shortcut"
+
+msgid "İşlev"
+msgstr "Function"
+
+msgid "Yeni başlangıç uygulaması ekle"
+msgstr "Add a new startup application"
+
+msgid "Seçili uygulamayı düzenle"
+msgstr "Edit selected application"
+
+msgid "Seçili uygulamayı başlat"
+msgstr "Start selected application"
+
+msgid "Seçili uygulamayı durdur (öldür)"
+msgstr "Stop (kill) selected application"
+
+msgid "Seçili uygulamayı sil"
+msgstr "Delete selected application"
+
+msgid "Arama kutusuna odaklan"
+msgstr "Focus the search box"
+
+msgid "Çalışıyor"
+msgstr "Running"
+
+msgid "Durdu"
+msgstr "Stopped"
+
+msgid "Eksik Bilgi!"
+msgstr "Missing Information!"
+
+msgid "Lütfen görev adını ve çalıştırılacak komutu boş bırakmayınız."
+msgstr "Please do not leave the task name and command fields empty."
+
+msgid "Lütfen isim ve komut kısımlarını boş bırakmayınız."
+msgstr "Please do not leave the name and command fields empty."
+
+msgid "Durum Tarama Sıklığı (Saniye):"
+msgstr "Status Refresh Rate (Seconds):"
+
+msgid "Pencere Boyutu ve Pozisyonu:"
+msgstr "Window Size and Position:"
+
+msgid "Pencere Modu:"
+msgstr "Window Mode:"
+
+msgid "Varsayılan Boyuta Dön"
+msgstr "Restore Default Size"
 
 msgid "⚙️ Yöneticiyi Aç"
 msgstr "⚙️ Open Manager"
@@ -95,36 +308,54 @@ msgstr "⚙️ Open Manager"
 msgid "❌ Çıkış Yap"
 msgstr "❌ Quit"
 
-msgid "Aktif"
-msgstr "Active"
+msgid "Her"
+msgstr "Every"
 
-msgid "Uygulama Adı"
-msgstr "App Name"
+msgid "Takvim:"
+msgstr "Calendar:"
 
-msgid "Komut"
-msgstr "Command"
+msgid "Takvim"
+msgstr "Calendar"
 
-msgid "Terminal"
-msgstr "Terminal"
+msgid "Gelişmiş"
+msgstr "Advanced"
 
-msgid "Evet"
-msgstr "Yes"
+msgid "Her Gün"
+msgstr "Every Day"
 
-msgid "Gecikme"
-msgstr "Delay"
+msgid "Tarih Seç"
+msgstr "Select Date"
 
-msgid "Yeni Başlangıç Öğesi Ekle"
-msgstr "Add New Startup Item"
+msgid "Saat:"
+msgstr "Time:"
 
-msgid "Öğeyi Düzenle"
-msgstr "Edit Item"
+msgid "Hafta"
+msgstr "Weeks"
 
-msgid "Bu öğeyi KALICI OLARAK silmek istiyor musunuz?\nGeçici olarak durdurmak için listeden 'Aktif' tikini kaldırabilirsiniz."
-msgstr "Do you want to PERMANENTLY delete this item?\nYou can untick 'Active' from the list to temporarily disable it."
+msgid "Ay"
+msgstr "Months"
 
-msgid "Uygulama/Script Başlatıldı!"
-msgstr "App/Script Started!"
+msgid "Yıl"
+msgstr "Years"
 
-msgid "Çalıştırma Hatası!"
-msgstr "Execution Error!"
+msgid "Başlat"
+msgstr "Start"
+
+msgid "Durdur"
+msgstr "Stop"
+
+msgid "Dosya Konumunu Aç"
+msgstr "Open File Location"
+
+msgid "Dosya konumunu aç"
+msgstr "Open file location"
+
+msgid "Görev Başlatılamadı"
+msgstr "Failed to Start Task"
+
+msgid "Geçersiz zamanlayıcı ayarı."
+msgstr "Invalid scheduler configuration."
+
+msgid "<b>Klavye Kısayolları</b>"
+msgstr "<b>Keyboard Shortcuts</b>"
 
