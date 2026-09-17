@@ -1319,15 +1319,17 @@ class AutostartManager(Gtk.Window):
             f.write("pid_file = sys.argv[1]\n")
             f.write("cmd = sys.argv[2]\n")
             f.write("log_file = sys.argv[3]\n")
+            f.write("is_terminal = len(sys.argv) > 4 and sys.argv[4] == '1'\n")
             f.write("with open(pid_file, 'w') as f:\n")
             f.write("    f.write(str(os.getpid()))\n")
-            f.write("with open(log_file, 'w') as lf:\n")
-            f.write("    proc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid, stdout=lf, stderr=subprocess.STDOUT)\n")
-            f.write("    def handler(signum, frame):\n")
-            f.write("        os.killpg(proc.pid, signal.SIGKILL)\n")
-            f.write("        sys.exit(0)\n")
-            f.write("    signal.signal(signal.SIGTERM, handler)\n")
-            f.write("    proc.wait()\n")
+            f.write("lf = None if is_terminal else open(log_file, 'w')\n")
+            f.write("proc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid, stdout=(None if is_terminal else lf), stderr=(None if is_terminal else subprocess.STDOUT))\n")
+            f.write("def handler(signum, frame):\n")
+            f.write("    os.killpg(proc.pid, signal.SIGKILL)\n")
+            f.write("    sys.exit(0)\n")
+            f.write("signal.signal(signal.SIGTERM, handler)\n")
+            f.write("proc.wait()\n")
+            f.write("if lf: lf.close()\n")
         os.chmod(runner_path, 0o755)
             
         self.load_apps()
@@ -1971,7 +1973,8 @@ class AutostartManager(Gtk.Window):
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, f"{filename}.log")
         import shlex
-        runner_exec = f'python3 {shlex.quote(runner_path)} {shlex.quote(pid_file)} {shlex.quote(base_cmd)} {shlex.quote(log_file)}'
+        terminal_flag = "1" if terminal else "0"
+        runner_exec = f'python3 {shlex.quote(runner_path)} {shlex.quote(pid_file)} {shlex.quote(base_cmd)} {shlex.quote(log_file)} {terminal_flag}'
         
         if terminal:
             import shutil
