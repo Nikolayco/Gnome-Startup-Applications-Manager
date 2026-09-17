@@ -175,76 +175,31 @@ class CmdTextView(Gtk.ScrolledWindow):
     def set_text(self, text):
         self.tv.get_buffer().set_text(text)
 
-class AppDialog(Gtk.Dialog):
-    def __init__(self, parent, title, app=None):
-        super().__init__(title=title, transient_for=parent, flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
-        self.set_default_size(580, 420)
-        self.original_icon = app.icon if app else "application-x-executable"
 
-        
-        self.add_buttons(_("İptal"), Gtk.ResponseType.CANCEL, _("Kaydet"), Gtk.ResponseType.OK)
-        save_btn = self.get_widget_for_response(Gtk.ResponseType.OK)
-        save_btn.get_style_context().add_class("suggested-action")
-        
-        box = self.get_content_area()
-        box.set_spacing(15)
-        box.set_margin_top(20)
-        box.set_margin_bottom(20)
-        box.set_margin_start(20)
-        box.set_margin_end(20)
-        
-        grid = Gtk.Grid()
-        grid.set_row_spacing(15)
-        grid.set_column_spacing(15)
-        box.pack_start(grid, True, True, 0)
-        
-        lbl_name = Gtk.Label(label=_("Uygulama Adı:"), xalign=0)
-        lbl_name.get_style_context().add_class("dim-label")
-        grid.attach(lbl_name, 0, 0, 1, 1)
-        self.entry_name = Gtk.Entry(placeholder_text=_("Örn: Yedekleme"))
-        self.entry_name.set_hexpand(True)
-        grid.attach(self.entry_name, 1, 0, 1, 1)
-        
-        lbl_comment = Gtk.Label(label=_("Açıklama (İsteğe):"), xalign=0)
-        lbl_comment.get_style_context().add_class("dim-label")
-        grid.attach(lbl_comment, 0, 1, 1, 1)
-        self.entry_comment = Gtk.Entry(placeholder_text=_("Kısaca açıklama yazın..."))
-        grid.attach(self.entry_comment, 1, 1, 1, 1)
+class CommandSourceEditor:
+    """Shared 'what should run' picker: an existing file/command, a small
+    inline script, or an already-installed application. Used by both
+    AppDialog (startup items) and ScheduleDialog (scheduled tasks) so both
+    offer the same three ways to choose a command.
 
-        lbl_delay = Gtk.Label(label=_("Gecikme (Sn):"), xalign=0)
-        lbl_delay.get_style_context().add_class("dim-label")
-        grid.attach(lbl_delay, 0, 2, 1, 1)
-        
-        self.spin_delay = Gtk.SpinButton.new_with_range(0, 300, 1)
-        self.spin_delay.set_tooltip_text(_("Sistem açıldıktan kaç saniye sonra çalışsın?"))
-        grid.attach(self.spin_delay, 1, 2, 1, 1)
+    `entry_name` is auto-filled when empty (from a browsed file or a picked
+    app); `terminal_toggle` is any widget with get_active()/set_active()
+    (Gtk.CheckButton or Gtk.Switch both qualify) that gets turned on for
+    .sh/.py files or apps that need a terminal. `entry_comment` and
+    `on_icon_picked` are optional since scheduled tasks have no comment or
+    icon concept.
+    """
 
-        lbl_term = Gtk.Label(label=_("Pencere Modu:"), xalign=0)
-        lbl_term.get_style_context().add_class("dim-label")
-        grid.attach(lbl_term, 0, 3, 1, 1)
+    def __init__(self, parent_window, entry_name, terminal_toggle, entry_comment=None, on_icon_picked=None):
+        self.parent_window = parent_window
+        self.entry_name = entry_name
+        self.terminal_toggle = terminal_toggle
+        self.entry_comment = entry_comment
+        self.on_icon_picked = on_icon_picked
 
-        term_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=15)
-        self.check_terminal = Gtk.CheckButton(label=_("Terminalde çalıştır"))
-        term_box.pack_start(self.check_terminal, False, False, 0)
-        
-        self.combo_term_size = Gtk.ComboBoxText()
-        self.combo_term_size.append("maximize", "Maximize")
-        self.combo_term_size.append("normal", "Normal")
-        self.combo_term_size.append("minimize", "Minimize")
-        self.combo_term_size.set_active_id("normal")
-        self.combo_term_size.set_sensitive(False)
-        self.check_terminal.connect("toggled", lambda w: self.combo_term_size.set_sensitive(w.get_active()))
-        
-        term_box.pack_start(self.combo_term_size, False, False, 0)
-        grid.attach(term_box, 1, 3, 1, 1)
-
-        lbl_source = Gtk.Label(label=_("Çalışacak Dosya/Kod:"), xalign=0)
-        lbl_source.get_style_context().add_class("dim-label")
-        grid.attach(lbl_source, 0, 4, 1, 1)
-        
         self.stack = Gtk.Stack()
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
-        
+
         file_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         self.entry_cmd = CmdTextView()
         file_box.pack_start(self.entry_cmd, True, True, 0)
@@ -252,7 +207,7 @@ class AppDialog(Gtk.Dialog):
         btn_browse.add(Gtk.Image.new_from_icon_name("folder-open-symbolic", Gtk.IconSize.BUTTON))
         btn_browse.connect("clicked", self.on_browse_clicked)
         file_box.pack_start(btn_browse, False, False, 0)
-        
+
         self.text_buffer = Gtk.TextBuffer()
         self.text_view = Gtk.TextView(buffer=self.text_buffer)
         self.text_view.set_wrap_mode(Gtk.WrapMode.WORD)
@@ -261,7 +216,7 @@ class AppDialog(Gtk.Dialog):
         scroll_tv.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         scroll_tv.set_size_request(-1, 100)
         scroll_tv.add(self.text_view)
-        
+
         self.stack.add_titled(file_box, "file", _("Mevcut Dosya / Komut Seç"))
         self.stack.add_titled(scroll_tv, "code", _("Mini Editör (Kodu Buraya Yaz)"))
         self.stack.add_titled(self._build_installed_apps_page(), "installed", _("Kurulu Uygulamalar"))
@@ -269,35 +224,27 @@ class AppDialog(Gtk.Dialog):
         switcher = Gtk.StackSwitcher()
         switcher.set_stack(self.stack)
         switcher.set_halign(Gtk.Align.START)
-        
-        vbox_source = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
-        vbox_source.pack_start(switcher, False, False, 0)
-        vbox_source.pack_start(self.stack, True, True, 0)
-        
-        grid.attach(vbox_source, 1, 4, 1, 1)
 
-        if app:
-            self.entry_name.set_text(app.name)
-            self.entry_cmd.set_text(app.cmd)
-            self.entry_comment.set_text(app.comment)
-            self.check_terminal.set_active(app.terminal)
-            self.combo_term_size.set_active_id(app.term_size)
-            self.combo_term_size.set_sensitive(app.terminal)
-            self.spin_delay.set_value(app.delay)
-            
-            if app.cmd.startswith(CUSTOM_SCRIPTS_DIR):
-                self.stack.set_visible_child_name("code")
-                try:
-                    with open(app.cmd, 'r') as f:
-                        lines = f.readlines()
-                        if lines and lines[0].startswith("#!"):
-                            content = "".join(lines[1:])
-                        else:
-                            content = "".join(lines)
-                        self.text_buffer.set_text(content.strip())
-                except: pass
-            
-        self.show_all()
+        self.widget = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+        self.widget.pack_start(switcher, False, False, 0)
+        self.widget.pack_start(self.stack, True, True, 0)
+
+    def is_code_mode(self):
+        return self.stack.get_visible_child_name() == "code"
+
+    def get_command_text(self):
+        if self.is_code_mode():
+            buf = self.text_buffer
+            return buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True).strip()
+        return self.entry_cmd.get_text().strip()
+
+    def set_command_text(self, text):
+        self.entry_cmd.set_text(text)
+        self.stack.set_visible_child_name("file")
+
+    def show_code(self, content):
+        self.text_buffer.set_text(content)
+        self.stack.set_visible_child_name("code")
 
     def _build_installed_apps_page(self):
         self.installed_store = Gtk.ListStore(str, str, str, str, bool)  # icon, name, comment, exec, terminal
@@ -414,15 +361,16 @@ class AppDialog(Gtk.Dialog):
         exec_cmd = model[treeiter][3]
         terminal = model[treeiter][4]
         self.entry_name.set_text(name)
-        self.entry_comment.set_text(comment)
+        if self.entry_comment is not None:
+            self.entry_comment.set_text(comment)
         self.entry_cmd.set_text(exec_cmd)
-        self.check_terminal.set_active(terminal)
-        self.combo_term_size.set_sensitive(terminal)
-        self.original_icon = icon_name
+        self.terminal_toggle.set_active(terminal)
+        if self.on_icon_picked:
+            self.on_icon_picked(icon_name)
         self.stack.set_visible_child_name("file")
 
     def on_browse_clicked(self, widget):
-        dialog = Gtk.FileChooserDialog(title=_("Çalıştırılacak Dosyayı Seçin"), parent=self, action=Gtk.FileChooserAction.OPEN)
+        dialog = Gtk.FileChooserDialog(title=_("Çalıştırılacak Dosyayı Seçin"), parent=self.parent_window, action=Gtk.FileChooserAction.OPEN)
         dialog.add_buttons(_("İptal"), Gtk.ResponseType.CANCEL, _("Seç"), Gtk.ResponseType.OK)
         filter_all = Gtk.FileFilter()
         filter_all.set_name(_("Tüm Dosyalar"))
@@ -436,15 +384,20 @@ class AppDialog(Gtk.Dialog):
                 name_no_ext = os.path.splitext(os.path.basename(filepath))[0]
                 self.entry_name.set_text(name_no_ext.replace("-", " ").replace("_", " ").title())
             if filepath.endswith(".sh") or filepath.endswith(".py"):
-                self.check_terminal.set_active(True)
+                self.terminal_toggle.set_active(True)
         dialog.destroy()
 
-class ScheduleDialog(Gtk.Dialog):
-    def __init__(self, parent, title, task=None):
+
+class AppDialog(Gtk.Dialog):
+    def __init__(self, parent, title, app=None):
         super().__init__(title=title, transient_for=parent, flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
-        self.set_default_size(600, 500)
+        self.set_default_size(580, 420)
+        self.original_icon = app.icon if app else "application-x-executable"
+
+        
         self.add_buttons(_("İptal"), Gtk.ResponseType.CANCEL, _("Kaydet"), Gtk.ResponseType.OK)
-        self.get_widget_for_response(Gtk.ResponseType.OK).get_style_context().add_class("suggested-action")
+        save_btn = self.get_widget_for_response(Gtk.ResponseType.OK)
+        save_btn.get_style_context().add_class("suggested-action")
         
         box = self.get_content_area()
         box.set_spacing(15)
@@ -458,6 +411,100 @@ class ScheduleDialog(Gtk.Dialog):
         grid.set_column_spacing(15)
         box.pack_start(grid, True, True, 0)
         
+        lbl_name = Gtk.Label(label=_("Uygulama Adı:"), xalign=0)
+        lbl_name.get_style_context().add_class("dim-label")
+        grid.attach(lbl_name, 0, 0, 1, 1)
+        self.entry_name = Gtk.Entry(placeholder_text=_("Örn: Yedekleme"))
+        self.entry_name.set_hexpand(True)
+        grid.attach(self.entry_name, 1, 0, 1, 1)
+        
+        lbl_comment = Gtk.Label(label=_("Açıklama (İsteğe):"), xalign=0)
+        lbl_comment.get_style_context().add_class("dim-label")
+        grid.attach(lbl_comment, 0, 1, 1, 1)
+        self.entry_comment = Gtk.Entry(placeholder_text=_("Kısaca açıklama yazın..."))
+        grid.attach(self.entry_comment, 1, 1, 1, 1)
+
+        lbl_delay = Gtk.Label(label=_("Gecikme (Sn):"), xalign=0)
+        lbl_delay.get_style_context().add_class("dim-label")
+        grid.attach(lbl_delay, 0, 2, 1, 1)
+        
+        self.spin_delay = Gtk.SpinButton.new_with_range(0, 300, 1)
+        self.spin_delay.set_tooltip_text(_("Sistem açıldıktan kaç saniye sonra çalışsın?"))
+        grid.attach(self.spin_delay, 1, 2, 1, 1)
+
+        lbl_term = Gtk.Label(label=_("Pencere Modu:"), xalign=0)
+        lbl_term.get_style_context().add_class("dim-label")
+        grid.attach(lbl_term, 0, 3, 1, 1)
+
+        term_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=15)
+        self.check_terminal = Gtk.CheckButton(label=_("Terminalde çalıştır"))
+        term_box.pack_start(self.check_terminal, False, False, 0)
+        
+        self.combo_term_size = Gtk.ComboBoxText()
+        self.combo_term_size.append("maximize", "Maximize")
+        self.combo_term_size.append("normal", "Normal")
+        self.combo_term_size.append("minimize", "Minimize")
+        self.combo_term_size.set_active_id("normal")
+        self.combo_term_size.set_sensitive(False)
+        self.check_terminal.connect("toggled", lambda w: self.combo_term_size.set_sensitive(w.get_active()))
+        
+        term_box.pack_start(self.combo_term_size, False, False, 0)
+        grid.attach(term_box, 1, 3, 1, 1)
+
+        lbl_source = Gtk.Label(label=_("Çalışacak Dosya/Kod:"), xalign=0)
+        lbl_source.get_style_context().add_class("dim-label")
+        grid.attach(lbl_source, 0, 4, 1, 1)
+
+        self.cmd_source = CommandSourceEditor(
+            self, self.entry_name, self.check_terminal,
+            entry_comment=self.entry_comment,
+            on_icon_picked=lambda icon: setattr(self, "original_icon", icon),
+        )
+        grid.attach(self.cmd_source.widget, 1, 4, 1, 1)
+
+        if app:
+            self.entry_name.set_text(app.name)
+            self.entry_comment.set_text(app.comment)
+            self.check_terminal.set_active(app.terminal)
+            self.combo_term_size.set_active_id(app.term_size)
+            self.combo_term_size.set_sensitive(app.terminal)
+            self.spin_delay.set_value(app.delay)
+
+            if app.cmd.startswith(CUSTOM_SCRIPTS_DIR):
+                try:
+                    with open(app.cmd, 'r') as f:
+                        lines = f.readlines()
+                        if lines and lines[0].startswith("#!"):
+                            content = "".join(lines[1:])
+                        else:
+                            content = "".join(lines)
+                        self.cmd_source.show_code(content.strip())
+                except: pass
+            else:
+                self.cmd_source.set_command_text(app.cmd)
+
+        self.show_all()
+
+
+class ScheduleDialog(Gtk.Dialog):
+    def __init__(self, parent, title, task=None):
+        super().__init__(title=title, transient_for=parent, flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
+        self.set_default_size(600, 620)
+        self.add_buttons(_("İptal"), Gtk.ResponseType.CANCEL, _("Kaydet"), Gtk.ResponseType.OK)
+        self.get_widget_for_response(Gtk.ResponseType.OK).get_style_context().add_class("suggested-action")
+
+        box = self.get_content_area()
+        box.set_spacing(15)
+        box.set_margin_top(20)
+        box.set_margin_bottom(20)
+        box.set_margin_start(20)
+        box.set_margin_end(20)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(15)
+        grid.set_column_spacing(15)
+        box.pack_start(grid, True, True, 0)
+
         # Name
         lbl_name = Gtk.Label(label=_("Görev Adı:"), xalign=0)
         grid.attach(lbl_name, 0, 0, 1, 1)
@@ -465,26 +512,22 @@ class ScheduleDialog(Gtk.Dialog):
         self.entry_name.set_hexpand(True)
         grid.attach(self.entry_name, 1, 0, 1, 1)
         
-        # Command
-        lbl_cmd = Gtk.Label(label=_("Komut / Dosya:"), xalign=0)
-        grid.attach(lbl_cmd, 0, 1, 1, 1)
-        cmd_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        self.entry_cmd = CmdTextView()
-        cmd_box.pack_start(self.entry_cmd, True, True, 0)
-        btn_browse = Gtk.Button()
-        btn_browse.add(Gtk.Image.new_from_icon_name("folder-open-symbolic", Gtk.IconSize.BUTTON))
-        btn_browse.connect("clicked", self.on_browse)
-        cmd_box.pack_start(btn_browse, False, False, 0)
-        grid.attach(cmd_box, 1, 1, 1, 1)
-        
-        # Terminal Switch
-        lbl_term = Gtk.Label(label=_("Terminalde Çalıştır:"), xalign=0)
-        grid.attach(lbl_term, 0, 2, 1, 1)
+        # Terminal Switch (built before the command picker below, which needs it)
         self.switch_term = Gtk.Switch()
         self.switch_term.set_halign(Gtk.Align.START)
         self.switch_term.set_valign(Gtk.Align.CENTER)
+
+        # Command
+        lbl_cmd = Gtk.Label(label=_("Komut / Dosya:"), xalign=0)
+        grid.attach(lbl_cmd, 0, 1, 1, 1)
+        self.cmd_source = CommandSourceEditor(self, self.entry_name, self.switch_term)
+        grid.attach(self.cmd_source.widget, 1, 1, 1, 1)
+
+        # Terminal Switch
+        lbl_term = Gtk.Label(label=_("Terminalde Çalıştır:"), xalign=0)
+        grid.attach(lbl_term, 0, 2, 1, 1)
         grid.attach(self.switch_term, 1, 2, 1, 1)
-        
+
         # Trigger Type
         lbl_type = Gtk.Label(label=_("Tetikleyici:"), xalign=0)
         grid.attach(lbl_type, 0, 3, 1, 1)
@@ -583,7 +626,19 @@ class ScheduleDialog(Gtk.Dialog):
             if cmd_text.startswith("gnome-terminal -- "):
                 cmd_text = cmd_text.replace("gnome-terminal -- ", "", 1)
                 self.switch_term.set_active(True)
-            self.entry_cmd.set_text(cmd_text)
+            if cmd_text.startswith(CUSTOM_SCRIPTS_DIR):
+                try:
+                    with open(cmd_text, 'r') as f:
+                        lines = f.readlines()
+                        if lines and lines[0].startswith("#!"):
+                            content = "".join(lines[1:])
+                        else:
+                            content = "".join(lines)
+                        self.cmd_source.show_code(content.strip())
+                except Exception:
+                    self.cmd_source.set_command_text(cmd_text)
+            else:
+                self.cmd_source.set_command_text(cmd_text)
             self.combo_type.set_active_id(task['type'])
             if task['type'] == 'interval':
                 self.spin_int.set_value(task['val_int'])
@@ -596,18 +651,8 @@ class ScheduleDialog(Gtk.Dialog):
                 self.spin_boot.set_value(task['val_delay'])
             elif task['type'] == 'login':
                 self.spin_login.set_value(task['val_delay'])
-                
-        self.show_all()
 
-    def on_browse(self, widget):
-        dialog = Gtk.FileChooserDialog(title=_("Dosya Seç"), parent=self, action=Gtk.FileChooserAction.OPEN)
-        dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
-        if dialog.run() == Gtk.ResponseType.OK:
-            filepath = dialog.get_filename()
-            self.entry_cmd.set_text(f'"{filepath}"' if " " in filepath else filepath)
-            if not self.entry_name.get_text().strip():
-                self.entry_name.set_text(os.path.splitext(os.path.basename(filepath))[0].title())
-        dialog.destroy()
+        self.show_all()
 
     def on_adv_toggled(self, btn):
         if btn.get_active():
@@ -1761,37 +1806,31 @@ class AutostartManager(Gtk.Window):
         while True:
             if dialog.run() == Gtk.ResponseType.OK:
                 name = dialog.entry_name.get_text().strip()
-                is_file = (dialog.stack.get_visible_child_name() == "file")
-                
-                cmd = ""
-                if is_file:
-                    cmd = dialog.entry_cmd.get_text().strip()
-                else:
-                    buf = dialog.text_buffer
-                    cmd = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True).strip()
-                
+                is_code = dialog.cmd_source.is_code_mode()
+                cmd = dialog.cmd_source.get_command_text()
+
                 if not name and cmd:
-                    if is_file:
-                        name = os.path.splitext(os.path.basename(cmd.split()[0]))[0].title()
-                    else:
+                    if is_code:
                         name = "Ozel Kod"
+                    else:
+                        name = os.path.splitext(os.path.basename(cmd.split()[0]))[0].title()
                     dialog.entry_name.set_text(name)
-                
+
                 if not name or not cmd:
                     err = Gtk.MessageDialog(transient_for=dialog, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=_("Eksik Bilgi!"))
                     err.format_secondary_text(_("Lütfen isim ve komut kısımlarını boş bırakmayınız."))
                     err.run()
                     err.destroy()
                     continue
-                
+
                 comment = dialog.entry_comment.get_text()
                 terminal = dialog.check_terminal.get_active()
                 term_size = dialog.combo_term_size.get_active_id()
                 delay = int(dialog.spin_delay.get_value())
                 icon = dialog.original_icon
-                
+
                 file_id = name.lower().replace(" ", "-").replace("/", "") + ".desktop"
-                if not is_file:
+                if is_code:
                     cmd = self.save_custom_script(file_id, cmd)
                     
                 self.write_desktop_file(file_id, name, cmd, comment, terminal, term_size, delay, True)
@@ -1809,36 +1848,30 @@ class AutostartManager(Gtk.Window):
         while True:
             if dialog.run() == Gtk.ResponseType.OK:
                 name = dialog.entry_name.get_text().strip()
-                is_file = (dialog.stack.get_visible_child_name() == "file")
-                
-                cmd = ""
-                if is_file:
-                    cmd = dialog.entry_cmd.get_text().strip()
-                else:
-                    buf = dialog.text_buffer
-                    cmd = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True).strip()
-                
+                is_code = dialog.cmd_source.is_code_mode()
+                cmd = dialog.cmd_source.get_command_text()
+
                 if not name and cmd:
-                    if is_file:
-                        name = os.path.splitext(os.path.basename(cmd.split()[0]))[0].title()
-                    else:
+                    if is_code:
                         name = "Ozel Kod"
+                    else:
+                        name = os.path.splitext(os.path.basename(cmd.split()[0]))[0].title()
                     dialog.entry_name.set_text(name)
-                
+
                 if not name or not cmd:
                     err = Gtk.MessageDialog(transient_for=dialog, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=_("Eksik Bilgi!"))
                     err.format_secondary_text(_("Lütfen isim ve komut kısımlarını boş bırakmayınız."))
                     err.run()
                     err.destroy()
                     continue
-                    
+
                 comment = dialog.entry_comment.get_text()
                 terminal = dialog.check_terminal.get_active()
                 term_size = dialog.combo_term_size.get_active_id()
                 delay = int(dialog.spin_delay.get_value())
                 icon = dialog.original_icon
-                
-                if not is_file:
+
+                if is_code:
                     cmd = self.save_custom_script(app.filename, cmd)
                     
                 self.write_desktop_file(app.filename, name, cmd, comment, terminal, term_size, delay, app.enabled)
@@ -2069,27 +2102,31 @@ class AutostartManager(Gtk.Window):
     def _save_dialog_to_sched(self, dialog, task_id=None):
         import os
         name = dialog.entry_name.get_text().strip()
-        cmd = dialog.entry_cmd.get_text().strip()
-        
+        is_code = dialog.cmd_source.is_code_mode()
+        cmd = dialog.cmd_source.get_command_text()
+
         if not name and cmd:
-            name = os.path.splitext(os.path.basename(cmd.split()[0]))[0].title()
+            name = "Ozel Kod" if is_code else os.path.splitext(os.path.basename(cmd.split()[0]))[0].title()
             dialog.entry_name.set_text(name)
-            
+
         if not name or not cmd:
             err = Gtk.MessageDialog(transient_for=dialog, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=_("Eksik Bilgi!"))
             err.format_secondary_text(_("Lütfen görev adını ve çalıştırılacak komutu boş bırakmayınız."))
             err.run()
             err.destroy()
             return False
-        
-        if dialog.switch_term.get_active() and not cmd.startswith("gnome-terminal"):
-            cmd = f"gnome-terminal -- {cmd}" 
-        
+
         t_type = dialog.combo_type.get_active_id()
         if not task_id:
             import uuid
             task_id = "gsam-" + str(uuid.uuid4())[:8]
-            
+
+        if is_code:
+            cmd = self.save_custom_script(f"{task_id}.desktop", cmd)
+
+        if dialog.switch_term.get_active() and not cmd.startswith("gnome-terminal"):
+            cmd = f"gnome-terminal -- {cmd}"
+
         v1, v2 = "", ""
         if t_type == 'interval':
             v1 = str(int(dialog.spin_int.get_value()))

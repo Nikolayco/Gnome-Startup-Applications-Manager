@@ -6,8 +6,10 @@ Run with:
     python3 -m unittest discover -s tests -v
 No PyGObject/GTK install is required (see stub_gi.py).
 """
+import gettext
 import importlib.util
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -146,10 +148,10 @@ class _FakeAppInfo:
 
 
 class InstalledAppExecCleaningTestCase(unittest.TestCase):
-    """AppDialog._clean_exec_command() strips XDG field codes (%f, %U, ...)."""
+    """CommandSourceEditor._clean_exec_command() strips XDG field codes (%f, %U, ...)."""
 
     def _clean(self, commandline):
-        return gsam.AppDialog._clean_exec_command(None, _FakeAppInfo(commandline))
+        return gsam.CommandSourceEditor._clean_exec_command(None, _FakeAppInfo(commandline))
 
     def test_strips_trailing_field_code(self):
         self.assertEqual(self._clean("firefox %u"), "firefox")
@@ -180,7 +182,6 @@ class TranslationTestCase(unittest.TestCase):
         for lang, expected in expectations.items():
             os.environ["LANG"] = f"{lang}_XX.UTF-8"
             gettext_lang = lang if lang in ("ru", "bg") else "en"
-            import gettext
             if lang == "tr":
                 translated = "Kaydet"
             else:
@@ -192,6 +193,62 @@ class TranslationTestCase(unittest.TestCase):
                 )
                 translated = t.gettext("Kaydet")
             self.assertEqual(translated, expected)
+
+
+class TranslationCoverageTestCase(unittest.TestCase):
+    """Every _("...") literal in the source must have a real en/ru/bg
+    translation, so a new UI string never silently ships untranslated.
+    A tiny allowlist covers strings that are correctly identical to the
+    Turkish source (e.g. "-", or "Terminal" which is already English)."""
+
+    ALLOWED_IDENTITY = {
+        "en": {"-", "Terminal"},
+        "ru": {"-"},
+        "bg": {"-"},
+    }
+
+    _CALL_RE = re.compile(r'''_\(\s*(f?)(["'])((?:\\.|(?!\2).)*)\2\s*\)''')
+
+    @staticmethod
+    def _unescape(body):
+        out = []
+        i = 0
+        while i < len(body):
+            c = body[i]
+            if c == "\\" and i + 1 < len(body):
+                nxt = body[i + 1]
+                if nxt == "n":
+                    out.append("\n"); i += 2; continue
+                if nxt == "t":
+                    out.append("\t"); i += 2; continue
+                if nxt in ("'", '"', "\\"):
+                    out.append(nxt); i += 2; continue
+            out.append(c)
+            i += 1
+        return "".join(out)
+
+    def _extract_keys(self):
+        with open(APP_PATH, encoding="utf-8") as f:
+            src = f.read()
+        keys = set()
+        for is_fstring, _quote, body in self._CALL_RE.findall(src):
+            if is_fstring:
+                continue  # dynamic content, not a static catalog key
+            keys.add(self._unescape(body))
+        return keys
+
+    def test_all_static_strings_are_translated(self):
+        keys = self._extract_keys()
+        self.assertGreater(len(keys), 50, "sanity check: string extraction found too few keys")
+
+        localedir = os.path.join(os.path.dirname(APP_PATH), "locale")
+        for lang in ("en", "ru", "bg"):
+            t = gettext.translation("gnome-startup-manager", localedir=localedir, languages=[lang], fallback=False)
+            untranslated = sorted(
+                k for k in keys
+                if t.gettext(k) == k and k not in self.ALLOWED_IDENTITY[lang]
+            )
+            self.assertEqual(untranslated, [], f"{lang}: missing translations for {untranslated}")
 
 
 if __name__ == "__main__":
