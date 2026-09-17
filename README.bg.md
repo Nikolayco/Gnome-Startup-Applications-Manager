@@ -57,9 +57,7 @@
 ## 🚀 Инсталация
 
 ```bash
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null || true
-cd Gnome-Startup-Applications-Manager
-bash install.sh
+git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null; cd Gnome-Startup-Applications-Manager && bash install.sh
 ```
 
 Командата инсталира приложението в `~/.local/bin` и го добавя автоматично в **мрежата с приложения (App Grid)**.
@@ -71,9 +69,7 @@ bash install.sh
 ## 🗑️ Деинсталиране
 
 ```bash
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null || true
-cd Gnome-Startup-Applications-Manager
-bash uninstall.sh
+git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null; cd Gnome-Startup-Applications-Manager && bash uninstall.sh
 ```
 
 > **Забележка:** Вашите собствени `.desktop` записи няма да бъдат изтрити — изтриват се само файловете, създадени от това приложение.

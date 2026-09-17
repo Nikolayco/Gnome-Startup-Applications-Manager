@@ -59,9 +59,7 @@ The application **automatically detects your system language** and displays in T
 ## 🚀 Installation
 
 ```bash
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null || true
-cd Gnome-Startup-Applications-Manager
-bash install.sh
+git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null; cd Gnome-Startup-Applications-Manager && bash install.sh
 ```
 
 This installs the app to `~/.local/bin` and adds it to your **App Grid** automatically.
@@ -73,9 +71,7 @@ This installs the app to `~/.local/bin` and adds it to your **App Grid** automat
 ## 🗑️ Uninstallation
 
 ```bash
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null || true
-cd Gnome-Startup-Applications-Manager
-bash uninstall.sh
+git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null; cd Gnome-Startup-Applications-Manager && bash uninstall.sh
 ```
 
 > **Note:** Your own `.desktop` autostart entries will NOT be deleted — only files created by this application are removed.
