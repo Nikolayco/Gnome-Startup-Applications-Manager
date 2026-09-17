@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import re
 import glob
 import shlex
 import subprocess
@@ -42,6 +43,7 @@ _EN_DICT = {
     "Komut": "Command",
     "Komut / Dosya:": "Command / File:",
     "Kullanıcı Uygulamaları": "User Applications",
+    "Kurulu Uygulamalar": "Installed Applications",
     "Kısaca açıklama yazın...": "Write a short description...",
     "Mevcut Dosya / Komut Seç": "Select Existing File / Command",
     "Mini Editör (Kodu Buraya Yaz)": "Mini Editor (Write Code Here)",
@@ -49,6 +51,7 @@ _EN_DICT = {
     "Saat": "Hours",
     "Saniye": "Seconds",
     "Seç": "Select",
+    "Seçileni Kullan": "Use Selected",
     "Seçili görevleri silmek istiyor musunuz?": "Are you sure you want to delete the selected tasks?",
     "Sil": "Delete",
     "Sistem Açılışında (Boot)": "At System Boot",
@@ -164,6 +167,7 @@ _RU_DICT = {
     "Komut": "Команда",
     "Komut / Dosya:": "Команда / Файл:",
     "Kullanıcı Uygulamaları": "Приложения пользователя",
+    "Kurulu Uygulamalar": "Установленные приложения",
     "Kısaca açıklama yazın...": "Краткое описание...",
     "Mevcut Dosya / Komut Seç": "Выбрать файл / команду",
     "Mini Editör (Kodu Buraya Yaz)": "Мини-редактор (вставьте код)",
@@ -171,6 +175,7 @@ _RU_DICT = {
     "Saat": "Часы",
     "Saniye": "Секунды",
     "Seç": "Выбрать",
+    "Seçileni Kullan": "Использовать выбранное",
     "Seçili görevleri silmek istiyor musunuz?": "Удалить выбранные задачи?",
     "Sil": "Удалить",
     "Sistem Açılışında (Boot)": "При загрузке системы",
@@ -286,6 +291,7 @@ _BG_DICT = {
     "Komut": "Команда",
     "Komut / Dosya:": "Команда / Файл:",
     "Kullanıcı Uygulamaları": "Потребителски приложения",
+    "Kurulu Uygulamalar": "Инсталирани приложения",
     "Kısaca açıklama yazın...": "Кратко описание...",
     "Mevcut Dosya / Komut Seç": "Избери файл / команда",
     "Mini Editör (Kodu Buraya Yaz)": "Мини редактор (вмъкни код)",
@@ -293,6 +299,7 @@ _BG_DICT = {
     "Saat": "Часове",
     "Saniye": "Секунди",
     "Seç": "Избери",
+    "Seçileni Kullan": "Използвай избраното",
     "Seçili görevleri silmek istiyor musunuz?": "Да изтриете ли избраните задачи?",
     "Sil": "Изтрий",
     "Sistem Açılışında (Boot)": "При стартиране на системата",
@@ -546,7 +553,8 @@ class AppDialog(Gtk.Dialog):
         
         self.stack.add_titled(file_box, "file", _("Mevcut Dosya / Komut Seç"))
         self.stack.add_titled(scroll_tv, "code", _("Mini Editör (Kodu Buraya Yaz)"))
-        
+        self.stack.add_titled(self._build_installed_apps_page(), "installed", _("Kurulu Uygulamalar"))
+
         switcher = Gtk.StackSwitcher()
         switcher.set_stack(self.stack)
         switcher.set_halign(Gtk.Align.START)
@@ -579,6 +587,128 @@ class AppDialog(Gtk.Dialog):
                 except: pass
             
         self.show_all()
+
+    def _build_installed_apps_page(self):
+        self.installed_store = Gtk.ListStore(str, str, str, str, bool)  # icon, name, comment, exec, terminal
+
+        self.installed_search = Gtk.SearchEntry()
+        self.installed_search.set_placeholder_text(_("Uygulama Ara..."))
+        self.installed_search.connect("search-changed", lambda w: self.installed_filter.refilter())
+
+        self.installed_filter = self.installed_store.filter_new()
+        self.installed_filter.set_visible_func(self._filter_installed_apps)
+
+        self.installed_tree = Gtk.TreeView(model=self.installed_filter)
+        self.installed_tree.set_headers_visible(False)
+        self.installed_tree.connect("row-activated", lambda tv, path, col: self._apply_installed_selection())
+
+        col = Gtk.TreeViewColumn(_("Uygulama Adı"))
+        render_icon = Gtk.CellRendererPixbuf()
+        render_icon.set_property("stock-size", Gtk.IconSize.DND)
+        col.pack_start(render_icon, False)
+        col.add_attribute(render_icon, "icon-name", 0)
+        render_text = Gtk.CellRendererText()
+        render_text.set_property("ellipsize", 3)
+        col.pack_start(render_text, True)
+        col.set_cell_data_func(render_text, self._render_installed_app_text)
+        self.installed_tree.append_column(col)
+
+        self._populate_installed_apps()
+
+        scroll_installed = Gtk.ScrolledWindow()
+        scroll_installed.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        scroll_installed.set_size_request(-1, 100)
+        scroll_installed.add(self.installed_tree)
+
+        btn_use_installed = Gtk.Button(label=_("Seçileni Kullan"))
+        btn_use_installed.connect("clicked", lambda w: self._apply_installed_selection())
+
+        vbox_installed = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+        vbox_installed.pack_start(self.installed_search, False, False, 0)
+        vbox_installed.pack_start(scroll_installed, True, True, 0)
+        vbox_installed.pack_start(btn_use_installed, False, False, 0)
+        return vbox_installed
+
+    def _populate_installed_apps(self):
+        seen_names = set()
+        entries = []
+        for app_info in Gio.AppInfo.get_all():
+            try:
+                if not app_info.should_show():
+                    continue
+                name = app_info.get_display_name() or app_info.get_name()
+                if not name or name in seen_names:
+                    continue
+                exec_cmd = self._clean_exec_command(app_info)
+                if not exec_cmd:
+                    continue
+                seen_names.add(name)
+
+                icon_name = "application-x-executable"
+                icon_obj = app_info.get_icon()
+                if isinstance(icon_obj, Gio.ThemedIcon):
+                    icon_names = icon_obj.get_names()
+                    if icon_names:
+                        icon_name = icon_names[0]
+
+                comment = app_info.get_description() or ""
+                terminal = bool(app_info.get_boolean("Terminal")) if isinstance(app_info, Gio.DesktopAppInfo) else False
+
+                entries.append((icon_name, name, comment, exec_cmd, terminal))
+            except Exception:
+                continue
+
+        entries.sort(key=lambda e: e[1].lower())
+        for entry in entries:
+            self.installed_store.append(list(entry))
+
+    def _clean_exec_command(self, app_info):
+        cmdline = app_info.get_commandline()
+        if not cmdline:
+            return ""
+        try:
+            tokens = shlex.split(cmdline)
+        except ValueError:
+            return cmdline.strip()
+        tokens = [t for t in tokens if not re.fullmatch(r"%[a-zA-Z]", t)]
+        if not tokens:
+            return ""
+        return " ".join(shlex.quote(t) for t in tokens)
+
+    def _filter_installed_apps(self, model, treeiter, data):
+        query = self.installed_search.get_text().strip().lower()
+        if not query:
+            return True
+        name = (model[treeiter][1] or "").lower()
+        comment = (model[treeiter][2] or "").lower()
+        return query in name or query in comment
+
+    def _render_installed_app_text(self, col, cell, model, treeiter, data):
+        name = GLib.markup_escape_text(model[treeiter][1] or "")
+        comment = model[treeiter][2]
+        if comment:
+            comment = GLib.markup_escape_text(comment)
+            cell.set_property("markup", f"<b>{name}</b>\n<span size='small' foreground='#888888'>{comment}</span>")
+        else:
+            cell.set_property("markup", f"<b>{name}</b>")
+
+    def _apply_installed_selection(self):
+        selection = self.installed_tree.get_selection()
+        model, treeiter = selection.get_selected()
+        if treeiter is None:
+            return
+        icon_name = model[treeiter][0]
+        name = model[treeiter][1]
+        comment = model[treeiter][2]
+        exec_cmd = model[treeiter][3]
+        terminal = model[treeiter][4]
+        self.entry_name.set_text(name)
+        self.entry_comment.set_text(comment)
+        self.entry_cmd.set_text(exec_cmd)
+        self.check_terminal.set_active(terminal)
+        self.combo_term_size.set_sensitive(terminal)
+        self.original_icon = icon_name
+        self.stack.set_visible_child_name("file")
 
     def on_browse_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(title=_("Çalıştırılacak Dosyayı Seçin"), parent=self, action=Gtk.FileChooserAction.OPEN)
