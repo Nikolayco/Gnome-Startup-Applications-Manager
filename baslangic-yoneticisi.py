@@ -1331,7 +1331,9 @@ class AutostartManager(Gtk.Window):
             f.write("proc.wait()\n")
             f.write("if lf: lf.close()\n")
         os.chmod(runner_path, 0o755)
-            
+
+        self.migrate_terminal_desktop_files()
+
         self.load_apps()
         self.load_sched_tasks()
         self.setup_tray()
@@ -1952,6 +1954,35 @@ class AutostartManager(Gtk.Window):
 
     def on_row_activated(self, treeview, path, column):
         self.on_edit_clicked(None)
+
+    def migrate_terminal_desktop_files(self):
+        if not os.path.isdir(AUTOSTART_DIR):
+            return
+        for fname in os.listdir(AUTOSTART_DIR):
+            if not fname.endswith(".desktop"):
+                continue
+            path = os.path.join(AUTOSTART_DIR, fname)
+            exec_line = None
+            try:
+                with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+                    for line in f:
+                        if line.startswith("Exec="):
+                            exec_line = line.strip().split("=", 1)[1]
+                            break
+            except Exception:
+                continue
+            if not exec_line or "runner.py" not in exec_line:
+                continue
+            is_terminal_cmd = exec_line.startswith(("gnome-terminal", "x-terminal-emulator", "xfce4-terminal", "xterm"))
+            if not is_terminal_cmd:
+                continue
+            if re.search(r"\.log['\"]?\s+1\s*$", exec_line):
+                continue  # already migrated (terminal flag already present)
+            try:
+                app = self.parse_desktop_file(path)
+                self.write_desktop_file(app.filename, app.name, app.cmd, app.comment, app.terminal, app.term_size, app.delay, app.enabled, app.icon)
+            except Exception:
+                continue
 
     def write_desktop_file(self, filename, name, cmd, comment, terminal, term_size, delay, enabled, icon="application-x-executable"):
         path = os.path.join(AUTOSTART_DIR, filename)
