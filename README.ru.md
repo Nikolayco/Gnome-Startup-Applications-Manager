@@ -57,7 +57,7 @@
 ## 🚀 Установка
 
 ```bash
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null; cd Gnome-Startup-Applications-Manager && bash install.sh
+([ -d Gnome-Startup-Applications-Manager ] && git -C Gnome-Startup-Applications-Manager pull || git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git); cd Gnome-Startup-Applications-Manager && bash install.sh
 ```
 
 Команда устанавливает приложение в `~/.local/bin` и автоматически добавляет его в **сетку приложений (App Grid)**.
@@ -69,7 +69,7 @@ git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>
 ## 🗑️ Удаление
 
 ```bash
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null; cd Gnome-Startup-Applications-Manager && bash uninstall.sh
+([ -d Gnome-Startup-Applications-Manager ] && git -C Gnome-Startup-Applications-Manager pull || git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git); cd Gnome-Startup-Applications-Manager && bash uninstall.sh
 ```
 
 > **Примечание:** Ваши собственные записи автозапуска не будут удалены — удаляются только файлы, созданные этим приложением.

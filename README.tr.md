@@ -57,7 +57,7 @@ Uygulama **sistem dilinizi otomatik olarak algılar** ve Türkçe, İngilizce, R
 ## 🚀 Kurulum
 
 ```bash
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null; cd Gnome-Startup-Applications-Manager && bash install.sh
+([ -d Gnome-Startup-Applications-Manager ] && git -C Gnome-Startup-Applications-Manager pull || git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git); cd Gnome-Startup-Applications-Manager && bash install.sh
 ```
 
 Bu komut uygulamayı `~/.local/bin`'e kurar ve **Uygulama Izgarasına (App Grid)** otomatik olarak ekler.
@@ -69,7 +69,7 @@ Bu komut uygulamayı `~/.local/bin`'e kurar ve **Uygulama Izgarasına (App Grid)
 ## 🗑️ Kaldırma
 
 ```bash
-git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git 2>/dev/null; cd Gnome-Startup-Applications-Manager && bash uninstall.sh
+([ -d Gnome-Startup-Applications-Manager ] && git -C Gnome-Startup-Applications-Manager pull || git clone https://github.com/Nikolayco/Gnome-Startup-Applications-Manager.git); cd Gnome-Startup-Applications-Manager && bash uninstall.sh
 ```
 
 > **Not:** Kendinizin elle eklediği `.desktop` başlangıç uygulamaları bu işlemden etkilenmez. Yalnızca uygulamanın kendi oluşturduğu dosyalar silinir.
